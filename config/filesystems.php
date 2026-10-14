@@ -38,6 +38,20 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Private applicant documents. Never served directly: every download
+         * goes through an authorized controller. Swap for a private S3 bucket
+         * in production via DOCUMENTS_DISK.
+         */
+        'documents' => [
+            'driver' => 'local',
+            'root' => env('DOCUMENTS_ROOT', storage_path('app/private/documents')),
+            'visibility' => 'private',
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

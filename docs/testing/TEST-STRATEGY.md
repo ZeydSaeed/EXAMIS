@@ -1,0 +1,56 @@
+# EXAMIS — Test strategy and traceability
+
+## 1. Layers
+
+| Layer                                               | Tooling                                                                          | Location        | Runs                                    |
+| --------------------------------------------------- | -------------------------------------------------------------------------------- | --------------- | --------------------------------------- |
+| Unit (framework-free rules)                         | Pest                                                                             | `tests/Unit`    | every change                            |
+| Feature / HTTP / authorization / concurrency guards | Pest + Laravel testing (SQLite in-memory locally, PostgreSQL in CI)              | `tests/Feature` | every change                            |
+| Translation completeness                            | Pest (`TranslationCoverageTest`)                                                 | `tests/Feature` | every change                            |
+| Static analysis                                     | Larastan level 7, TypeScript `tsc`, oxlint                                       | —               | every change                            |
+| End-to-end (real browser)                           | Playwright (Chromium, mobile Chromium; Firefox/WebKit with `E2E_ALL_BROWSERS=1`) | `tests/e2e`     | every change (Chromium) / nightly (all) |
+| Load / stress / spike / soak                        | k6                                                                               | `tests/load`    | manual, staging only                    |
+| Security                                            | see `docs/security/SECURITY-TEST-PLAN.md`                                        | —               | CI + before release                     |
+| Backup / restore                                    | `scripts/ops/restore-drill.sh` + `examis:verify-integrity`                       | —               | monthly drill                           |
+
+Principles: test behavior at the boundary that owns it. Policies are tested as a matrix, endpoints are tested for being wired to the policy, and E2E covers journeys and browser-only behavior (service worker, RTL layout, file inputs). Tests use synthetic data only and never real student data.
+
+## 2. Requirement → test traceability
+
+| #   | Requirement                                              | Proven by                                                                                                                                                                                                                                                                                                                |
+| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R1  | A student never sees another student's data              | `ApplicationPolicyTest` (404), `ApplicationDraftTest::answers 404…`, `ApplicationDocumentTest::answers 404 to other applicants`, `ApplicationReceiptTest::answers 404…`, `PageRenderingTest::answers 404…`, E2E `security.spec.ts::another applicant gets 404`                                                           |
+| R2  | Staff cannot exceed their permissions                    | `ApplicationPolicyTest` (decision matrix, deactivated staff), `ReviewWorkflowTest` (reviewer cannot decide or reassign, section permissions), E2E `review-workflow.spec.ts::a reviewer cannot see the decision buttons`                                                                                                  |
+| R3  | Private files are not downloadable without authorization | `ApplicationDocumentTest` (downloading block), E2E security                                                                                                                                                                                                                                                              |
+| R4  | No double submission on retry or double click            | `ApplicationSubmissionTest::is idempotent…`, E2E `applicant-journey` (dblclick), k6 `submission-flow.js` (second submit returns the same reference)                                                                                                                                                                      |
+| R5  | No illegal status transitions                            | `ApplicationStatusTest` (table pinned), `ReviewWorkflowTest::rejects transitions…`                                                                                                                                                                                                                                       |
+| R6  | Data is not lost when a notification fails               | Notifications are queued `afterCommit` in separate jobs with retries; the state change commits independently (`SubmitApplication`, `TransitionApplication`). Covered by design and by `ApplicationSubmissionTest` (state persisted, notification asserted separately). **Gap:** no test forces a mail transport failure. |
+| R7  | Safe retry after timeout                                 | Same as R4 + E2E `submission-unconfirmed` UI path (implemented; network-drop E2E **Not Tested**)                                                                                                                                                                                                                         |
+| R8  | Documents survive backup/restore                         | `VerifyDataIntegrityTest` (missing files, hash mismatch, counters); restore drill **Blocked** (B1/B5)                                                                                                                                                                                                                    |
+| R9  | Reference numbers are correct and unique                 | `ReferenceNumberGeneratorTest` (check digit), `ApplicationSubmissionTest::issues distinct sequential…`, DB `UNIQUE`                                                                                                                                                                                                      |
+| R10 | Correct Arabic PDF                                       | `ApplicationReceiptTest::renders an A4 receipt whose Arabic text can be extracted` (A4 MediaBox, full Arabic name extracted, no private-use glyphs, LTR academic year), visual check during development                                                                                                                  |
+| R11 | No sensitive data in the PWA cache                       | E2E `security.spec.ts::the service worker never stores private pages`, `PublicPortalTest::marks authenticated responses as not cacheable`                                                                                                                                                                                |
+| R12 | System integrity under concurrent load                   | DB constraints tests (`enforces one application per applicant…`, `allows only one current document…`); row-locking design; k6 `submission-flow.js` + integrity SQL. **Load evidence Not Tested** (k6 unavailable here).                                                                                                  |
+| R13 | Arabic RTL and English LTR                               | `PublicPortalTest::switches the interface…`, `TranslationCoverageTest`, E2E `public-portal.spec.ts` (dir flips), responsive spec                                                                                                                                                                                         |
+| R14 | Optimistic concurrency between two sessions              | `ApplicationDraftTest::rejects a save based on a stale version…`                                                                                                                                                                                                                                                         |
+| R15 | Upload abuse rejected                                    | `ApplicationDocumentTest` (disguised type, size, unknown type, scripted PDF), `StructuralDocumentScannerTest`, E2E (client-side type block)                                                                                                                                                                              |
+| R16 | Shared family email                                      | `RegistrationTest::several accounts may share…`, `PasswordResetTest` (isolation of reset tokens)                                                                                                                                                                                                                         |
+| R17 | Audit trail is complete and immutable                    | `AuditTrailTest`, `ReviewWorkflowTest` (decision audited), `ApplicationDocumentTest` (document view audited), `PageRenderingTest` (application view and export audited)                                                                                                                                                  |
+| R18 | Responsive layouts                                       | E2E `responsive.spec.ts` (phone viewport, long Arabic names)                                                                                                                                                                                                                                                             |
+| R19 | Rate limiting                                            | `AuthenticationTest`, `RegistrationTest`, `PasswordResetTest`, `PublicPortalTest` (tracking)                                                                                                                                                                                                                             |
+
+## 3. How to run
+
+```bash
+php artisan test --compact                 # PHP suite (SQLite in memory)
+composer types:check && npm run types:check && npm run check
+npm run build && npm run test:e2e          # Playwright; E2E_ALL_BROWSERS=1 for Firefox/WebKit
+npm run test:e2e:report                    # open the HTML report
+k6 run -e BASE_URL=https://staging… tests/load/smoke.js
+```
+
+## 4. Known gaps (tracked)
+
+- E2E for network loss _during_ submission, session expiry mid-form, and SW update prompt: **Not Tested** (UI paths implemented).
+- Visual regression snapshots: not adopted (too brittle at this stage); responsive overflow checks instead.
+- Automated accessibility scanning (axe): not installed (needs a dependency approval). Manual checks done: labels, focus-visible, skip link, status not by color alone, `aria-live` for status changes.

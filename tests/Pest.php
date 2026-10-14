@@ -1,6 +1,14 @@
 <?php
 
+use App\Enums\Role;
+use App\Models\Application;
+use App\Models\ApplicationDocument;
+use App\Models\DocumentType;
+use App\Models\ExamPeriod;
+use App\Models\User;
+use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 /*
@@ -15,7 +23,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
- // ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -38,13 +46,77 @@ expect()->extend('toBeOne', function () {
 | Functions
 |--------------------------------------------------------------------------
 |
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
+| Shared builders for EXAMIS feature tests. All data is synthetic.
 |
 */
 
-function something()
+/**
+ * Seeds the lookup lists that application validation depends on.
+ */
+function seedReferenceData(): void
 {
-    // ..
+    test()->seed(ReferenceDataSeeder::class);
+}
+
+/**
+ * An open period that requires one PDF-capable document type.
+ *
+ * @return array{0: ExamPeriod, 1: DocumentType}
+ */
+function openPeriodRequiringDocument(): array
+{
+    $type = DocumentType::factory()->create(['code' => 'national_id']);
+    $period = ExamPeriod::factory()->requiring($type)->create();
+
+    return [$period, $type];
+}
+
+function applicant(): User
+{
+    return User::factory()->create();
+}
+
+function staffWith(Role ...$roles): User
+{
+    return User::factory()->staff(...$roles)->create();
+}
+
+/**
+ * A complete draft whose required document is already verified, so it is
+ * ready to submit.
+ */
+function readyDraft(?User $owner = null): Application
+{
+    [$period, $type] = openPeriodRequiringDocument();
+
+    $application = Application::factory()->complete()->create([
+        'user_id' => ($owner ?? applicant())->id,
+        'exam_period_id' => $period->id,
+    ]);
+
+    ApplicationDocument::factory()->verified()->create([
+        'application_id' => $application->id,
+        'document_type_id' => $type->id,
+    ]);
+
+    return $application;
+}
+
+function pdfBytes(string $body = 'BT /F1 12 Tf (Hello) Tj ET'): string
+{
+    return "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\nstream\n{$body}\nendstream\ntrailer << /Root 1 0 R >>\n%%EOF\n";
+}
+
+function pngBytes(int $width = 40, int $height = 40): string
+{
+    $image = imagecreatetruecolor($width, $height);
+    ob_start();
+    imagepng($image);
+
+    return (string) ob_get_clean();
+}
+
+function uploadedPdf(string $name = 'id-card.pdf', ?string $body = null): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent($name, pdfBytes($body ?? 'BT (ok) Tj ET'));
 }

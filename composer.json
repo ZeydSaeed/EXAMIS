@@ -15,7 +15,9 @@
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/wayfinder": "^0.1.14",
+        "mpdf/mpdf": "^8.3",
+        "mpdf/qrcode": "^1.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -28,7 +30,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9.3",
         "pestphp/pest": "^5.3",
-        "pestphp/pest-plugin-laravel": "^5.0"
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "smalot/pdfparser": "^2.13"
     },
     "autoload": {
         "psr-4": {
@@ -68,7 +71,7 @@
             "@test"
         ],
         "types:check": [
-            "phpstan analyse"
+            "phpstan analyse --memory-limit=1G"
         ],
         "test": [
             "@php artisan config:clear --ansi",
@@ -94,6 +97,12 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "test:pgsql": [
+            "@php artisan config:clear --ansi",
+            "@putenv DB_CONNECTION=pgsql",
+            "@putenv DB_DATABASE=examis_testing",
+            "@php artisan test --compact"
         ]
     },
     "extra": {

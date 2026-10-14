@@ -1,0 +1,63 @@
+config/route/view/event cached
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✗ 'rate>0.99' rate=98.86%
+
+    http_req_duration{type:read}
+    ✗ 'p(95)<1000' p(95)=2.1s
+
+    http_req_duration{type:write}
+    ✗ 'p(95)<2000' p(95)=3.76s
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.83%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 616    9.954686/s
+    checks_succeeded...: 98.86% 609 out of 616
+    checks_failed......: 1.13%  7 out of 616
+
+    ✗ home 200
+      ↳  99% — ✓ 121 / ✗ 1
+    ✓ page 200
+    ✗ logged in
+      ↳  86% — ✓ 40 / ✗ 6
+    ✓ dashboard 200
+    ✓ draft opened
+    ✓ track 200
+    ✓ manifest 200
+    ✓ draft saved
+    ✓ document stored
+    ✓ notifications 200
+    ✓ submitted
+    ✓ resubmit returns the same reference
+    ✓ status 200
+    ✓ receipt pdf
+
+    HTTP
+    http_req_duration..............: avg=1.03s    min=552.6µs med=865.31ms max=5.44s p(90)=2.02s  p(95)=2.55s 
+      { expected_response:true }...: avg=1.03s    min=552.6µs med=867.42ms max=5.44s p(90)=2.01s  p(95)=2.55s 
+      { type:read }................: avg=945.76ms min=552.6µs med=833.02ms max=3.27s p(90)=1.83s  p(95)=2.1s  
+      { type:write }...............: avg=1.29s    min=80.68ms med=926.14ms max=5.44s p(90)=2.72s  p(95)=3.76s 
+    http_req_failed................: 0.83%  7 out of 841
+    http_reqs......................: 841    13.590732/s
+
+    EXECUTION
+    iteration_duration.............: avg=7.31s    min=2.43s   med=5.93s    max=32.6s p(90)=13.44s p(95)=14.86s
+    iterations.....................: 148    2.39171/s
+    vus............................: 26     min=3        max=26 
+    vus_max........................: 250    min=250      max=250
+
+    NETWORK
+    data_received..................: 39 MB  626 kB/s
+    data_sent......................: 579 kB 9.4 kB/s
+
+
+
+time="2026-10-14T22:59:44+03:00" level=error msg="thresholds on metrics 'checks, http_req_duration{type:read}, http_req_duration{type:write}' were crossed; at least one has abortOnFail enabled, stopping test prematurely"
+.env restored, caches cleared

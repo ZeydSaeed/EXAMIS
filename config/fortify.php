@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ThrottleAuthEndpoints;
 use Laravel\Fortify\Features;
 
 return [
@@ -45,7 +46,7 @@ return [
     |
     */
 
-    'username' => 'email',
+    'username' => 'username',
 
     'email' => 'email',
 
@@ -101,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    'middleware' => ['web', ThrottleAuthEndpoints::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -160,9 +161,12 @@ return [
     |
     */
 
+    /*
+     * Password reset is implemented by App\Http\Controllers\Auth because it is
+     * keyed by username, not email (ADR-0002); Fortify's version is disabled.
+     */
     'features' => [
         Features::registration(),
-        Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
             'confirm' => true,

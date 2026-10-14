@@ -9,9 +9,9 @@
 
 @theme {
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, Calibri, Aptos,
+        ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -41,6 +41,10 @@
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
 
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -62,74 +66,109 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
+    /* Approved EXAMIS palette */
+    --examis-deep: #355764;
+    --examis-sage: #5a8f7b;
+    --examis-cyan: #81cacf;
+    --examis-sun: #ffea11;
+    --examis-surface: color-mix(in srgb, var(--examis-cyan) 14%, white);
+    --examis-card: #ffffff;
+
+    /* Compat aliases used by chrome components */
+    --sis-night: var(--examis-deep);
+    --sis-oxford: var(--examis-deep);
+    --sis-steel: var(--examis-sage);
+    --sis-mist: var(--examis-cyan);
+    --sis-pearl: var(--examis-surface);
+    --sis-hover: color-mix(in srgb, var(--examis-cyan) 55%, white);
+    --sis-ribbon: color-mix(in srgb, var(--examis-cyan) 28%, white);
+    --sis-blush: #e9afa3;
+    --sis-caption: var(--examis-sun);
+    --sis-button-radius: 0.375rem;
+    --sis-field-radius: 0.375rem;
+    --sis-surface-radius: 0.5rem;
+
+    /* Table SSOT — organization matches SIS drafts/data tables */
+    --examis-table-radius: 0.65rem;
+    --examis-table-line-width: 1px;
+    --examis-table-line-color: var(--examis-deep);
+    --examis-table-line: var(--examis-table-line-width) solid
+        var(--examis-table-line-color);
+    --examis-table-font-size: 0.875rem;
+    --examis-table-header-weight: 700;
+    --examis-table-row-h: 2.35rem;
+
+    --background: var(--examis-surface);
+    --foreground: var(--examis-deep);
+    --card: var(--examis-card);
+    --card-foreground: var(--examis-deep);
+    --popover: var(--examis-card);
+    --popover-foreground: var(--examis-deep);
+    --primary: var(--examis-deep);
+    --primary-foreground: #ffffff;
+    --secondary: var(--examis-sage);
+    --secondary-foreground: #ffffff;
+    --muted: color-mix(in srgb, var(--examis-cyan) 32%, white);
+    --muted-foreground: color-mix(in srgb, var(--examis-deep) 72%, black);
+    --accent: var(--examis-cyan);
+    --accent-foreground: var(--examis-deep);
+    --destructive: #c45c5c;
+    --destructive-foreground: #ffffff;
+    --border: color-mix(in srgb, var(--examis-deep) 22%, white);
+    --input: color-mix(in srgb, var(--examis-cyan) 25%, white);
+    --ring: var(--examis-sage);
+    --success: var(--examis-sage);
+    --warning: color-mix(in srgb, var(--examis-sun) 70%, #b8860b);
+    --info: var(--examis-cyan);
+    --chart-1: var(--examis-deep);
+    --chart-2: var(--examis-sage);
+    --chart-3: var(--examis-cyan);
+    --chart-4: var(--examis-sun);
+    --chart-5: color-mix(in srgb, var(--examis-sage) 50%, var(--examis-deep));
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar: var(--examis-deep);
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: var(--examis-sun);
+    --sidebar-primary-foreground: var(--examis-deep);
+    --sidebar-accent: var(--examis-sage);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: color-mix(in srgb, var(--examis-deep) 70%, black);
+    --sidebar-ring: var(--examis-cyan);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --examis-surface: color-mix(in srgb, var(--examis-deep) 88%, black);
+    --examis-card: color-mix(in srgb, var(--examis-deep) 78%, black);
+    --background: var(--examis-surface);
+    --foreground: #f4fbfb;
+    --card: var(--examis-card);
+    --card-foreground: #f4fbfb;
+    --popover: var(--examis-card);
+    --popover-foreground: #f4fbfb;
+    --primary: var(--examis-cyan);
+    --primary-foreground: var(--examis-deep);
+    --secondary: var(--examis-sage);
+    --secondary-foreground: #ffffff;
+    --muted: color-mix(in srgb, var(--examis-deep) 70%, black);
+    --muted-foreground: color-mix(in srgb, var(--examis-cyan) 70%, white);
+    --accent: var(--examis-sage);
+    --accent-foreground: #ffffff;
+    --destructive: #e07a7a;
+    --destructive-foreground: #1a1010;
+    --border: color-mix(in srgb, var(--examis-cyan) 35%, transparent);
+    --input: color-mix(in srgb, var(--examis-deep) 65%, black);
+    --ring: var(--examis-sun);
+    --success: #7bc4a4;
+    --warning: var(--examis-sun);
+    --info: var(--examis-cyan);
+    --sidebar: color-mix(in srgb, var(--examis-deep) 92%, black);
+    --sidebar-foreground: #f4fbfb;
+    --sidebar-primary: var(--examis-sun);
+    --sidebar-primary-foreground: var(--examis-deep);
+    --sidebar-accent: var(--examis-sage);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: color-mix(in srgb, var(--examis-cyan) 25%, transparent);
+    --sidebar-ring: var(--examis-cyan);
 }
 
 @layer base {
@@ -139,5 +178,141 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-ring;
+    }
+
+    [dir='rtl'] body {
+        line-height: 1.7;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/*
+ * Data tables — same organization as SIS (.sis-admission-drafts-table /
+ * .sis-data-table): outer frame owns the border, cells form a single-line
+ * grid, sticky bold header, compact Arabic-safe row height.
+ */
+.examis-data-table {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior: contain;
+    border: var(--examis-table-line);
+    border-radius: var(--examis-table-radius);
+    background: var(--card);
+}
+
+.examis-data-table > table {
+    width: 100%;
+    max-width: none;
+    border-collapse: collapse;
+    font-size: var(--examis-table-font-size);
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.examis-data-table :is(th, td) {
+    box-sizing: border-box;
+    min-height: var(--examis-table-row-h);
+    padding-block: 0.35rem 0.45rem;
+    padding-inline: 0.65rem;
+    border: var(--examis-table-line);
+    vertical-align: middle;
+    text-align: start;
+}
+
+.examis-data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: var(--examis-table-row-h);
+    background: var(--examis-deep);
+    color: #ffffff;
+    font-weight: var(--examis-table-header-weight);
+    white-space: nowrap;
+    box-shadow: none;
+}
+
+.examis-data-table thead {
+    position: relative;
+    z-index: 2;
+}
+
+/* Wrapper owns outer frame — avoid double lines on the perimeter. */
+.examis-data-table :is(thead, tbody, tfoot) tr > :first-child {
+    border-inline-start: 0;
+}
+
+.examis-data-table :is(thead, tbody, tfoot) tr > :last-child {
+    border-inline-end: 0;
+}
+
+.examis-data-table thead tr:first-child > * {
+    border-block-start: 0;
+}
+
+.examis-data-table tbody tr:last-child > * {
+    border-block-end: 0;
+}
+
+.examis-data-table tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--examis-cyan) 14%, var(--card));
+}
+
+.examis-data-table tbody tr:hover {
+    background: color-mix(in srgb, var(--examis-cyan) 32%, var(--card));
+}
+
+.examis-data-table tbody tr:focus-visible {
+    outline: 2px solid var(--examis-sun);
+    outline-offset: -2px;
+}
+
+.examis-data-table a {
+    color: var(--examis-deep);
+    font-weight: 600;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.examis-data-table a:hover {
+    color: var(--examis-sage);
+}
+
+.dark .examis-data-table thead th {
+    background: var(--examis-sage);
+    color: #ffffff;
+}
+
+.dark .examis-data-table {
+    --examis-table-line-color: var(--examis-cyan);
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .examis-data-table {
+        overflow: visible;
+        border-color: #000;
+    }
+
+    .examis-data-table :is(th, td) {
+        border-color: #000;
     }
 }

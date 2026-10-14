@@ -1,0 +1,61 @@
+config/route/view/event cached
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate>0.99' rate=100.00%
+
+    http_req_duration{type:read}
+    ✗ 'p(95)<1000' p(95)=4.89s
+
+    http_req_duration{type:write}
+    ✗ 'p(95)<2000' p(95)=5.36s
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.49%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 304     4.907844/s
+    checks_succeeded...: 100.00% 304 out of 304
+    checks_failed......: 0.00%   0 out of 304
+
+    ✓ home 200
+    ✓ page 200
+    ✓ logged in
+    ✓ dashboard 200
+    ✓ track 200
+    ✓ manifest 200
+    ✓ draft opened
+    ✓ draft saved
+    ✓ notifications 200
+    ✓ document stored
+    ✓ submitted
+    ✓ resubmit returns the same reference
+    ✓ status 200
+    ✓ receipt pdf
+
+    HTTP
+    http_req_duration..............: avg=2.45s  min=7.99ms   med=2.55s  max=6.64s  p(90)=4.35s  p(95)=5.1s  
+      { expected_response:true }...: avg=2.46s  min=7.99ms   med=2.56s  max=6.64s  p(90)=4.35s  p(95)=5.1s  
+      { type:read }................: avg=2.38s  min=7.99ms   med=2.46s  max=5.76s  p(90)=4.23s  p(95)=4.89s 
+      { type:write }...............: avg=2.67s  min=298.26ms med=2.73s  max=6.64s  p(90)=4.74s  p(95)=5.36s 
+    http_req_failed................: 0.49%  2 out of 406
+    http_reqs......................: 406    6.554555/s
+
+    EXECUTION
+    iteration_duration.............: avg=13.48s min=2.84s    med=13.42s max=36.74s p(90)=22.48s p(95)=28.52s
+    iterations.....................: 68     1.097807/s
+    vus............................: 26     min=3        max=26 
+    vus_max........................: 250    min=250      max=250
+
+    NETWORK
+    data_received..................: 19 MB  309 kB/s
+    data_sent......................: 311 kB 5.0 kB/s
+
+
+
+time="2026-10-14T22:54:43+03:00" level=error msg="thresholds on metrics 'http_req_duration{type:read}, http_req_duration{type:write}' were crossed; at least one has abortOnFail enabled, stopping test prematurely"
+.env restored, caches cleared

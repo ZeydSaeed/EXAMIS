@@ -28,24 +28,27 @@ trait ProfileValidationRules
      */
     protected function nameRules(): array
     {
-        return ['required', 'string', 'max:255'];
+        return ['required', 'string', 'min:3', 'max:150'];
     }
 
     /**
-     * Get the validation rules used to validate user emails.
+     * Email is a contact channel that several accounts (e.g. siblings) may
+     * share, so it is deliberately not unique (ADR-0002).
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
     protected function emailRules(?int $userId = null): array
     {
-        return [
-            'required',
-            'string',
-            'email',
-            'max:255',
-            $userId === null
-                ? Rule::unique(User::class)
-                : Rule::unique(User::class)->ignore($userId),
-        ];
+        return ['required', 'string', 'email:rfc', 'max:255'];
+    }
+
+    /**
+     * The unique login identifier.
+     *
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function usernameRules(): array
+    {
+        return ['required', 'string', 'min:4', 'max:32', 'regex:/^[a-z0-9._-]+$/', Rule::unique(User::class, 'username')];
     }
 }

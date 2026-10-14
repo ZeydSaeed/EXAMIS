@@ -1,21 +1,31 @@
-// Components
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { useTrans } from '@/hooks/use-trans';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
+    const { t } = useTrans();
+
+    setLayoutProps({
+        title: t('auth.forgot_title'),
+        description: t('auth.forgot_description'),
+    });
+
     return (
         <>
-            <Head title="Forgot password" />
+            <Head title={t('auth.forgot_title')} />
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div
+                    role="status"
+                    className="rounded-md border border-success/40 bg-success/10 p-3 text-center text-sm font-medium text-success"
+                >
                     {status}
                 </div>
             )}
@@ -25,45 +35,41 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="username">
+                                    {t('auth.username')}
+                                </Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="off"
+                                    id="username"
+                                    name="username"
+                                    dir="ltr"
+                                    autoComplete="username"
+                                    autoCapitalize="none"
                                     autoFocus
-                                    placeholder="email@example.com"
+                                    required
                                 />
-
-                                <InputError message={errors.email} />
+                                <InputError message={errors.username} />
                             </div>
 
-                            <div className="my-6 flex items-center justify-start">
+                            <div className="my-6">
                                 <Button
                                     className="w-full"
                                     disabled={processing}
                                     data-test="email-password-reset-link-button"
                                 >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    Email password reset link
+                                    {processing && <Spinner />}
+                                    {t('auth.send_reset_link')}
                                 </Button>
                             </div>
                         </>
                     )}
                 </Form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                <div className="text-center text-sm text-muted-foreground">
+                    <TextLink href={login()}>
+                        {t('auth.back_to_login')}
+                    </TextLink>
                 </div>
             </div>
         </>
     );
 }
-
-ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
-};

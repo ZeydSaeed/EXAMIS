@@ -1,0 +1,41 @@
+{
+    "id": "/",
+    "name": "EXAMIS — منصة التقديم الإلكتروني للامتحانات الخارجية",
+    "short_name": "EXAMIS",
+    "description": "التقديم الإلكتروني للامتحانات الخارجية ومتابعة الطلبات",
+    "lang": "ar",
+    "dir": "rtl",
+    "start_url": "/dashboard?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#ffffff",
+    "theme_color": "#355764",
+    "categories": ["education", "government"],
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}

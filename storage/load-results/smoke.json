@@ -1,0 +1,311 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "public pages": {
+                "name": "public pages",
+                "path": "::public pages",
+                "id": "7af933c928cda23c760cd7e356b5fe3a",
+                "groups": {},
+                "checks": {
+                        "home 200": {
+                            "path": "::public pages::home 200",
+                            "id": "e850cdadcdfc32ce84a146a4a514d834",
+                            "passes": 22,
+                            "fails": 0,
+                            "name": "home 200"
+                        },
+                        "page 200": {
+                            "fails": 0,
+                            "name": "page 200",
+                            "path": "::public pages::page 200",
+                            "id": "0df1ec608855b2d293867489b580a968",
+                            "passes": 22
+                        },
+                        "track 200": {
+                            "path": "::public pages::track 200",
+                            "id": "5328603a65efd98d9e4b95af96deb35e",
+                            "passes": 22,
+                            "fails": 0,
+                            "name": "track 200"
+                        },
+                        "manifest 200": {
+                            "passes": 22,
+                            "fails": 0,
+                            "name": "manifest 200",
+                            "path": "::public pages::manifest 200",
+                            "id": "4acc6e19d487c36eb789b8026e2f52d6"
+                        }
+                    }
+            },
+            "start application": {
+                "name": "start application",
+                "path": "::start application",
+                "id": "4d397ad3cb74cd9e2f0cd3265dc82d75",
+                "groups": {},
+                "checks": {
+                        "draft opened": {
+                            "name": "draft opened",
+                            "path": "::start application::draft opened",
+                            "id": "9fbaba79e2360b440907a2774b5f75a0",
+                            "passes": 1,
+                            "fails": 0
+                        }
+                    }
+            },
+            "save draft": {
+                "path": "::save draft",
+                "id": "e8ae906df98f4ce79ce81b8b2bb173ed",
+                "groups": {},
+                "checks": {
+                        "draft saved": {
+                            "name": "draft saved",
+                            "path": "::save draft::draft saved",
+                            "id": "3fb895cbe3f7c225d7fe9ed37d7f8dc6",
+                            "passes": 1,
+                            "fails": 0
+                        }
+                    },
+                "name": "save draft"
+            },
+            "upload documents": {
+                "groups": {},
+                "checks": {
+                        "document stored": {
+                            "name": "document stored",
+                            "path": "::upload documents::document stored",
+                            "id": "54e220fb5572bf3b3b7cc9def9940914",
+                            "passes": 3,
+                            "fails": 0
+                        }
+                    },
+                "name": "upload documents",
+                "path": "::upload documents",
+                "id": "5b717d0150bc77ac5efada14cd394982"
+            },
+            "submit (twice, must be idempotent)": {
+                "name": "submit (twice, must be idempotent)",
+                "path": "::submit (twice, must be idempotent)",
+                "id": "4c9a36928a4b9203531172b388a544f4",
+                "groups": {},
+                "checks": {
+                        "submitted": {
+                            "name": "submitted",
+                            "path": "::submit (twice, must be idempotent)::submitted",
+                            "id": "c4f1270a262b72fc0d736ac7e17e4cbd",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "resubmit returns the same reference": {
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "resubmit returns the same reference",
+                            "path": "::submit (twice, must be idempotent)::resubmit returns the same reference",
+                            "id": "821641ce1dfab23a35075267ddb4c977"
+                        }
+                    }
+            },
+            "status and receipt": {
+                "path": "::status and receipt",
+                "id": "ee7f5d9faac5742ea0bbf09cddce21c4",
+                "groups": {},
+                "checks": {
+                        "status 200": {
+                            "name": "status 200",
+                            "path": "::status and receipt::status 200",
+                            "id": "6429ad407ae2dbd970e1ab59b420e548",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "receipt pdf": {
+                            "fails": 0,
+                            "name": "receipt pdf",
+                            "path": "::status and receipt::receipt pdf",
+                            "id": "634c0da731d04f43c9782f8f91832e7f",
+                            "passes": 1
+                        }
+                    },
+                "name": "status and receipt"
+            },
+            "applicant reads": {
+                "name": "applicant reads",
+                "path": "::applicant reads",
+                "id": "713510c6eb20755d910bdc57b05b3163",
+                "groups": {},
+                "checks": {
+                        "dashboard 200": {
+                            "name": "dashboard 200",
+                            "path": "::applicant reads::dashboard 200",
+                            "id": "35ea4751b55c63e86a128026c9345783",
+                            "passes": 1,
+                            "fails": 0
+                        },
+                        "notifications 200": {
+                            "passes": 1,
+                            "fails": 0,
+                            "name": "notifications 200",
+                            "path": "::applicant reads::notifications 200",
+                            "id": "62f7ed52cc9c7b92625e37cf2b07bc74"
+                        }
+                    }
+            }
+        },
+        "checks": {
+            "logged in": {
+                "path": "::logged in",
+                "id": "51db191fca8565c4f42cbd526a882733",
+                "passes": 2,
+                "fails": 0,
+                "name": "logged in"
+            }
+        }
+    },
+    "metrics": {
+        "http_req_duration{expected_response:true}": {
+            "avg": 240.36093050847464,
+            "min": 0,
+            "med": 217.17305,
+            "max": 1183.0163,
+            "p(90)": 417.79455,
+            "p(95)": 520.1580399999999
+        },
+        "iteration_duration": {
+            "med": 2756.1458,
+            "max": 17076.6679,
+            "p(90)": 2953.39908,
+            "p(95)": 2989.3447,
+            "avg": 3381.113447826087,
+            "min": 2498.4507
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 118,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "checks": {
+            "passes": 101,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.99": false
+            },
+            "value": 1
+        },
+        "http_req_sending": {
+            "max": 57.2329,
+            "p(90)": 8.00488,
+            "p(95)": 10.787959999999998,
+            "avg": 2.5086805084745767,
+            "min": 0,
+            "med": 0
+        },
+        "group_duration": {
+            "avg": 2633.533257142856,
+            "min": 410.2993,
+            "med": 2716.4292,
+            "max": 5402.7448,
+            "p(90)": 2966.1025,
+            "p(95)": 3247.702305
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 2
+        },
+        "http_req_connecting": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.009022033898305085,
+            "min": 0,
+            "med": 0,
+            "max": 0.5323
+        },
+        "http_req_blocked": {
+            "avg": 1.6103118644067795,
+            "min": 0,
+            "med": 0,
+            "max": 95.0084,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_duration{type:read}": {
+            "p(90)": 379.48109999999997,
+            "p(95)": 420.6727,
+            "avg": 209.94147395833332,
+            "min": 0,
+            "med": 197.08555,
+            "max": 1183.0163,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "iterations": {
+            "count": 23,
+            "rate": 0.37897676924802165
+        },
+        "http_req_waiting": {
+            "med": 217.17305,
+            "max": 1183.0163,
+            "p(90)": 400.94722999999993,
+            "p(95)": 519.722925,
+            "avg": 237.30796440677972,
+            "min": 0
+        },
+        "data_sent": {
+            "count": 80169,
+            "rate": 1320.9647223410716
+        },
+        "http_req_duration{type:write}": {
+            "avg": 373.10037727272726,
+            "min": 161.7419,
+            "med": 297.39775,
+            "max": 980.4259,
+            "p(90)": 708.8922300000004,
+            "p(95)": 883.0233799999999,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "vus_max": {
+            "value": 2,
+            "min": 2,
+            "max": 2
+        },
+        "data_received": {
+            "count": 5434188,
+            "rate": 89540.47877071166
+        },
+        "http_req_tls_handshaking": {
+            "avg": 1.0964906779661017,
+            "min": 0,
+            "med": 0,
+            "max": 68.4625,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_duration": {
+            "avg": 240.36093050847464,
+            "min": 0,
+            "med": 217.17305,
+            "max": 1183.0163,
+            "p(90)": 417.79455,
+            "p(95)": 520.1580399999999
+        },
+        "http_reqs": {
+            "count": 118,
+            "rate": 1.94431559875072
+        },
+        "http_req_receiving": {
+            "med": 0,
+            "max": 8.8105,
+            "p(90)": 0.03956999999999962,
+            "p(95)": 6.310314999999983,
+            "avg": 0.544285593220339,
+            "min": 0
+        }
+    }
+}

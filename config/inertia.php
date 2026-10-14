@@ -67,4 +67,20 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | History Encryption
+    |--------------------------------------------------------------------------
+    |
+    | Page props are encrypted in the browser's history state and the key is
+    | rotated at logout, so pressing "back" after signing out on a shared
+    | device cannot reveal the previous user's data. Requires HTTPS (or
+    | localhost).
+    |
+    */
+
+    'history' => [
+        'encrypt' => (bool) env('INERTIA_ENCRYPT_HISTORY', true),
+    ],
+
 ];
