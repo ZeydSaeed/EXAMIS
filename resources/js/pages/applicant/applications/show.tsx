@@ -8,6 +8,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
@@ -198,8 +199,9 @@ export default function ShowApplication({
                             <h2 id="summary" className="mb-4 font-semibold">
                                 {t('applicant.summary')}
                             </h2>
-                            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                                {[
+                            <ApplicationSummaryTable
+                                caption={t('applicant.summary')}
+                                rows={[
                                     ...applicationSummary(application, t),
                                     [
                                         t('applications.submitted_at'),
@@ -207,21 +209,9 @@ export default function ShowApplication({
                                             application.submitted_at,
                                             locale,
                                         ),
-                                    ] as const,
-                                ].map(([label, value]) => (
-                                    <div key={label}>
-                                        <dt className="text-muted-foreground">
-                                            {label}
-                                        </dt>
-                                        <dd
-                                            className="font-medium whitespace-pre-line"
-                                            dir="auto"
-                                        >
-                                            {value ?? '—'}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
+                                    ],
+                                ]}
+                            />
                         </section>
 
                         <section

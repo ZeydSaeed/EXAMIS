@@ -1,6 +1,7 @@
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
 import { ExternalLink, FileWarning, Printer } from 'lucide-react';
 import { useState } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { selectClassName, textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
@@ -131,8 +132,6 @@ export default function AdminApplicationShow({
             document,
         ]),
     );
-    const fields = applicationSummary(application, t);
-
     return (
         <>
             <Head
@@ -213,21 +212,10 @@ export default function AdminApplicationShow({
                             <h2 id="data" className="mb-4 font-semibold">
                                 {t('admin.applicant_data')}
                             </h2>
-                            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                                {fields.map(([label, value]) => (
-                                    <div key={label}>
-                                        <dt className="text-muted-foreground">
-                                            {label}
-                                        </dt>
-                                        <dd
-                                            className="font-medium whitespace-pre-line"
-                                            dir="auto"
-                                        >
-                                            {value ?? '—'}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
+                            <ApplicationSummaryTable
+                                caption={t('admin.applicant_data')}
+                                rows={applicationSummary(application, t)}
+                            />
                         </section>
 
                         <section

@@ -1,8 +1,12 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Enums\Role;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Models\AuditEvent;
+use App\Models\DocumentType;
+use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 
 beforeEach(function () {
@@ -11,12 +15,14 @@ beforeEach(function () {
 
 /**
  * Text as a reader would extract it: Arabic presentation forms normalised
- * back to base letters and whitespace collapsed.
+ * back to base letters and whitespace collapsed. Times New Roman maps some
+ * joined forms to their Persian code points (ی, ھ, ک), folded back here.
  */
 function extractPdfText(string $pdf): string
 {
     $text = (new Parser)->parseContent($pdf)->getText();
     $text = Normalizer::normalize($text, Normalizer::FORM_KC) ?: $text;
+    $text = strtr($text, ['ی' => 'ي', 'ھ' => 'ه', 'ک' => 'ك']);
 
     return (string) preg_replace('/\s+/u', ' ', $text);
 }
@@ -45,11 +51,33 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
 
     $text = extractPdfText($pdf);
     expect($text)->toContain('EX2027-0000019')
-        ->and($text)->toContain(visualOrder('عبد الرحمن محمد عبد الكريم الساعدي'))
-        ->and($text)->toContain(visualOrder('فاطمة جاسم كاظم'))
-        ->and($text)->toContain(visualOrder('كهرباء'))
-        ->and($text)->toContain('(2026-2027)')
+        ->and($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
+        ->and($text)->toContain(visualOrder('عبد الرحمن'))
+        ->and($text)->toContain(visualOrder('عبد الكريم'))
+        ->and($text)->toContain(visualOrder('متوسطة الفرات للبنين'))
+        ->and($text)->toContain(visualOrder('حي الحسين'))
+        ->and($text)->toContain('2026-2027')
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);
+});
+
+it('prints the verified personal photo in the photo box', function () {
+    Storage::fake('documents');
+    $application = Application::factory()->submitted()->create();
+    $photo = ApplicationDocument::factory()->verified()->create([
+        'application_id' => $application->id,
+        'document_type_id' => DocumentType::factory()->create(['is_photo' => true])->id,
+        'disk' => 'documents',
+        'path' => 'photos/student.png',
+    ]);
+    Storage::disk('documents')->put($photo->path, (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='));
+
+    $withPhoto = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+    $photo->forceFill(['status' => DocumentStatus::Pending])->save();
+    $withoutVerifiedPhoto = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+
+    expect($withPhoto)->toContain('/Subtype /Image')
+        ->and($withoutVerifiedPhoto)->not->toContain('/Subtype /Image')
+        ->and(extractPdfText($withoutVerifiedPhoto))->toContain(visualOrder('الصورة الشخصية'));
 });
 
 it('encodes only the verification link in the QR code, not personal data', function () {

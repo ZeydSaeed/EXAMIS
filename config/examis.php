@@ -21,6 +21,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Student form PDF
+    |--------------------------------------------------------------------------
+    |
+    | The form prints in Times New Roman (times.ttf, timesbd.ttf), which is
+    | licensed with Windows and not shipped with the application. Point
+    | EXAMIS_RECEIPT_FONT_DIR at a folder holding those files; without them
+    | the form falls back to DejaVu Sans.
+    |
+    */
+
+    'receipt' => [
+        'font_dir' => env('EXAMIS_RECEIPT_FONT_DIR', 'C:/Windows/Fonts'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Security
     |--------------------------------------------------------------------------
     */
