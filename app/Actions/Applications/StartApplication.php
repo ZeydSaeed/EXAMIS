@@ -81,8 +81,8 @@ class StartApplication
         }
 
         return $latest->only([
-            'full_name_ar', 'full_name_en', 'mother_name_ar', 'birth_date', 'gender',
-            'national_id_number', 'phone', 'contact_email', 'address', 'governorate_code', 'directorate_code',
+            'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
+            'phone', 'district', 'mahalla', 'alley', 'house_number', 'school_name', 'intermediate_school_name',
         ]);
     }
 }

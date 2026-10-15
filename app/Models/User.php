@@ -7,7 +7,6 @@ use App\Enums\Permission;
 use App\Enums\Role;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -40,7 +39,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  */
 #[Fillable(['username', 'name', 'email', 'password', 'locale'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, PasskeyUser
+class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;

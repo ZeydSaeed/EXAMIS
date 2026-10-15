@@ -111,10 +111,18 @@ export function submissionJourney() {
                     gender: 'male',
                     national_id_number: `1999${String(__VU).padStart(8, '0')}`,
                     phone: `0770${String(__VU).padStart(7, '0')}`,
-                    governorate_code: 'BGD',
+                    surname: 'الربيعي',
+                    district: 'حي الحسين',
+                    mahalla: '630',
+                    alley: '44',
+                    house_number: '164',
                     school_name: 'إعدادية النجاح للبنين',
-                    branch_code: 'SCI',
-                    category_code: 'EXTERNAL',
+                    intermediate_school_name: 'متوسطة الفرات للبنين',
+                    last_grade: 'الخامس الإعدادي',
+                    failed_years: '0',
+                    left_years: '0',
+                    branch_code: 'IND',
+                    category_code: 'IND_ELC',
                 },
                 'PUT /applications/:id',
             );
@@ -123,12 +131,18 @@ export function submissionJourney() {
 
         group('upload documents', () => {
             for (const [type, file] of [
-                ['personal_photo', http.file(PNG, 'photo.png', 'image/png')],
-                ['national_id', http.file(PDF, 'id.pdf', 'application/pdf')],
                 [
-                    'school_certificate',
-                    http.file(PDF, 'school.pdf', 'application/pdf'),
+                    'participation_request',
+                    http.file(PDF, 'request.pdf', 'application/pdf'),
                 ],
+                ['national_id', http.file(PDF, 'id.pdf', 'application/pdf')],
+                ['father_id', http.file(PDF, 'father.pdf', 'application/pdf')],
+                ['mother_id', http.file(PDF, 'mother.pdf', 'application/pdf')],
+                [
+                    'residence_card',
+                    http.file(PDF, 'residence.pdf', 'application/pdf'),
+                ],
+                ['personal_photo', http.file(PNG, 'photo.png', 'image/png')],
             ]) {
                 const uploaded = send(
                     'POST',

@@ -10,14 +10,21 @@ import {
     AlertTriangle,
     CheckCircle2,
     Info,
+    Plus,
     RefreshCw,
     Save,
     Send,
+    Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { DocumentUploader } from '@/components/examis/document-uploader';
-import { describedBy, Field, selectClassName } from '@/components/examis/field';
+import {
+    describedBy,
+    Field,
+    selectClassName,
+    textareaClassName,
+} from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { StatusBadge } from '@/components/examis/status-badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -27,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
 import { formatDate } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
@@ -34,6 +42,7 @@ import type {
     Application,
     ApplicationForm,
     DocumentRequirement,
+    IssuedDocument,
     MissingRequirements,
     ReferenceOption,
 } from '@/types';
@@ -44,15 +53,19 @@ type Props = {
     missing: MissingRequirements;
     instructions: string | null;
     options: {
-        governorates: ReferenceOption[];
-        directorates: ReferenceOption[];
         branches: ReferenceOption[];
+        /** Specializations; `parent_code` is the branch. */
         categories: ReferenceOption[];
     };
     step: number;
 };
 
 type FormData = ApplicationForm & { lock_version: number };
+
+type TextField = Exclude<keyof ApplicationForm, 'issued_documents'>;
+
+/** Rows of "documents issued for study purposes" on the official form. */
+const MAX_ISSUED_DOCUMENTS = 4;
 
 const STEPS = [
     'personal',
@@ -65,24 +78,23 @@ const STEPS = [
 const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
     personal: [
         'full_name_ar',
-        'full_name_en',
+        'surname',
         'mother_name_ar',
         'birth_date',
         'gender',
         'national_id_number',
     ],
-    contact: [
-        'phone',
-        'contact_email',
-        'governorate_code',
-        'directorate_code',
-        'address',
-    ],
+    contact: ['district', 'mahalla', 'alley', 'house_number', 'phone'],
     education: [
         'school_name',
+        'intermediate_school_name',
+        'last_grade',
+        'failed_years',
+        'left_years',
         'branch_code',
         'category_code',
-        'previous_exam_year',
+        'other_info',
+        'issued_documents',
     ],
     documents: [],
     review: [],
@@ -131,8 +143,15 @@ export default function EditApplication({
     const optionName = (option: ReferenceOption) =>
         locale === 'en' ? option.name_en : option.name_ar;
     const currentStep = STEPS[step];
+    const errors = form.errors as Record<string, string | undefined>;
     const stepHasErrors = (index: number) =>
-        STEP_FIELDS[STEPS[index]].some((field) => form.errors[field]);
+        STEP_FIELDS[STEPS[index]].some((field) =>
+            Object.keys(errors).some(
+                (key) =>
+                    errors[key] &&
+                    (key === field || key.startsWith(`${field}.`)),
+            ),
+        );
     const isCorrection = application.status === 'requires_correction';
 
     const save = (afterSave?: () => void) => {
@@ -179,13 +198,13 @@ export default function EditApplication({
     };
 
     const input = (
-        field: keyof ApplicationForm,
+        field: TextField,
         props: Partial<React.ComponentProps<typeof Input>> = {},
     ) => (
         <Input
             id={field}
             name={field}
-            value={(form.data[field] as string | number | null) ?? ''}
+            value={form.data[field] ?? ''}
             onChange={(event) =>
                 form.setData(
                     field,
@@ -201,14 +220,15 @@ export default function EditApplication({
     );
 
     const select = (
-        field: keyof ApplicationForm,
+        field: TextField,
         choices: { value: string; label: string }[],
+        placeholder = t('common.choose'),
     ) => (
         <select
             id={field}
             name={field}
             className={selectClassName}
-            value={(form.data[field] as string | null) ?? ''}
+            value={form.data[field] ?? ''}
             onChange={(event) =>
                 form.setData(
                     field,
@@ -220,7 +240,7 @@ export default function EditApplication({
             aria-invalid={form.errors[field] ? true : undefined}
             aria-describedby={describedBy(field, undefined, form.errors[field])}
         >
-            <option value="">{t('common.choose')}</option>
+            <option value="">{placeholder}</option>
             {choices.map((choice) => (
                 <option key={choice.value} value={choice.value}>
                     {choice.label}
@@ -229,11 +249,29 @@ export default function EditApplication({
         </select>
     );
 
-    const directorates = options.directorates.filter(
-        (item) =>
-            !form.data.governorate_code ||
-            item.parent_code === form.data.governorate_code,
+    const specializations = options.categories.filter(
+        (item) => item.parent_code === form.data.branch_code,
     );
+    const chooseBranch = (branch: string | null) =>
+        form.setData((data) => ({
+            ...data,
+            branch_code: branch,
+            category_code: options.categories.some(
+                (item) =>
+                    item.code === data.category_code &&
+                    item.parent_code === branch,
+            )
+                ? data.category_code
+                : null,
+        }));
+    const folderColorKey = `fields.folder_colors.${form.data.branch_code}`;
+    const folderColorHint =
+        form.data.branch_code && t(folderColorKey) !== folderColorKey
+            ? t('fields.folder_color', { color: t(folderColorKey) })
+            : undefined;
+    const issuedDocuments = form.data.issued_documents ?? [];
+    const setIssuedDocuments = (rows: IssuedDocument[]) =>
+        form.setData('issued_documents', rows);
     const documentsByType = Object.fromEntries(
         (application.documents ?? []).map((document) => [
             document.document_type,
@@ -378,10 +416,20 @@ export default function EditApplication({
                                     hint={t('fields.full_name_ar_hint')}
                                     error={form.errors.full_name_ar}
                                     required
-                                    className="sm:col-span-2"
                                 >
                                     {input('full_name_ar', {
                                         autoComplete: 'name',
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="surname"
+                                    label={t('fields.surname')}
+                                    error={form.errors.surname}
+                                    required
+                                >
+                                    {input('surname', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
@@ -391,20 +439,11 @@ export default function EditApplication({
                                     label={t('fields.mother_name_ar')}
                                     error={form.errors.mother_name_ar}
                                     required
+                                    className="sm:col-span-2"
                                 >
                                     {input('mother_name_ar', {
                                         lang: 'ar',
                                         dir: 'rtl',
-                                    })}
-                                </Field>
-                                <Field
-                                    id="full_name_en"
-                                    label={t('fields.full_name_en')}
-                                    error={form.errors.full_name_en}
-                                >
-                                    {input('full_name_en', {
-                                        lang: 'en',
-                                        dir: 'ltr',
                                     })}
                                 </Field>
                                 <Field
@@ -452,65 +491,73 @@ export default function EditApplication({
                         {currentStep === 'contact' && (
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <Field
+                                    id="governorate"
+                                    label={t('fields.governorate')}
+                                    hint={t('fields.residence_hint')}
+                                    className="sm:col-span-2"
+                                >
+                                    <Input
+                                        id="governorate"
+                                        value={t('fields.karbala')}
+                                        readOnly
+                                        aria-describedby="governorate-hint"
+                                        className="bg-muted"
+                                    />
+                                </Field>
+                                <Field
+                                    id="district"
+                                    label={t('fields.district')}
+                                    error={form.errors.district}
+                                    required
+                                >
+                                    {input('district')}
+                                </Field>
+                                <Field
+                                    id="mahalla"
+                                    label={t('fields.mahalla')}
+                                    error={form.errors.mahalla}
+                                    required
+                                >
+                                    {input('mahalla', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="alley"
+                                    label={t('fields.alley')}
+                                    error={form.errors.alley}
+                                    required
+                                >
+                                    {input('alley', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="house_number"
+                                    label={t('fields.house_number')}
+                                    error={form.errors.house_number}
+                                    required
+                                >
+                                    {input('house_number', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                    })}
+                                </Field>
+                                <Field
                                     id="phone"
                                     label={t('fields.phone')}
                                     hint={t('fields.phone_hint')}
                                     error={form.errors.phone}
                                     required
+                                    className="sm:col-span-2"
                                 >
                                     {input('phone', {
                                         type: 'tel',
                                         dir: 'ltr',
                                         inputMode: 'tel',
                                         autoComplete: 'tel',
-                                    })}
-                                </Field>
-                                <Field
-                                    id="contact_email"
-                                    label={t('fields.contact_email')}
-                                    error={form.errors.contact_email}
-                                >
-                                    {input('contact_email', {
-                                        type: 'email',
-                                        dir: 'ltr',
-                                        autoComplete: 'email',
-                                    })}
-                                </Field>
-                                <Field
-                                    id="governorate_code"
-                                    label={t('fields.governorate')}
-                                    error={form.errors.governorate_code}
-                                    required
-                                >
-                                    {select(
-                                        'governorate_code',
-                                        options.governorates.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="directorate_code"
-                                    label={t('fields.directorate')}
-                                    error={form.errors.directorate_code}
-                                >
-                                    {select(
-                                        'directorate_code',
-                                        directorates.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="address"
-                                    label={t('fields.address')}
-                                    error={form.errors.address}
-                                    className="sm:col-span-2"
-                                >
-                                    {input('address', {
-                                        autoComplete: 'street-address',
                                     })}
                                 </Field>
                             </div>
@@ -523,23 +570,97 @@ export default function EditApplication({
                                     label={t('fields.school_name')}
                                     error={form.errors.school_name}
                                     required
-                                    className="sm:col-span-2"
                                 >
                                     {input('school_name')}
                                 </Field>
                                 <Field
+                                    id="intermediate_school_name"
+                                    label={t('fields.intermediate_school_name')}
+                                    error={form.errors.intermediate_school_name}
+                                    required
+                                >
+                                    {input('intermediate_school_name')}
+                                </Field>
+                                <Field
+                                    id="last_grade"
+                                    label={t('fields.last_grade')}
+                                    hint={t('fields.last_grade_hint')}
+                                    error={form.errors.last_grade}
+                                    required
+                                    className="sm:col-span-2"
+                                >
+                                    {input('last_grade')}
+                                </Field>
+                                <Field
+                                    id="failed_years"
+                                    label={t('fields.failed_years')}
+                                    hint={t('fields.years_hint')}
+                                    error={form.errors.failed_years}
+                                    required
+                                >
+                                    {input('failed_years', {
+                                        type: 'number',
+                                        inputMode: 'numeric',
+                                        dir: 'ltr',
+                                        min: 0,
+                                        max: 20,
+                                    })}
+                                </Field>
+                                <Field
+                                    id="left_years"
+                                    label={t('fields.left_years')}
+                                    hint={t('fields.years_hint')}
+                                    error={form.errors.left_years}
+                                    required
+                                >
+                                    {input('left_years', {
+                                        type: 'number',
+                                        inputMode: 'numeric',
+                                        dir: 'ltr',
+                                        min: 0,
+                                        max: 20,
+                                    })}
+                                </Field>
+                                <Field
                                     id="branch_code"
                                     label={t('fields.branch')}
+                                    hint={folderColorHint}
                                     error={form.errors.branch_code}
                                     required
                                 >
-                                    {select(
-                                        'branch_code',
-                                        options.branches.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
+                                    <select
+                                        id="branch_code"
+                                        name="branch_code"
+                                        className={selectClassName}
+                                        value={form.data.branch_code ?? ''}
+                                        onChange={(event) =>
+                                            chooseBranch(
+                                                event.target.value || null,
+                                            )
+                                        }
+                                        aria-invalid={
+                                            form.errors.branch_code
+                                                ? true
+                                                : undefined
+                                        }
+                                        aria-describedby={describedBy(
+                                            'branch_code',
+                                            folderColorHint,
+                                            form.errors.branch_code,
+                                        )}
+                                    >
+                                        <option value="">
+                                            {t('common.choose')}
+                                        </option>
+                                        {options.branches.map((item) => (
+                                            <option
+                                                key={item.code}
+                                                value={item.code}
+                                            >
+                                                {optionName(item)}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </Field>
                                 <Field
                                     id="category_code"
@@ -549,25 +670,192 @@ export default function EditApplication({
                                 >
                                     {select(
                                         'category_code',
-                                        options.categories.map((item) => ({
+                                        specializations.map((item) => ({
                                             value: item.code,
                                             label: optionName(item),
                                         })),
+                                        form.data.branch_code
+                                            ? t('common.choose')
+                                            : t('fields.choose_branch_first'),
                                     )}
                                 </Field>
                                 <Field
-                                    id="previous_exam_year"
-                                    label={t('fields.previous_exam_year')}
-                                    error={form.errors.previous_exam_year}
+                                    id="other_info"
+                                    label={t('fields.other_info')}
+                                    error={form.errors.other_info}
+                                    className="sm:col-span-2"
                                 >
-                                    {input('previous_exam_year', {
-                                        type: 'number',
-                                        inputMode: 'numeric',
-                                        dir: 'ltr',
-                                        min: 1990,
-                                        max: new Date().getFullYear(),
-                                    })}
+                                    <textarea
+                                        id="other_info"
+                                        name="other_info"
+                                        rows={3}
+                                        maxLength={1000}
+                                        className={textareaClassName}
+                                        value={form.data.other_info ?? ''}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'other_info',
+                                                event.target.value === ''
+                                                    ? null
+                                                    : event.target.value,
+                                            )
+                                        }
+                                        aria-invalid={
+                                            form.errors.other_info
+                                                ? true
+                                                : undefined
+                                        }
+                                        aria-describedby={describedBy(
+                                            'other_info',
+                                            undefined,
+                                            form.errors.other_info,
+                                        )}
+                                    />
                                 </Field>
+                                <fieldset className="grid gap-3 sm:col-span-2">
+                                    <legend className="text-sm font-medium">
+                                        {t('fields.issued_documents')}
+                                    </legend>
+                                    <p className="-mt-1 text-xs text-muted-foreground">
+                                        {t('fields.issued_documents_hint', {
+                                            max: MAX_ISSUED_DOCUMENTS,
+                                        })}
+                                    </p>
+                                    {issuedDocuments.map((row, index) => (
+                                        <div
+                                            key={index}
+                                            className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_2fr_auto] sm:items-end"
+                                            data-test={`issued-document-${index}`}
+                                        >
+                                            {(
+                                                [
+                                                    [
+                                                        'number',
+                                                        'fields.document_number',
+                                                        {
+                                                            dir: 'ltr',
+                                                        },
+                                                    ],
+                                                    [
+                                                        'date',
+                                                        'fields.document_date',
+                                                        { type: 'date' },
+                                                    ],
+                                                    [
+                                                        'recipient',
+                                                        'fields.document_recipient',
+                                                        {},
+                                                    ],
+                                                ] as const
+                                            ).map(([key, label, props]) => {
+                                                const id = `issued_documents_${index}_${key}`;
+                                                const error =
+                                                    errors[
+                                                        `issued_documents.${index}.${key}`
+                                                    ];
+
+                                                return (
+                                                    <Field
+                                                        key={key}
+                                                        id={id}
+                                                        label={t(label)}
+                                                        error={error}
+                                                    >
+                                                        <Input
+                                                            id={id}
+                                                            value={
+                                                                row[key] ?? ''
+                                                            }
+                                                            onChange={(event) =>
+                                                                setIssuedDocuments(
+                                                                    issuedDocuments.map(
+                                                                        (
+                                                                            item,
+                                                                            position,
+                                                                        ) =>
+                                                                            position ===
+                                                                            index
+                                                                                ? {
+                                                                                      ...item,
+                                                                                      [key]:
+                                                                                          event
+                                                                                              .target
+                                                                                              .value ||
+                                                                                          null,
+                                                                                  }
+                                                                                : item,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            aria-invalid={
+                                                                error
+                                                                    ? true
+                                                                    : undefined
+                                                            }
+                                                            aria-describedby={describedBy(
+                                                                id,
+                                                                undefined,
+                                                                error,
+                                                            )}
+                                                            {...props}
+                                                        />
+                                                    </Field>
+                                                );
+                                            })}
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    setIssuedDocuments(
+                                                        issuedDocuments.filter(
+                                                            (_, position) =>
+                                                                position !==
+                                                                index,
+                                                        ),
+                                                    )
+                                                }
+                                                aria-label={t(
+                                                    'fields.remove_document',
+                                                )}
+                                                title={t(
+                                                    'fields.remove_document',
+                                                )}
+                                            >
+                                                <Trash2
+                                                    className="size-4"
+                                                    aria-hidden
+                                                />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    {issuedDocuments.length <
+                                        MAX_ISSUED_DOCUMENTS && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="justify-self-start"
+                                            onClick={() =>
+                                                setIssuedDocuments([
+                                                    ...issuedDocuments,
+                                                    {
+                                                        number: null,
+                                                        date: null,
+                                                        recipient: null,
+                                                    },
+                                                ])
+                                            }
+                                            data-test="add-issued-document"
+                                        >
+                                            <Plus
+                                                className="size-4"
+                                                aria-hidden
+                                            />
+                                            {t('fields.add_document')}
+                                        </Button>
+                                    )}
+                                </fieldset>
                             </div>
                         )}
 
@@ -669,75 +957,24 @@ export default function EditApplication({
                         </h2>
 
                         <dl className="grid gap-x-6 gap-y-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2 sm:p-6">
-                            {(
-                                [
-                                    [
-                                        'fields.full_name_ar',
-                                        application.form.full_name_ar,
-                                    ],
-                                    [
-                                        'fields.mother_name_ar',
-                                        application.form.mother_name_ar,
-                                    ],
-                                    [
-                                        'fields.full_name_en',
-                                        application.form.full_name_en,
-                                    ],
-                                    [
-                                        'fields.birth_date',
-                                        application.form.birth_date,
-                                    ],
-                                    [
-                                        'fields.gender',
-                                        application.labels.gender,
-                                    ],
-                                    [
-                                        'fields.national_id_number',
-                                        application.form.national_id_number,
-                                    ],
-                                    ['fields.phone', application.form.phone],
-                                    [
-                                        'fields.contact_email',
-                                        application.form.contact_email,
-                                    ],
-                                    [
-                                        'fields.governorate',
-                                        application.labels.governorate,
-                                    ],
-                                    [
-                                        'fields.directorate',
-                                        application.labels.directorate,
-                                    ],
-                                    [
-                                        'fields.school_name',
-                                        application.form.school_name,
-                                    ],
-                                    [
-                                        'fields.branch',
-                                        application.labels.branch,
-                                    ],
-                                    [
-                                        'fields.category',
-                                        application.labels.category,
-                                    ],
-                                    [
-                                        'fields.previous_exam_year',
-                                        application.form.previous_exam_year,
-                                    ],
-                                ] as const
-                            ).map(([label, value]) => (
-                                <div
-                                    key={label}
-                                    className="flex flex-col gap-0.5 border-b pb-2 last:border-0"
-                                >
-                                    <dt className="text-muted-foreground">
-                                        {t(label)}
-                                    </dt>
-                                    <dd className="font-medium" dir="auto">
-                                        {value ?? '—'}
-                                    </dd>
-                                </div>
-                            ))}
+                            {applicationSummary(application, t).map(
+                                ([label, value]) => (
+                                    <div
+                                        key={label}
+                                        className="flex flex-col gap-0.5 border-b pb-2 last:border-0"
+                                    >
+                                        <dt className="text-muted-foreground">
+                                            {label}
+                                        </dt>
+                                        <dd
+                                            className="font-medium whitespace-pre-line"
+                                            dir="auto"
+                                        >
+                                            {value ?? '—'}
+                                        </dd>
+                                    </div>
+                                ),
+                            )}
                         </dl>
 
                         {!isReady && (

@@ -22,7 +22,7 @@ Estimated completion against the full brief is about 78% (was 70% before Postgre
 
 ## 2. What works (Implemented + Tested)
 
-- Accounts: username login (email shareable, ADR-0002), registration with terms, email verification, password reset by username with a generic response, rate limits, deactivation that ends sessions, 2FA/passkeys (Fortify), staff 2FA enforcement, audit of logins and failures.
+- Accounts: username login (email shareable, ADR-0002), registration with terms (no email verification, ADR-0002), password reset by username with a generic response, rate limits, deactivation that ends sessions, 2FA/passkeys (Fortify), staff 2FA enforcement, audit of logins and failures.
 - Applications: draft start (idempotent), 5-step form with server-side validation (Arabic messages, Arabic-Indic digit normalization), optimistic locking across sessions, eligibility per period, document upload (MIME sniffing, size, structural scan, replacement history), submission (idempotent, per-period numbering with check digit, completeness and eligibility re-check), correction and resubmission, withdrawal.
 - Receipts: A4 Arabic PDF (mPDF) with extractable text, QR to the verification page, audited issuance. Visually verified during development.
 - Review: queue and visibility per role, assignment, start review, request correction (reason), accept/reject (supervisor), reopen (reason), append-only history, notifications after commit.

@@ -11,7 +11,7 @@ import {
 } from './helpers';
 
 test.describe('applicant journey', () => {
-    test('registers a new account and is asked to verify the email', async ({
+    test('registers a new account and lands on the dashboard with the username shown', async ({
         page,
     }) => {
         await page.goto('/register');
@@ -23,7 +23,7 @@ test.describe('applicant journey', () => {
         await page.locator('#terms').check();
         await page.getByTestId('register-user-button').click();
 
-        await expect(page).toHaveURL(/\/email\/verify/);
+        await expect(page).toHaveURL(/\/dashboard/);
         await expect(
             page.getByText(uniqueUsername('e2e.newcomer')),
         ).toBeVisible();

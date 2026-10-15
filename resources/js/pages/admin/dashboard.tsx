@@ -6,12 +6,12 @@ import {
     RotateCcw,
     Search,
     Send,
-    UserCheck,
     XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
     StatusDistributionBar,
+    StatusDistributionLegend,
     statusOrder,
 } from '@/components/examis/status-distribution-bar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -21,7 +21,6 @@ import type { ApplicationStatus } from '@/types';
 
 type Props = {
     statusCounts: { status: ApplicationStatus; label: string; count: number }[];
-    myQueue: number;
 };
 
 /**
@@ -90,13 +89,6 @@ const statusAppearance: Partial<
     },
 };
 
-/** The queue card is not a status, so they use the brand colours. */
-const queueAppearance: Appearance = {
-    fill: 'bg-primary dark:bg-(--examis-pearl)',
-    avatar: 'text-primary-foreground ring-primary/25 dark:text-(--examis-navy) dark:ring-(--examis-pearl)/25',
-    tint: 'bg-[color-mix(in_srgb,var(--primary)_8%,var(--card))] border-primary/20',
-};
-
 /** Distribution-bar colours: the same fill as each status card's avatar. */
 const statusFill = Object.fromEntries(
     Object.entries(statusAppearance).map(([status, appearance]) => [
@@ -141,7 +133,7 @@ function StatCard({ card }: { card: Card }) {
     );
 }
 
-export default function AdminDashboard({ statusCounts, myQueue }: Props) {
+export default function AdminDashboard({ statusCounts }: Props) {
     const { t } = useTrans();
 
     setLayoutProps({
@@ -150,41 +142,24 @@ export default function AdminDashboard({ statusCounts, myQueue }: Props) {
         ],
     });
 
-    /**
-     * Status cards follow the bar's order; "under review" is shown only in
-     * the bar (its work is the "my queue" card). The queue card comes last.
-     */
-    const cards: Card[] = [
-        ...statusOrder.flatMap((status) => {
-            const item = statusCounts.find((row) => row.status === status);
-            const appearance = statusAppearance[status];
+    /** Status cards follow the bar's order. */
+    const cards: Card[] = statusOrder.flatMap((status) => {
+        const item = statusCounts.find((row) => row.status === status);
+        const appearance = statusAppearance[status];
 
-            return item && appearance && status !== 'under_review'
-                ? [
-                      {
-                          key: status,
-                          label: item.label,
-                          count: item.count,
-                          icon: appearance.icon,
-                          appearance,
-                          href: admin.applications.index({
-                              query: { status },
-                          }),
-                      },
-                  ]
-                : [];
-        }),
-        {
-            key: 'my-queue',
-            label: t('admin.my_queue'),
-            count: myQueue,
-            icon: UserCheck,
-            appearance: queueAppearance,
-            href: admin.applications.index({
-                query: { assigned: 'me', status: 'under_review' },
-            }),
-        },
-    ];
+        return item && appearance
+            ? [
+                  {
+                      key: status,
+                      label: item.label,
+                      count: item.count,
+                      icon: appearance.icon,
+                      appearance,
+                      href: admin.applications.index({ query: { status } }),
+                  },
+              ]
+            : [];
+    });
 
     return (
         <>
@@ -196,20 +171,28 @@ export default function AdminDashboard({ statusCounts, myQueue }: Props) {
 
                 <section
                     aria-label={t('admin.by_status')}
-                    className="flex flex-1 items-center justify-center p-4 sm:p-6"
+                    className="flex flex-1 items-start justify-center p-4 pt-[6vh] sm:p-6 sm:pt-[8vh]"
                 >
-                    {/* Sized to the one-line legend; the cards follow that width. */}
-                    <div className="grid w-fit max-w-full gap-5">
+                    <div className="grid w-full max-w-4xl gap-5">
                         <StatusDistributionBar
                             rows={statusCounts}
                             colors={statusFill}
                         />
 
-                        {/* Four columns (two on phones); an incomplete last row is centred. */}
-                        <div className="flex w-0 min-w-full flex-wrap justify-center gap-3">
-                            {cards.map((card) => (
-                                <StatCard key={card.key} card={card} />
-                            ))}
+                        {/* Legend at the start (right in Arabic), the cards beside it. */}
+                        <div className="flex flex-col gap-5 sm:flex-row">
+                            <StatusDistributionLegend
+                                rows={statusCounts}
+                                colors={statusFill}
+                                className="sm:shrink-0 sm:justify-between"
+                            />
+
+                            {/* Four columns (two on phones); an incomplete last row is centred. */}
+                            <div className="flex flex-1 flex-wrap content-start justify-center gap-3">
+                                {cards.map((card) => (
+                                    <StatCard key={card.key} card={card} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </section>

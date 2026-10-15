@@ -28,13 +28,10 @@
     </div>
 
     <table class="data">
-        <tr><td class="label">{{ __('receipt.full_name') }}</td><td>{{ $application->full_name_ar }}</td></tr>
-        @if ($application->full_name_en)
-            <tr><td class="label">{{ __('receipt.full_name_en') }}</td><td class="ltr">{{ $application->full_name_en }}</td></tr>
-        @endif
+        <tr><td class="label">{{ __('receipt.full_name') }}</td><td>{{ $application->full_name_ar }} {{ $application->surname }}</td></tr>
         <tr><td class="label">{{ __('receipt.mother_name') }}</td><td>{{ $application->mother_name_ar }}</td></tr>
         <tr><td class="label">{{ __('receipt.birth_date') }}</td><td class="ltr">{{ $application->birth_date?->format('Y-m-d') }}</td></tr>
-        <tr><td class="label">{{ __('receipt.governorate') }}</td><td>{{ $labels['governorate'] }}</td></tr>
+        <tr><td class="label">{{ __('receipt.address') }}</td><td>{{ __('receipt.address_value', ['governorate' => $labels['governorate'], 'district' => $application->district, 'mahalla' => $application->mahalla, 'alley' => $application->alley, 'house' => $application->house_number]) }}</td></tr>
         <tr><td class="label">{{ __('receipt.school') }}</td><td>{{ $application->school_name }}</td></tr>
         <tr><td class="label">{{ __('receipt.branch') }}</td><td>{{ $labels['branch'] }}</td></tr>
         <tr><td class="label">{{ __('receipt.category') }}</td><td>{{ $labels['category'] }}</td></tr>

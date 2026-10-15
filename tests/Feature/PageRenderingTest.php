@@ -30,14 +30,14 @@ it('sends staff from the applicant dashboard to the admin area', function () {
 
 it('renders the application form with eligible options and what is missing', function () {
     $application = readyDraft();
-    $application->examPeriod->update(['eligible_branch_codes' => ['SCI']]);
+    $application->examPeriod->update(['eligible_branch_codes' => ['IND']]);
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))
         ->assertInertia(fn (Assert $page) => $page
             ->component('applicant/applications/edit')
             ->where('application.lock_version', 1)
             ->has('options.branches', 1)
-            ->where('options.branches.0.code', 'SCI')
+            ->where('options.branches.0.code', 'IND')
             ->has('documentTypes', 1)
             ->where('missing.fields', [])
             ->where('missing.documents', []));
@@ -144,6 +144,23 @@ it('treats search input as data, not SQL', function () {
 it('renders every admin section for an administrator', function (string $route) {
     $this->actingAs(staffWith(Role::Administrator))->get(route($route))->assertOk();
 })->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.audit.index', 'admin.operations', 'admin.reports.index']);
+
+it('finds exam periods by part of the code or name and filters them by status', function () {
+    $target = ExamPeriod::factory()->create(['code' => 'EX2031', 'name_ar' => 'دورة الربيع']);
+    $closed = ExamPeriod::factory()->closed()->create(['code' => 'EX2020']);
+    $admin = staffWith(Role::Administrator);
+
+    foreach (['ex203', 'الربيع'] as $term) {
+        $this->actingAs($admin)->get(route('admin.periods.index', ['q' => $term]))
+            ->assertInertia(fn (Assert $page) => $page->where('periods.total', 1)->where('periods.data.0.id', $target->id));
+    }
+
+    $this->actingAs($admin)->get(route('admin.periods.index', ['status' => 'closed']))
+        ->assertInertia(fn (Assert $page) => $page->where('periods.total', 1)->where('periods.data.0.id', $closed->id));
+
+    $this->actingAs($admin)->get(route('admin.periods.index', ['status' => 'paused']))
+        ->assertSessionHasErrors('status');
+});
 
 it('creates an exam period with its document requirements', function () {
     $type = DocumentType::factory()->create();

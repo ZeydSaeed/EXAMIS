@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  * @property ApplicationStatus $status
  * @property int $lock_version
  * @property string|null $full_name_ar
+ * @property string|null $surname
  * @property string|null $full_name_en
  * @property string|null $mother_name_ar
  * @property CarbonImmutable|null $birth_date
@@ -33,12 +34,22 @@ use Illuminate\Support\Str;
  * @property string|null $phone
  * @property string|null $contact_email
  * @property string|null $address
+ * @property string|null $district
+ * @property string|null $mahalla
+ * @property string|null $alley
+ * @property string|null $house_number
  * @property string|null $governorate_code
  * @property string|null $directorate_code
  * @property string|null $school_name
+ * @property string|null $intermediate_school_name
+ * @property string|null $last_grade
+ * @property int|null $failed_years
+ * @property int|null $left_years
  * @property string|null $branch_code
  * @property string|null $category_code
  * @property int|null $previous_exam_year
+ * @property string|null $other_info
+ * @property list<array{number: string|null, date: string|null, recipient: string|null}>|null $issued_documents
  * @property CarbonImmutable|null $declaration_accepted_at
  * @property CarbonImmutable|null $submitted_at
  * @property CarbonImmutable|null $last_submitted_at
@@ -60,21 +71,33 @@ class Application extends Model
     use HasFactory;
 
     /**
-     * Form fields an applicant may write. Status, numbering, ownership,
-     * assignment and timestamps are never mass assignable.
+     * Applicants apply to the vocational education department in Karbala and
+     * must hold a Karbala residence card, so the governorate is fixed.
+     */
+    public const GOVERNORATE_CODE = 'KRB';
+
+    /**
+     * Form fields an applicant may write: the official student status form
+     * (استمارة واقع حال) plus the national ID number. `school_name` is the
+     * last school attended and `category_code` the specialization within
+     * the branch. Status, numbering, ownership, assignment and timestamps are
+     * never mass assignable.
      */
     public const FORM_FIELDS = [
-        'full_name_ar', 'full_name_en', 'mother_name_ar', 'birth_date', 'gender',
-        'national_id_number', 'phone', 'contact_email', 'address', 'governorate_code',
-        'directorate_code', 'school_name', 'branch_code', 'category_code', 'previous_exam_year',
+        'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
+        'phone', 'district', 'mahalla', 'alley', 'house_number',
+        'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
+        'branch_code', 'category_code', 'other_info', 'issued_documents',
     ];
 
     /**
      * Fields that must be filled before the application can be submitted.
      */
     public const REQUIRED_FOR_SUBMISSION = [
-        'full_name_ar', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
-        'phone', 'governorate_code', 'school_name', 'branch_code', 'category_code',
+        'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
+        'phone', 'district', 'mahalla', 'alley', 'house_number',
+        'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
+        'branch_code', 'category_code',
     ];
 
     /**
@@ -88,6 +111,7 @@ class Application extends Model
     protected $attributes = [
         'status' => 'draft',
         'lock_version' => 1,
+        'governorate_code' => self::GOVERNORATE_CODE,
     ];
 
     protected static function booted(): void
@@ -109,6 +133,9 @@ class Application extends Model
             'birth_date' => 'date',
             'lock_version' => 'integer',
             'previous_exam_year' => 'integer',
+            'failed_years' => 'integer',
+            'left_years' => 'integer',
+            'issued_documents' => 'array',
             'declaration_accepted_at' => 'datetime',
             'submitted_at' => 'datetime',
             'last_submitted_at' => 'datetime',

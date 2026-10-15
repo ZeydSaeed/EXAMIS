@@ -1,10 +1,13 @@
 import { Head, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { Download } from 'lucide-react';
-import { selectClassName } from '@/components/examis/field';
-import { PageContainer, PageHeader } from '@/components/examis/page-header';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { DataTableFrame } from '@/components/examis/data-table-frame';
+import {
+    HeaderFilter,
+    headerButtonClassName,
+    ListHeader,
+} from '@/components/examis/list-header';
 import { useTrans } from '@/hooks/use-trans';
+import { formatPercent } from '@/lib/format';
 import admin from '@/routes/admin';
 
 type Row = { code: string | null; count: number; label: string | null };
@@ -13,57 +16,80 @@ type Props = {
     periodId: number | null;
     periods: { id: number; name: string }[];
     byStatus: Row[];
-    byGovernorate: Row[];
+    bySpecialization: Row[];
     byBranch: Row[];
     drafts: number;
 };
 
 function Breakdown({ title, rows }: { title: string; rows: Row[] }) {
-    const { t } = useTrans();
+    const { t, locale } = useTrans();
     const total = rows.reduce((sum, row) => sum + row.count, 0);
 
     return (
-        <section className="rounded-xl border bg-card p-4" aria-label={title}>
-            <h2 className="mb-3 font-semibold">{title}</h2>
-            {rows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    {t('admin.no_results')}
-                </p>
-            ) : (
-                <table className="w-full text-sm">
-                    <tbody className="divide-y">
-                        {rows.map((row) => (
+        <DataTableFrame className="examis-data-table--plain max-h-full">
+            <table className="w-full [&_td]:whitespace-nowrap">
+                <caption className="sr-only">{title}</caption>
+                <thead>
+                    <tr>
+                        <th scope="col" className="w-12 text-center!">
+                            #
+                        </th>
+                        <th scope="col">{title}</th>
+                        <th scope="col" className="text-center!">
+                            {t('reports.count')}
+                        </th>
+                        <th scope="col" className="w-2/5">
+                            {t('reports.share')}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.length === 0 ? (
+                        <tr>
+                            <td
+                                colSpan={4}
+                                className="text-center! text-muted-foreground"
+                            >
+                                {t('admin.no_results')}
+                            </td>
+                        </tr>
+                    ) : (
+                        rows.map((row, index) => (
                             <tr key={row.code ?? 'none'}>
-                                <th
-                                    scope="row"
-                                    className="py-2 text-start font-normal"
-                                >
-                                    {row.label ?? t('reports.unspecified')}
-                                </th>
-                                <td className="w-1/2 py-2">
+                                <td className="text-center! text-muted-foreground tabular-nums">
+                                    {index + 1}
+                                </td>
+                                <td>{row.label ?? t('reports.unspecified')}</td>
+                                <td className="text-center! font-medium tabular-nums">
+                                    {row.count}
+                                </td>
+                                <td>
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="h-2 flex-1 rounded bg-muted"
+                                            className="h-2 flex-1 rounded-full bg-muted"
                                             aria-hidden
                                         >
                                             <div
-                                                className="h-2 rounded bg-primary"
+                                                className="h-2 rounded-full bg-primary dark:bg-(--examis-pearl)"
                                                 style={{
                                                     width: `${total ? (row.count / total) * 100 : 0}%`,
                                                 }}
                                             />
                                         </div>
-                                        <span className="w-12 text-end font-medium tabular-nums">
-                                            {row.count}
+                                        <span className="w-12 text-end text-xs text-muted-foreground tabular-nums">
+                                            {formatPercent(
+                                                total ? row.count / total : 0,
+                                                locale,
+                                            )}
                                         </span>
                                     </div>
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </section>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </DataTableFrame>
     );
 }
 
@@ -71,7 +97,7 @@ export default function Reports({
     periodId,
     periods,
     byStatus,
-    byGovernorate,
+    bySpecialization,
     byBranch,
     drafts,
 }: Props) {
@@ -86,56 +112,57 @@ export default function Reports({
     return (
         <>
             <Head title={t('nav.reports')} />
-            <PageContainer>
-                <PageHeader
-                    title={t('nav.reports')}
-                    description={t('reports.description', { drafts })}
-                    actions={
-                        canExport &&
-                        periodId && (
-                            <Button variant="outline" asChild>
-                                <a href={admin.reports.export.url(periodId)}>
-                                    <Download className="size-4" aria-hidden />
-                                    {t('reports.export_csv')}
-                                </a>
-                            </Button>
+
+            <ListHeader
+                actions={
+                    canExport &&
+                    periodId && (
+                        <a
+                            href={admin.reports.export.url(periodId)}
+                            className={headerButtonClassName}
+                            aria-label={t('reports.export_csv')}
+                            title={t('reports.export_csv')}
+                        >
+                            <Download aria-hidden />
+                        </a>
+                    )
+                }
+            >
+                <HeaderFilter
+                    label={t('applications.exam_period')}
+                    value={String(periodId ?? '')}
+                    options={periods.map((period) => ({
+                        value: String(period.id),
+                        label: period.name,
+                    }))}
+                    onChange={(period) =>
+                        router.get(
+                            admin.reports.index.url(),
+                            { period },
+                            { preserveState: true, replace: true },
                         )
                     }
+                    required
+                    className="max-w-md"
                 />
+            </ListHeader>
 
-                <div className="grid max-w-sm gap-1.5">
-                    <Label htmlFor="report-period">
-                        {t('applications.exam_period')}
-                    </Label>
-                    <select
-                        id="report-period"
-                        className={selectClassName}
-                        value={periodId ?? ''}
-                        onChange={(event) =>
-                            router.get(
-                                admin.reports.index.url(),
-                                { period: event.target.value },
-                                { preserveState: true, replace: true },
-                            )
-                        }
-                    >
-                        {periods.map((period) => (
-                            <option key={period.id} value={period.id}>
-                                {period.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 p-4 sm:p-6">
+                <h1 className="sr-only">{t('nav.reports')}</h1>
 
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="grid content-start items-start gap-4 lg:grid-cols-3">
                     <Breakdown title={t('admin.by_status')} rows={byStatus} />
                     <Breakdown
-                        title={t('reports.by_governorate')}
-                        rows={byGovernorate}
+                        title={t('reports.by_specialization')}
+                        rows={bySpecialization}
                     />
                     <Breakdown title={t('reports.by_branch')} rows={byBranch} />
                 </div>
-            </PageContainer>
+
+                <p className="text-sm text-muted-foreground">
+                    {t('reports.drafts', { drafts })}
+                </p>
+            </div>
         </>
     );
 }

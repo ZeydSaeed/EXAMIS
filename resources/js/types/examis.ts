@@ -8,22 +8,36 @@ export type ApplicationStatus =
     | 'rejected'
     | 'withdrawn';
 
+export type IssuedDocument = {
+    number: string | null;
+    date: string | null;
+    recipient: string | null;
+};
+
+/** Fields of the official student status form (استمارة واقع حال). */
 export type ApplicationForm = {
     full_name_ar: string | null;
-    full_name_en: string | null;
+    surname: string | null;
     mother_name_ar: string | null;
     birth_date: string | null;
     gender: 'male' | 'female' | null;
     national_id_number: string | null;
     phone: string | null;
-    contact_email: string | null;
-    address: string | null;
-    governorate_code: string | null;
-    directorate_code: string | null;
+    district: string | null;
+    mahalla: string | null;
+    alley: string | null;
+    house_number: string | null;
+    /** The last school attended. */
     school_name: string | null;
+    intermediate_school_name: string | null;
+    last_grade: string | null;
+    failed_years: number | string | null;
+    left_years: number | string | null;
     branch_code: string | null;
+    /** The specialization within the branch. */
     category_code: string | null;
-    previous_exam_year: number | null;
+    other_info: string | null;
+    issued_documents: IssuedDocument[];
 };
 
 export type ApplicationDocument = {
@@ -68,7 +82,6 @@ export type Application = {
     form: ApplicationForm;
     labels: {
         governorate: string | null;
-        directorate: string | null;
         branch: string | null;
         category: string | null;
         gender: string | null;

@@ -206,6 +206,33 @@
         @apply outline-2 outline-offset-2 outline-ring;
     }
 
+    /*
+     * Very thin scrollbars in the sidebar colour. Chromium ignores the
+     * ::-webkit-scrollbar rules once scrollbar-width is set, so the standard
+     * properties apply only where those pseudo-elements are unsupported.
+     */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background: var(--sidebar);
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--sidebar) transparent;
+        }
+    }
+
     [dir='rtl'] body {
         line-height: 1.7;
     }

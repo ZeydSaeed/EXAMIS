@@ -53,12 +53,12 @@ describe('starting an application', function () {
             ->assertForbidden();
     });
 
-    it('requires a verified email address', function () {
+    it('does not require a verified email address', function () {
         $period = ExamPeriod::factory()->create();
 
         $this->actingAs(User::factory()->unverified()->create())
             ->post(route('applications.store'), ['exam_period_id' => $period->id])
-            ->assertRedirect(route('verification.notice'));
+            ->assertRedirect(route('applications.edit', Application::query()->sole()));
     });
 });
 
@@ -70,16 +70,64 @@ describe('saving a draft', function () {
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
                 'full_name_ar' => 'زينب علي حسين كاظم',
+                'surname' => 'الموسوي',
                 'phone' => '٠٧٧٠١٢٣٤٥٦٧',
-                'governorate_code' => 'BSR',
+                'mahalla' => '٦٣٠',
+                'failed_years' => '٠',
+                'branch_code' => 'COM',
+                'category_code' => 'COM_ACC',
+                'issued_documents' => [
+                    ['number' => '1452', 'date' => '2025-09-01', 'recipient' => 'مديرية تربية كربلاء'],
+                    ['number' => null, 'date' => null, 'recipient' => null],
+                ],
             ])
             ->assertSessionHasNoErrors();
 
         $application->refresh();
         expect($application->full_name_ar)->toBe('زينب علي حسين كاظم')
+            ->and($application->surname)->toBe('الموسوي')
             ->and($application->phone)->toBe('07701234567')
-            ->and($application->governorate_code)->toBe('BSR')
+            ->and($application->mahalla)->toBe('630')
+            ->and($application->failed_years)->toBe(0)
+            ->and($application->category_code)->toBe('COM_ACC')
+            ->and($application->issued_documents)->toBe([
+                ['number' => '1452', 'date' => '2025-09-01', 'recipient' => 'مديرية تربية كربلاء'],
+            ])
             ->and($application->lock_version)->toBe(2);
+    });
+
+    it('keeps every application in Karbala', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'governorate_code' => 'BSR'])
+            ->assertSessionHasNoErrors();
+
+        expect($application->fresh()->governorate_code)->toBe(Application::GOVERNORATE_CODE);
+    });
+
+    it('requires the specialization to belong to the chosen branch', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), [
+                'lock_version' => 1,
+                'branch_code' => 'COM',
+                'category_code' => 'IND_ELC',
+            ])
+            ->assertSessionHasErrors(['category_code' => __('applications.errors.specialization_branch')]);
+    });
+
+    it('accepts at most four issued documents', function () {
+        $application = Application::factory()->create();
+        $row = ['number' => '1', 'date' => '2025-01-01', 'recipient' => 'مدرسة'];
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), [
+                'lock_version' => 1,
+                'issued_documents' => array_fill(0, 5, $row),
+            ])
+            ->assertSessionHasErrors('issued_documents');
     });
 
     it('rejects a save based on a stale version instead of overwriting', function () {
@@ -103,20 +151,20 @@ describe('saving a draft', function () {
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
                 'full_name_ar' => 'Ahmed Ali',
-                'governorate_code' => 'ATLANTIS',
+                'branch_code' => 'ATLANTIS',
             ])
             ->assertSessionHasErrors([
                 'full_name_ar' => 'يجب كتابة الاسم بالأحرف العربية فقط.',
-                'governorate_code' => 'القيمة المختارة في المحافظة غير صالحة.',
+                'branch_code' => 'القيمة المختارة في الفرع غير صالحة.',
             ]);
     });
 
     it('only offers branches eligible for the period', function () {
-        $period = ExamPeriod::factory()->create(['eligible_branch_codes' => ['SCI']]);
+        $period = ExamPeriod::factory()->create(['eligible_branch_codes' => ['IND']]);
         $application = Application::factory()->create(['exam_period_id' => $period->id]);
 
         $this->actingAs($application->user)
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'branch_code' => 'LIT'])
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'branch_code' => 'COM'])
             ->assertSessionHasErrors('branch_code');
     });
 

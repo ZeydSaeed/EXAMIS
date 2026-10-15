@@ -14,7 +14,8 @@ Families often share one email address or phone number. Several applicant accoun
 - Forgot-password always returns the same generic message (no account enumeration).
 - Owning an email or phone grants **no** access to any application. Access is decided only by the authenticated account plus policies.
 - Legal identity is not proven by account registration. Staff verify it at review against the uploaded identity documents (configurable per period).
+- Email addresses are not verified (amended 2026-10-16, to make sign-up and sign-in simpler): a new applicant goes straight to their dashboard. Because the address is unconfirmed, a mistyped email only means the password-reset link goes astray; it never grants access to anything.
 
 ## Consequences
 
-- Users must remember a username. It is shown after registration and in the verification email.
+- Users must remember a username. It is shown in a confirmation message right after registration.

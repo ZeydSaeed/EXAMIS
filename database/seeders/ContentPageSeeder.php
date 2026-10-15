@@ -6,9 +6,10 @@ use App\Models\ContentPage;
 use Illuminate\Database\Seeder;
 
 /**
- * Initial public portal content. Pages are only created if missing so that
- * administrator edits are never overwritten by a redeploy. The texts are
- * drafts to be replaced with the authority's approved wording.
+ * Public portal content. Missing pages are created and pages no administrator
+ * has edited yet (`updated_by` is empty) take the latest wording, so admin
+ * edits are never overwritten by a redeploy. The instructions, conditions
+ * and documents pages follow the authority's published instructions.
  */
 class ContentPageSeeder extends Seeder
 {
@@ -22,18 +23,18 @@ class ContentPageSeeder extends Seeder
             ],
             'instructions' => [
                 'تعليمات ملء الاستمارة', 'How to fill in the form',
-                "١. أنشئ حساباً باسم مستخدم خاص بك وفعّل بريدك الإلكتروني.\n\n٢. اختر الدورة الامتحانية المفتوحة واضغط «بدء طلب جديد».\n\n٣. املأ البيانات بدقة كما وردت في المستمسكات الرسمية. يُحفظ الطلب كمسودة ويمكنك إكماله لاحقاً.\n\n٤. ارفع المستمسكات المطلوبة بصيغة JPG أو PNG أو PDF ضمن الحجم المسموح.\n\n٥. راجع البيانات ثم وافق على الإقرار وأرسل الطلب. لا يمكن تعديل الطلب بعد الإرسال إلا إذا طُلب منك الاستكمال.",
-                "1. Create an account with your own username and verify your email address.\n\n2. Choose the open exam period and select \"Start a new application\".\n\n3. Enter your details exactly as they appear in your official documents. Your application is saved as a draft and you can finish it later.\n\n4. Upload the required documents as JPG, PNG or PDF within the size limit.\n\n5. Review your details, accept the declaration and submit. You cannot edit the application after submission unless you are asked for a correction.",
+                "١. أنشئ حساباً باسم مستخدم خاص بك واحفظ اسم المستخدم، فستدخل به في كل مرة.\n\n٢. اقرأ «شروط التقديم» و«المستمسكات المطلوبة» قبل البدء.\n\n٣. اختر الدورة الامتحانية المفتوحة واضغط «بدء طلب جديد».\n\n٤. املأ بيانات استمارة واقع حال بدقة كما وردت في المستمسكات الرسمية: الاسم الرباعي واللقب، والتولد، واسم الأم الثلاثي، وعنوان السكن الدائم في كربلاء (الحي، المحلة، الزقاق، الدار)، ورقم الهاتف، وآخر مدرسة، والمدرسة المتوسطة المتخرج منها، وآخر صف، وسنوات الرسوب والترك، ثم الفرع والاختصاص. يُحفظ الطلب كمسودة ويمكنك إكماله لاحقاً.\n\n٥. ارفع المستمسكات المطلوبة بصيغة JPG أو PNG أو PDF ضمن الحجم المسموح.\n\n٦. راجع البيانات ثم وافق على الإقرار وأرسل الطلب. لا يمكن تعديل الطلب بعد الإرسال إلا إذا طُلب منك الاستكمال.\n\n٧. تُختم استمارة واقع حال الورقية من آخر مدرسة، ويتحمل مدير المدرسة صحة المعلومات، وتسلَّم إلى قسم التعليم المهني.",
+                "1. Create an account with your own username and keep it: you sign in with it every time.\n\n2. Read the application conditions and the required documents before you start.\n\n3. Choose the open exam period and select \"Start a new application\".\n\n4. Fill in the student status form exactly as in your official documents: full name and surname, date of birth, mother's name, permanent Karbala address (district, mahalla, alley, house), phone number, last school, intermediate school, last grade, years failed and years out of school, then the branch and specialization. Your application is saved as a draft and you can finish it later.\n\n5. Upload the required documents as JPG, PNG or PDF within the size limit.\n\n6. Review your details, accept the declaration and submit. You cannot edit the application after submission unless you are asked for a correction.\n\n7. The paper status form is stamped by your last school, whose principal vouches for it, and handed to the vocational education department.",
             ],
             'eligibility' => [
-                'الفئات المؤهلة', 'Who can apply',
-                'تحدد تعليمات كل دورة امتحانية الفئات المؤهلة والفروع المتاحة. تظهر لك عند ملء الاستمارة الخيارات المتاحة للدورة المختارة فقط.',
-                'The instructions of each exam period define the eligible categories and branches. The form shows only the options available for the selected period.',
+                'شروط التقديم', 'Application conditions',
+                "١. أن يكون الطالب المتقدم من سكنة إحدى المحافظات المشمولة بالتقديم ضمن الرقعة الجغرافية للمعهد {بغداد، بابل، ديالى، النجف الأشرف، كربلاء المقدسة، واسط، الديوانية، المثنى} وفقاً لما مثبت في وثيقة التخرج الصادرة من الإعدادية.\n\n٢. أن لا يتجاوز عمر الطالب المتقدم 24 سنة، ويُسمح بالتقديم لخريجي المدارس الإعدادية العراقية حصراً {صباحي، مسائي، خارجي}، الإعدادية {العلمي / المهني} للعامين الدراسيين 2023/2024 و2024/2025.\n\n٣. أن لا يقل معدل الطالب المتقدم عن 75%.\n\n٤. تخصص نسبة 20% من خطة القبول بنفس الشروط الواردة في أعلاه لخريجي الدراسة الإعدادية المهنية {الصناعة} بتأييد رسمي صادر من المديرية العامة للتعليم المهني معززاً برمز الاستجابة السريع (QR Code)، يؤيد أن المتقدم من ضمن 10% الأوائل للاختصاصات المشمولة بالتقديم {تكرير النفط ومعالجة الغاز / صناعات بتروكيمياوية / إلكترونيك وسيطرة / كهرباء / لحام / سيارات / ميكانيك}، وستكون المفاضلة وفقاً لأعلى المعدلات ضمن الاختصاص المهني الواحد.\n\n٥. قبول الإناث بنسبة {10-15}% من خطة القبول وحسب الاختصاصات الملائمة.\n\n٦. تخصص نسبة 10% من خطة القبول بنفس الشروط الواردة في أعلاه لذوي الشهداء من الدرجة الأولى فقط وفقاً للمادة (29) ثانياً من القانون المدني رقم (40) لسنة 1951.\n\n٧. يشترط في الطالب المتقدم أن يكون لائقاً من الناحية الصحية والبدنية بحسب طبيعة ومتطلبات الاختصاص الذي سيُقبل فيه.\n\n٨. الوزارة غير ملزمة بتعيين خريجي المعاهد النفطية بعد التخرج مباشرة.\n\n٩. السقف الزمني لمراجعة الطالب المقبول أسبوعان من تاريخ إعلان نتائج القبول، وفي حال عدم مراجعة الطالب خلال المدة المذكورة يسقط حقه في القبول، ويتم تعويضه من قوائم الاحتياط وفقاً لأعلى المعدلات.",
+                "1. The applicant must live in one of the governorates covered by the institute {Baghdad, Babil, Diyala, Najaf, Karbala, Wasit, Diwaniyah, Muthanna}, as shown in the preparatory school graduation document.\n\n2. The applicant must be no older than 24. Only graduates of Iraqi preparatory schools {morning, evening, external}, preparatory {scientific / vocational}, of the 2023/2024 and 2024/2025 school years may apply.\n\n3. The applicant's average must be at least 75%.\n\n4. 20% of the admission plan, under the same conditions, is reserved for graduates of vocational preparatory {industrial} schools with an official confirmation from the General Directorate of Vocational Education, backed by a QR code, that the applicant is in the top 10% of the eligible specializations {oil refining and gas processing / petrochemical industries / electronics and control / electrical / welding / automotive / mechanics}; ranking is by the highest averages within each specialization.\n\n5. Female applicants are admitted at {10-15}% of the admission plan, in suitable specializations.\n\n6. 10% of the admission plan, under the same conditions, is reserved for first-degree relatives of martyrs only, under Article 29(2) of Civil Law No. 40 of 1951.\n\n7. The applicant must be medically and physically fit for the specialization they are admitted to.\n\n8. The ministry is not obliged to employ graduates of the oil institutes immediately after graduation.\n\n9. An admitted student must report within two weeks of the announcement of admission results; otherwise the place is lost and given to the reserve list by highest average.",
             ],
             'documents' => [
                 'المستمسكات المطلوبة', 'Required documents',
-                "تختلف المستمسكات المطلوبة حسب الدورة، وتشمل عادةً: الصورة الشخصية، والبطاقة الوطنية، ووثيقة المدرسة أو الشهادة السابقة.\n\nيجب أن تكون الصور واضحة ومقروءة. تُفحص الملفات تلقائياً قبل اعتمادها.",
-                "Required documents depend on the exam period and usually include a personal photo, the national ID card and a school document or previous certificate.\n\nImages must be clear and readable. Files are checked automatically before they are accepted.",
+                "١. طلب الاشتراك في الامتحان الخارجي.\n\n٢. هوية الأحوال المدنية أو البطاقة الموحدة للطالب، أصل وصورة (ملونة).\n\n٣. هوية الأحوال المدنية أو البطاقة الموحدة لوالد الطالب، وفي حالة وفاة الأب يتم جلب شهادة الوفاة أو صورة قيد، أصل وصورة (ملونة).\n\n٤. هوية الأحوال المدنية أو البطاقة الموحدة لأم الطالب، وفي حالة وفاة الأم يتم جلب شهادة الوفاة أو صورة قيد، أصل وصورة (ملونة).\n\n٥. بطاقة السكن (كربلاء حصراً) للطالب، أصل وصورة (ملونة).\n\n٦. بالنسبة للمستمسكات المذكورة أعلاه يجب أن تكون مستنسخة في ورقة واحدة.\n\n٧. بالنسبة للنازحين الذين ليس لديهم بطاقة سكن (كربلاء) فيجب تقديم كتاب من دائرة الهجرة والمهجرين + تأييد سكن المتقدم من المختار مدعماً بتوقيع شاهدين مع أرقام الموبايل لهم مع ختم القائممقامية.\n\n٨. صورة أمامية خلفية بيضاء قياس (3.5×4.5) عدد 10 بدون غطاء رأس بالنسبة للذكور.\n\n٩. توضع المستمسكات أعلاه في فايل كارتون ويكون لون الفايل حسب الفرع:\nالصناعي: أحمر\nالحاسوب وتقنية المعلومات: أبيض\nالتجاري: أصفر\nالفنون التطبيقية: أزرق\nالزراعي: أخضر\nالسياحة والفندقة: وردي\n\nارفع نسخة واضحة من كل مستمسك في النظام. تُفحص الملفات تلقائياً قبل اعتمادها.",
+                "1. The external examination participation request.\n\n2. The student's civil ID or unified national card, original and colour copy.\n\n3. The father's civil ID or unified national card; if the father has died, the death certificate or a civil registry record, original and colour copy.\n\n4. The mother's civil ID or unified national card; if the mother has died, the death certificate or a civil registry record, original and colour copy.\n\n5. The student's residence card (Karbala only), original and colour copy.\n\n6. Each of the documents above must be copied on one page.\n\n7. Displaced students without a Karbala residence card must provide a letter from the Migration and Displacement office plus a residence confirmation from the mukhtar, signed by two witnesses with their mobile numbers and stamped by the district office.\n\n8. Ten front-facing photos on a white background (3.5×4.5 cm), without a head cover for males.\n\n9. The documents go in a cardboard folder in the branch's colour:\nIndustrial: red\nComputing and IT: white\nCommercial: yellow\nApplied arts: blue\nAgricultural: green\nTourism and hospitality: pink\n\nUpload a clear copy of each document to the system. Files are checked automatically before they are accepted.",
             ],
             'faq' => [
                 'الأسئلة الشائعة', 'Frequently asked questions',
@@ -58,13 +59,20 @@ class ContentPageSeeder extends Seeder
         ];
 
         foreach ($pages as $slug => [$titleAr, $titleEn, $bodyAr, $bodyEn]) {
-            ContentPage::query()->firstOrCreate(['slug' => $slug], [
+            $page = ContentPage::query()->firstOrNew(['slug' => $slug]);
+
+            if ($page->exists && $page->updated_by !== null) {
+                continue;
+            }
+
+            $page->fill([
                 'title_ar' => $titleAr,
                 'title_en' => $titleEn,
                 'body_ar' => $bodyAr,
                 'body_en' => $bodyEn,
-                'is_published' => true,
             ]);
+            $page->is_published ??= true;
+            $page->save();
         }
     }
 }

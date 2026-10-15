@@ -26,9 +26,9 @@ it('seeds 100 applicants covering every status and assignee option through the r
         ->and($applications->pluck('assignee.username')->unique()->filter()->sort()->values()->all())
         ->toBe(['reviewer', 'supervisor'])
         ->and($applications->where('status', '!=', ApplicationStatus::Draft)->whereNull('assigned_to'))->not->toBeEmpty()
-        ->and($applications->pluck('governorate_code')->unique())->toHaveCount(18)
-        ->and($applications->pluck('branch_code')->unique())->toHaveCount(4)
-        ->and($applications->pluck('category_code')->unique())->toHaveCount(3);
+        ->and($applications->pluck('governorate_code')->unique()->all())->toBe([Application::GOVERNORATE_CODE])
+        ->and($applications->pluck('branch_code')->unique())->toHaveCount(5)
+        ->and($applications->pluck('category_code')->unique())->toHaveCount(12);
 
     $submitted = $applications->whereNotNull('submitted_at');
     expect($submitted->pluck('submitted_at')->map->toDateTimeString()->unique())->toHaveCount($submitted->count())

@@ -104,7 +104,7 @@ it('refuses new submissions after the period closes', function () {
 
 it('re-checks eligibility against the period rules at submission time', function () {
     $application = readyDraft();
-    $application->examPeriod->update(['eligible_branch_codes' => ['LIT']]);
+    $application->examPeriod->update(['eligible_branch_codes' => ['COM']]);
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])

@@ -34,7 +34,7 @@ test('a correction request goes to the applicant and the corrected application i
     await expect(page.getByText('يجب كتابة السبب لهذا الإجراء.')).toBeVisible();
     await page
         .locator('#reason-requires_correction')
-        .fill('صورة وثيقة المدرسة غير واضحة، يرجى إعادة رفعها.');
+        .fill('صورة بطاقة السكن غير واضحة، يرجى إعادة رفعها.');
     await page.getByTestId('confirm-action').click();
     await expect(page.getByText('يتطلب استكمالاً').first()).toBeVisible();
     await logout(page);
@@ -43,16 +43,14 @@ test('a correction request goes to the applicant and the corrected application i
     await login(page, applicant(9));
     await page.goto(url);
     await expect(
-        page
-            .getByText('صورة وثيقة المدرسة غير واضحة، يرجى إعادة رفعها.')
-            .first(),
+        page.getByText('صورة بطاقة السكن غير واضحة، يرجى إعادة رفعها.').first(),
     ).toBeVisible();
     await page.getByRole('link', { name: 'استكمال الطلب' }).click();
     await page.getByRole('button', { name: /المستمسكات/ }).click();
     await uploadDocument(
         page,
-        'school_certificate',
-        pdfFile('school-clear.pdf'),
+        'residence_card',
+        pdfFile('residence-clear.pdf'),
     );
     await page.getByTestId('next-step').click();
     await page.locator('#declaration').check();

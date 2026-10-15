@@ -6,6 +6,7 @@ use App\Models\AuditEvent;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     config(['examis.security.require_staff_two_factor' => false]);
@@ -78,4 +79,36 @@ it('only administrators manage staff', function () {
         ->assertForbidden();
 
     expect(User::query()->where('username', 'x.y.z')->exists())->toBeFalse();
+});
+
+it('finds staff by part of the name, username or email, ignoring case', function () {
+    $target = User::factory()->staff(Role::Reviewer)->create(['username' => 'sara.reviewer', 'name' => 'سارة علي']);
+    User::factory()->staff(Role::Reviewer)->create(['username' => 'omar', 'name' => 'عمر خالد']);
+    $admin = staffWith(Role::Administrator);
+
+    foreach (['SARA.REV', 'سارة', strtoupper(explode('@', $target->email)[0])] as $term) {
+        $this->actingAs($admin)->get(route('admin.users.index', ['q' => $term]))
+            ->assertInertia(fn (Assert $page) => $page->where('staff.total', 1)->where('staff.data.0.id', $target->id));
+    }
+});
+
+it('filters staff by role and by account state', function () {
+    $supervisor = staffWith(Role::Supervisor);
+    $inactive = User::factory()->staff(Role::Reviewer)->deactivated()->create();
+    $admin = staffWith(Role::Administrator);
+
+    $this->actingAs($admin)->get(route('admin.users.index', ['role' => 'supervisor']))
+        ->assertInertia(fn (Assert $page) => $page->where('staff.total', 1)->where('staff.data.0.id', $supervisor->id));
+
+    $this->actingAs($admin)->get(route('admin.users.index', ['state' => 'inactive']))
+        ->assertInertia(fn (Assert $page) => $page->where('staff.total', 1)->where('staff.data.0.id', $inactive->id));
+
+    $this->actingAs($admin)->get(route('admin.users.index', ['state' => 'active']))
+        ->assertInertia(fn (Assert $page) => $page->where('staff.total', 2));
+});
+
+it('rejects unknown staff filters and page sizes', function () {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->get(route('admin.users.index', ['role' => 'owner', 'state' => 'gone', 'per_page' => 1000]))
+        ->assertSessionHasErrors(['role', 'state', 'per_page']);
 });

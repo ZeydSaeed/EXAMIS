@@ -175,9 +175,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain
-                    label={
-                        isStaff ? t('nav.administration') : t('nav.applicant')
-                    }
+                    label={isStaff ? undefined : t('nav.applicant')}
                     items={isStaff ? staffItems : applicantItems}
                 />
             </SidebarContent>

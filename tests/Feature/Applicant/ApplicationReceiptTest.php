@@ -46,8 +46,8 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
     $text = extractPdfText($pdf);
     expect($text)->toContain('EX2027-0000019')
         ->and($text)->toContain(visualOrder('عبد الرحمن محمد عبد الكريم الساعدي'))
-        ->and($text)->toContain(visualOrder('بغداد'))
-        ->and($text)->toContain(visualOrder('العلمي'))
+        ->and($text)->toContain(visualOrder('فاطمة جاسم كاظم'))
+        ->and($text)->toContain(visualOrder('كهرباء'))
         ->and($text)->toContain('(2026-2027)')
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);
 });

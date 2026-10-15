@@ -37,14 +37,8 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        $myQueue = Application::query()
-            ->where('assigned_to', $user->id)
-            ->where('status', ApplicationStatus::UnderReview)
-            ->count();
-
         return Inertia::render('admin/dashboard', [
             'statusCounts' => $statusCounts,
-            'myQueue' => $myQueue,
         ]);
     }
 }

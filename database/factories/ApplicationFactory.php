@@ -36,17 +36,23 @@ class ApplicationFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'full_name_ar' => 'أحمد محمد علي حسن',
-            'full_name_en' => 'Ahmed Mohammed Ali Hasan',
+            'surname' => 'الكربلائي',
             'mother_name_ar' => 'فاطمة جاسم كاظم',
             'birth_date' => '2006-03-15',
             'gender' => Gender::Male,
             'national_id_number' => fake()->unique()->numerify('19##########'),
             'phone' => fake()->numerify('0770#######'),
-            'contact_email' => fake()->safeEmail(),
-            'governorate_code' => 'BGD',
+            'district' => 'حي الحسين',
+            'mahalla' => (string) fake()->numberBetween(100, 999),
+            'alley' => (string) fake()->numberBetween(1, 60),
+            'house_number' => (string) fake()->numberBetween(1, 200),
             'school_name' => 'إعدادية النجاح للبنين',
-            'branch_code' => 'SCI',
-            'category_code' => 'EXTERNAL',
+            'intermediate_school_name' => 'متوسطة الفرات للبنين',
+            'last_grade' => 'الخامس الإعدادي',
+            'failed_years' => 0,
+            'left_years' => 1,
+            'branch_code' => 'IND',
+            'category_code' => 'IND_ELC',
         ]);
     }
 

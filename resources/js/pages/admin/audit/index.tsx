@@ -1,14 +1,15 @@
-import { Head, router, setLayoutProps } from '@inertiajs/react';
-import { ScrollText, Search } from 'lucide-react';
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+import { Head, setLayoutProps } from '@inertiajs/react';
+import { ScrollText } from 'lucide-react';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
 import { EmptyState } from '@/components/examis/empty-state';
-import { PageContainer, PageHeader } from '@/components/examis/page-header';
+import { Highlight } from '@/components/examis/highlight';
+import {
+    HeaderFilter,
+    HeaderFilterChip,
+    ListHeader,
+} from '@/components/examis/list-header';
 import { Pagination } from '@/components/examis/pagination';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useListQuery } from '@/hooks/use-list-query';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDateTime } from '@/lib/format';
 import admin from '@/routes/admin';
@@ -28,148 +29,165 @@ type AuditRow = {
 
 type Props = {
     events: CursorPaginated<AuditRow>;
-    filters: { action?: string; actor?: string; subject?: string };
+    filters: {
+        action?: string;
+        actor?: string | number;
+        subject?: string;
+        q?: string;
+        per_page?: string | number;
+    };
+    subjects: string[];
 };
 
-export default function AuditLog({ events, filters }: Props) {
+/**
+ * Cursor-paginated (previous / next only) so deep pages stay cheap on the
+ * large append-only table; there is no total, hence no page numbers.
+ */
+export default function AuditLog({ events, filters, subjects }: Props) {
     const { t, locale } = useTrans();
-    const [values, setValues] = useState(filters);
+    const { search, setSearch, visit, tableArea } = useListQuery({
+        url: admin.audit.index.url,
+        filters,
+        paginator: events,
+    });
 
     setLayoutProps({
         breadcrumbs: [{ title: t('nav.audit'), href: admin.audit.index() }],
     });
 
-    const apply = (event: FormEvent) => {
-        event.preventDefault();
-        const query = Object.fromEntries(
-            Object.entries(values).filter(([, value]) => value),
-        );
-        router.get(admin.audit.index.url(), query, {
-            preserveState: true,
-            replace: true,
-        });
-    };
-
     return (
         <>
             <Head title={t('nav.audit')} />
-            <PageContainer>
-                <PageHeader
-                    title={t('nav.audit')}
-                    description={t('audit.description')}
+
+            <ListHeader
+                search={search}
+                onSearchChange={setSearch}
+                onSearchSubmit={() => visit({ q: search.trim() })}
+                placeholder={t('audit.search_placeholder')}
+            >
+                <HeaderFilter
+                    label={t('audit.subject')}
+                    value={filters.subject ?? ''}
+                    options={subjects.map((subject) => ({
+                        value: subject,
+                        label: subject,
+                    }))}
+                    onChange={(subject) => visit({ subject })}
                 />
-
-                <form
-                    onSubmit={apply}
-                    className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
-                    role="search"
-                >
-                    <div className="grid gap-1.5">
-                        <Label htmlFor="action">{t('audit.action')}</Label>
-                        <Input
-                            id="action"
-                            dir="ltr"
-                            placeholder="application."
-                            value={values.action ?? ''}
-                            onChange={(event) =>
-                                setValues({
-                                    ...values,
-                                    action: event.target.value,
-                                })
-                            }
-                        />
-                    </div>
-                    <div className="grid gap-1.5">
-                        <Label htmlFor="actor">{t('audit.actor_id')}</Label>
-                        <Input
-                            id="actor"
-                            dir="ltr"
-                            inputMode="numeric"
-                            value={values.actor ?? ''}
-                            onChange={(event) =>
-                                setValues({
-                                    ...values,
-                                    actor: event.target.value,
-                                })
-                            }
-                        />
-                    </div>
-                    <div className="grid gap-1.5">
-                        <Label htmlFor="subject">{t('audit.subject')}</Label>
-                        <Input
-                            id="subject"
-                            dir="ltr"
-                            placeholder="Application"
-                            value={values.subject ?? ''}
-                            onChange={(event) =>
-                                setValues({
-                                    ...values,
-                                    subject: event.target.value,
-                                })
-                            }
-                        />
-                    </div>
-                    <Button type="submit">
-                        <Search className="size-4" aria-hidden />
-                        {t('admin.search')}
-                    </Button>
-                </form>
-
-                {events.data.length === 0 ? (
-                    <EmptyState
-                        icon={ScrollText}
-                        title={t('admin.no_results')}
+                {filters.action && (
+                    <HeaderFilterChip
+                        label={`${t('audit.action')}: ${filters.action}`}
+                        onRemove={() => visit({ action: '' })}
                     />
-                ) : (
-                    <DataTableFrame>
-                        <table className="min-w-[56rem]" dir="ltr">
-                            <thead>
-                                <tr>
-                                    <th scope="col">{t('audit.time')}</th>
-                                    <th scope="col">{t('audit.action')}</th>
-                                    <th scope="col">{t('audit.actor')}</th>
-                                    <th scope="col">{t('audit.subject')}</th>
-                                    <th scope="col">{t('audit.details')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="font-mono text-xs">
-                                {events.data.map((event) => (
-                                    <tr key={event.id}>
-                                        <td className="whitespace-nowrap">
-                                            {formatDateTime(
-                                                event.created_at,
-                                                locale,
-                                            )}
-                                        </td>
-                                        <td>{event.action}</td>
-                                        <td>
-                                            {event.actor
-                                                ? `${event.actor.username} (#${event.actor.id})`
-                                                : '—'}
-                                        </td>
-                                        <td>
-                                            {event.subject_type
-                                                ? `${event.subject_type} #${event.subject_id}`
-                                                : '—'}
-                                        </td>
-                                        <td className="max-w-md break-all text-muted-foreground">
-                                            {event.ip_address}{' '}
-                                            {event.metadata
-                                                ? JSON.stringify(event.metadata)
-                                                : ''}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </DataTableFrame>
                 )}
+                {filters.actor && (
+                    <HeaderFilterChip
+                        label={`${t('audit.actor_id')}: ${filters.actor}`}
+                        onRemove={() => visit({ actor: '' })}
+                    />
+                )}
+            </ListHeader>
+
+            <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 p-4 sm:p-6">
+                <h1 className="sr-only">{t('nav.audit')}</h1>
+
+                <div ref={tableArea} className="min-h-0 flex-1">
+                    {events.data.length === 0 ? (
+                        <EmptyState
+                            icon={ScrollText}
+                            title={t('admin.no_results')}
+                        />
+                    ) : (
+                        <DataTableFrame className="examis-data-table--plain max-h-full">
+                            <table className="min-w-[56rem] [&_td]:whitespace-nowrap">
+                                <caption className="sr-only">
+                                    {t('nav.audit')}
+                                </caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">{t('audit.time')}</th>
+                                        <th scope="col">{t('audit.action')}</th>
+                                        <th scope="col">{t('audit.actor')}</th>
+                                        <th scope="col">
+                                            {t('audit.subject')}
+                                        </th>
+                                        <th scope="col">
+                                            {t('audit.details')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {events.data.map((event) => (
+                                        <tr key={event.id}>
+                                            <td className="text-muted-foreground">
+                                                {formatDateTime(
+                                                    event.created_at,
+                                                    locale,
+                                                )}
+                                            </td>
+                                            <td
+                                                className="font-mono text-xs"
+                                                dir="ltr"
+                                            >
+                                                <Highlight
+                                                    text={event.action}
+                                                    query={filters.q}
+                                                />
+                                            </td>
+                                            <td dir="ltr">
+                                                {event.actor ? (
+                                                    <>
+                                                        <Highlight
+                                                            text={
+                                                                event.actor
+                                                                    .username
+                                                            }
+                                                            query={filters.q}
+                                                        />{' '}
+                                                        <span className="text-muted-foreground">
+                                                            #{event.actor.id}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    '—'
+                                                )}
+                                            </td>
+                                            <td dir="ltr">
+                                                {event.subject_type
+                                                    ? `${event.subject_type} #${event.subject_id}`
+                                                    : '—'}
+                                            </td>
+                                            <td
+                                                className="max-w-md truncate font-mono text-xs text-muted-foreground"
+                                                dir="ltr"
+                                                title={
+                                                    event.metadata
+                                                        ? JSON.stringify(
+                                                              event.metadata,
+                                                          )
+                                                        : undefined
+                                                }
+                                            >
+                                                {event.ip_address}{' '}
+                                                {event.metadata
+                                                    ? JSON.stringify(
+                                                          event.metadata,
+                                                      )
+                                                    : ''}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </DataTableFrame>
+                    )}
+                </div>
 
                 <Pagination
                     prev={events.prev_page_url}
                     next={events.next_page_url}
                 />
-            </PageContainer>
+            </div>
         </>
     );
 }

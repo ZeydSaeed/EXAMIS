@@ -40,7 +40,7 @@ class ReportController extends Controller
             'periods' => ExamPeriod::query()->latest('opens_at')->get(['id', 'name_ar', 'name_en'])
                 ->map(fn (ExamPeriod $period): array => ['id' => $period->id, 'name' => $period->localizedName()]),
             'byStatus' => $grouped('status')->map(fn (array $row): array => [...$row, 'label' => ApplicationStatus::from($row['code'])->label()]),
-            'byGovernorate' => $grouped('governorate_code')->map(fn (array $row): array => [...$row, 'label' => $referenceData->name(ReferenceType::Governorate, $row['code'])]),
+            'bySpecialization' => $grouped('category_code')->map(fn (array $row): array => [...$row, 'label' => $referenceData->name(ReferenceType::Category, $row['code'])]),
             'byBranch' => $grouped('branch_code')->map(fn (array $row): array => [...$row, 'label' => $referenceData->name(ReferenceType::Branch, $row['code'])]),
             'drafts' => Application::query()->where('exam_period_id', $periodId)->where('status', ApplicationStatus::Draft)->count(),
         ]);
@@ -64,7 +64,11 @@ class ReportController extends Controller
             }
 
             fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['reference_number', 'status', 'full_name_ar', 'gender', 'birth_date', 'governorate', 'branch', 'category', 'submitted_at'], escape: '');
+            fputcsv($output, [
+                'reference_number', 'status', 'full_name_ar', 'surname', 'mother_name_ar', 'gender', 'birth_date', 'phone',
+                'district', 'mahalla', 'alley', 'house_number', 'last_school', 'intermediate_school', 'last_grade',
+                'failed_years', 'left_years', 'branch', 'specialization', 'submitted_at',
+            ], escape: '');
 
             Application::query()
                 ->where('exam_period_id', $period->id)
@@ -76,9 +80,20 @@ class ReportController extends Controller
                         (string) $application->reference_number,
                         $application->status->value,
                         (string) $application->full_name_ar,
+                        (string) $application->surname,
+                        (string) $application->mother_name_ar,
                         (string) $application->gender?->value,
                         (string) $application->birth_date?->format('Y-m-d'),
-                        (string) $referenceData->name(ReferenceType::Governorate, $application->governorate_code),
+                        (string) $application->phone,
+                        (string) $application->district,
+                        (string) $application->mahalla,
+                        (string) $application->alley,
+                        (string) $application->house_number,
+                        (string) $application->school_name,
+                        (string) $application->intermediate_school_name,
+                        (string) $application->last_grade,
+                        (string) $application->failed_years,
+                        (string) $application->left_years,
                         (string) $referenceData->name(ReferenceType::Branch, $application->branch_code),
                         (string) $referenceData->name(ReferenceType::Category, $application->category_code),
                         (string) $application->submitted_at?->toIso8601String(),

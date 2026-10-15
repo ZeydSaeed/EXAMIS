@@ -35,7 +35,9 @@ export default function AuthCardLayout({
                     <Card className="rounded-xl">
                         <CardHeader className="px-10 pt-8 pb-0 text-center">
                             <CardTitle className="text-xl">{title}</CardTitle>
-                            <CardDescription>{description}</CardDescription>
+                            {description && (
+                                <CardDescription>{description}</CardDescription>
+                            )}
                         </CardHeader>
                         <CardContent className="px-10 py-8">
                             {children}

@@ -29,6 +29,22 @@ function fold(text: string): { folded: string; origin: number[] } {
 }
 
 /**
+ * Whether every word of `query` appears in `text`, with the same folding as
+ * `Highlight`. An empty query matches everything.
+ */
+export function matchesQuery(
+    text: string | null | undefined,
+    query: string | null | undefined,
+): boolean {
+    const { folded } = fold(text ?? '');
+
+    return fold(query ?? '')
+        .folded.split(/\s+/)
+        .filter(Boolean)
+        .every((word) => folded.includes(word));
+}
+
+/**
  * Marks every word of `query` found in `text`, ignoring case, Arabic letter
  * variants and diacritics.
  */

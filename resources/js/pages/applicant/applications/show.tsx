@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
@@ -198,50 +199,24 @@ export default function ShowApplication({
                                 {t('applicant.summary')}
                             </h2>
                             <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                                {(
+                                {[
+                                    ...applicationSummary(application, t),
                                     [
-                                        [
-                                            'fields.full_name_ar',
-                                            application.form.full_name_ar,
-                                        ],
-                                        [
-                                            'fields.mother_name_ar',
-                                            application.form.mother_name_ar,
-                                        ],
-                                        [
-                                            'fields.birth_date',
-                                            application.form.birth_date,
-                                        ],
-                                        [
-                                            'fields.governorate',
-                                            application.labels.governorate,
-                                        ],
-                                        [
-                                            'fields.school_name',
-                                            application.form.school_name,
-                                        ],
-                                        [
-                                            'fields.branch',
-                                            application.labels.branch,
-                                        ],
-                                        [
-                                            'fields.category',
-                                            application.labels.category,
-                                        ],
-                                        [
-                                            'applications.submitted_at',
-                                            formatDateTime(
-                                                application.submitted_at,
-                                                locale,
-                                            ),
-                                        ],
-                                    ] as const
-                                ).map(([label, value]) => (
+                                        t('applications.submitted_at'),
+                                        formatDateTime(
+                                            application.submitted_at,
+                                            locale,
+                                        ),
+                                    ] as const,
+                                ].map(([label, value]) => (
                                     <div key={label}>
                                         <dt className="text-muted-foreground">
-                                            {t(label)}
+                                            {label}
                                         </dt>
-                                        <dd className="font-medium" dir="auto">
+                                        <dd
+                                            className="font-medium whitespace-pre-line"
+                                            dir="auto"
+                                        >
                                             {value ?? '—'}
                                         </dd>
                                     </div>

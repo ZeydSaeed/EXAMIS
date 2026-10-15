@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\RoleAssignment;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,13 +19,31 @@ class StaffUserController extends Controller
 {
     use ProfileValidationRules;
 
-    public function index(): Response
+    /**
+     * The search term matches part of the name, username or email.
+     */
+    public function index(Request $request): Response
     {
+        $filters = $request->validate([
+            'role' => ['nullable', Rule::enum(Role::class)],
+            'state' => ['nullable', Rule::in(['active', 'inactive'])],
+            'q' => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'between:5,100'],
+        ]);
+
         $staff = User::query()
             ->staff()
             ->with('roleAssignments')
+            ->when($filters['role'] ?? null, fn (Builder $query, string $role) => $query->whereHas('roleAssignments', fn (Builder $query) => $query->where('role', $role)))
+            ->when(($filters['state'] ?? null) === 'active', fn (Builder $query) => $query->whereNull('deactivated_at'))
+            ->when(($filters['state'] ?? null) === 'inactive', fn (Builder $query) => $query->whereNotNull('deactivated_at'))
+            ->when($filters['q'] ?? null, fn (Builder $query, string $term) => $query->where(
+                fn (Builder $query) => collect(['name', 'username', 'email'])
+                    ->each(fn (string $column) => $query->orWhereLike($column, '%'.trim($term).'%')),
+            ))
             ->orderBy('name')
-            ->paginate(25)
+            ->paginate((int) ($filters['per_page'] ?? 25))
+            ->withQueryString()
             ->through(fn (User $user): array => [
                 'id' => $user->id,
                 'username' => $user->username,
@@ -38,6 +57,7 @@ class StaffUserController extends Controller
 
         return Inertia::render('admin/users/index', [
             'staff' => $staff,
+            'filters' => $filters,
             'roles' => collect(Role::cases())->map(fn (Role $role): array => ['value' => $role->value, 'label' => $role->label()]),
         ]);
     }

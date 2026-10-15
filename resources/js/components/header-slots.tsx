@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-type SlotName = 'start' | 'center';
+type SlotName = 'start' | 'center' | 'end';
 
 type HeaderSlotsValue = {
     targets: Partial<Record<SlotName, HTMLElement | null>>;
@@ -29,7 +29,11 @@ export function HeaderSlotsProvider({ children }: { children: ReactNode }) {
                         : { ...current, [name]: element },
                 );
 
-        return { start: make('start'), center: make('center') };
+        return {
+            start: make('start'),
+            center: make('center'),
+            end: make('end'),
+        };
     }, []);
 
     const value = useMemo<HeaderSlotsValue>(

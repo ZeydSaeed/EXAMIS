@@ -51,7 +51,7 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('dashboard', Applicant\DashboardController::class)->name('dashboard');
 
     Route::middleware('throttle:application-writes')->group(function () {
@@ -81,7 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified', 'can:admin.access', 'staff.2fa'])
+Route::middleware(['auth', 'can:admin.access', 'staff.2fa'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

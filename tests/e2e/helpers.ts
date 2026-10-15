@@ -72,28 +72,46 @@ export async function logout(page: Page): Promise<void> {
  * required document, ending on the review step.
  */
 export async function completeApplicationForm(page: Page): Promise<void> {
-    await page.locator('#full_name_ar').fill('سارة علي حسين الجبوري');
+    await page.locator('#full_name_ar').fill('سارة علي حسين كاظم');
+    await page.locator('#surname').fill('الجبوري');
     await page.locator('#mother_name_ar').fill('زينب كاظم جواد');
-    await page.locator('#full_name_en').fill('Sara Ali Hussein');
     await page.locator('#birth_date').fill(BIRTH_DATE);
     await page.locator('#gender').selectOption('female');
     await page.locator('#national_id_number').fill('199812345678');
     await page.getByTestId('next-step').click();
 
-    await expect(page.locator('#phone')).toBeVisible();
+    await expect(page.locator('#district')).toBeVisible();
+    await page.locator('#district').fill('حي الحسين');
+    await page.locator('#mahalla').fill('630');
+    await page.locator('#alley').fill('44');
+    await page.locator('#house_number').fill('164');
     await page.locator('#phone').fill('07701234567');
-    await page.locator('#governorate_code').selectOption('BGD');
     await page.getByTestId('next-step').click();
 
     await expect(page.locator('#school_name')).toBeVisible();
     await page.locator('#school_name').fill('إعدادية الفردوس للبنات');
-    await page.locator('#branch_code').selectOption('SCI');
-    await page.locator('#category_code').selectOption('EXTERNAL');
+    await page
+        .locator('#intermediate_school_name')
+        .fill('متوسطة الكوثر للبنات');
+    await page.locator('#last_grade').fill('الخامس الإعدادي');
+    await page.locator('#failed_years').fill('0');
+    await page.locator('#left_years').fill('1');
+    await page.locator('#branch_code').selectOption('COM');
+    await page.locator('#category_code').selectOption('COM_ACC');
+    await page.getByTestId('add-issued-document').click();
+    await page.locator('#issued_documents_0_number').fill('1452');
+    await page.locator('#issued_documents_0_date').fill('2025-09-01');
+    await page
+        .locator('#issued_documents_0_recipient')
+        .fill('مديرية تربية كربلاء');
     await page.getByTestId('next-step').click();
 
-    await uploadDocument(page, 'personal_photo', pngFile());
+    await uploadDocument(page, 'participation_request', pdfFile('request.pdf'));
     await uploadDocument(page, 'national_id', pdfFile('id.pdf'));
-    await uploadDocument(page, 'school_certificate', pdfFile('school.pdf'));
+    await uploadDocument(page, 'father_id', pdfFile('father.pdf'));
+    await uploadDocument(page, 'mother_id', pdfFile('mother.pdf'));
+    await uploadDocument(page, 'residence_card', pdfFile('residence.pdf'));
+    await uploadDocument(page, 'personal_photo', pngFile());
 
     await page.getByTestId('next-step').click();
     await expect(page.getByTestId('submit-application')).toBeVisible();

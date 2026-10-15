@@ -10,6 +10,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import admin from '@/routes/admin';
 import applications from '@/routes/applications';
@@ -130,23 +131,7 @@ export default function AdminApplicationShow({
             document,
         ]),
     );
-    const fields = [
-        ['fields.full_name_ar', application.form.full_name_ar],
-        ['fields.full_name_en', application.form.full_name_en],
-        ['fields.mother_name_ar', application.form.mother_name_ar],
-        ['fields.birth_date', application.form.birth_date],
-        ['fields.gender', application.labels.gender],
-        ['fields.national_id_number', application.form.national_id_number],
-        ['fields.phone', application.form.phone],
-        ['fields.contact_email', application.form.contact_email],
-        ['fields.governorate', application.labels.governorate],
-        ['fields.directorate', application.labels.directorate],
-        ['fields.address', application.form.address],
-        ['fields.school_name', application.form.school_name],
-        ['fields.branch', application.labels.branch],
-        ['fields.category', application.labels.category],
-        ['fields.previous_exam_year', application.form.previous_exam_year],
-    ] as const;
+    const fields = applicationSummary(application, t);
 
     return (
         <>
@@ -157,7 +142,14 @@ export default function AdminApplicationShow({
             />
             <PageContainer>
                 <PageHeader
-                    title={application.form.full_name_ar ?? '—'}
+                    title={
+                        [
+                            application.form.full_name_ar,
+                            application.form.surname,
+                        ]
+                            .filter(Boolean)
+                            .join(' ') || '—'
+                    }
                     description={
                         <>
                             <bdi
@@ -225,9 +217,12 @@ export default function AdminApplicationShow({
                                 {fields.map(([label, value]) => (
                                     <div key={label}>
                                         <dt className="text-muted-foreground">
-                                            {t(label)}
+                                            {label}
                                         </dt>
-                                        <dd className="font-medium" dir="auto">
+                                        <dd
+                                            className="font-medium whitespace-pre-line"
+                                            dir="auto"
+                                        >
                                             {value ?? '—'}
                                         </dd>
                                     </div>

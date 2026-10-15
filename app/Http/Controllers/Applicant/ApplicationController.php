@@ -72,8 +72,6 @@ class ApplicationController extends Controller
             'missing' => $application->missingRequirements(),
             'instructions' => $period->localizedInstructions(),
             'options' => [
-                'governorates' => $referenceData->items(ReferenceType::Governorate),
-                'directorates' => $referenceData->items(ReferenceType::Directorate),
                 'branches' => $this->eligible($referenceData->items(ReferenceType::Branch), $period->eligible_branch_codes),
                 'categories' => $this->eligible($referenceData->items(ReferenceType::Category), $period->eligible_category_codes),
             ],

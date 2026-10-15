@@ -2,6 +2,7 @@
 
 use App\Enums\AccountType;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -27,6 +28,20 @@ test('new users can register', function () {
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
     expect(User::query()->where('username', 'test.user')->sole()->account_type)->toBe(AccountType::Applicant);
+});
+
+test('a new applicant goes straight to the dashboard and is shown their username', function () {
+    $this->post(route('register.store'), [
+        'username' => 'new.student',
+        'name' => 'New Student',
+        'email' => 'student@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'terms' => '1',
+    ])->assertRedirect(route('dashboard', absolute: false))
+        ->assertInertiaFlash('toast.message', __('auth.registered', ['username' => 'new.student']));
+
+    $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->component('applicant/dashboard'));
 });
 
 test('several accounts may share one email address', function () {

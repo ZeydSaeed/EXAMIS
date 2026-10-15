@@ -21,7 +21,7 @@ use RuntimeException;
 /**
  * 100 synthetic applicants covering every status, the reopen and withdraw
  * paths, every assignee option (reviewer, supervisor, unassigned) and every
- * governorate, branch, category and gender. Created through the real Actions
+ * branch, specialization and gender. Created through the real Actions
  * so history, numbering and audit rows look like production, with submissions
  * spread over the days since the demo period opened. For demos and restore
  * drills only; never runs in production.
@@ -90,15 +90,25 @@ class DemoApplicationsSeeder extends Seeder
         ['الكعبي', 'Al-Kaabi'], ['الساعدي', 'Al-Saadi'], ['البياتي', 'Al-Bayati'], ['العزاوي', 'Al-Azzawi'], ['الزبيدي', 'Al-Zubaidi'],
     ];
 
-    private const GOVERNORATES = ['BGD', 'BSR', 'NIN', 'ERB', 'NJF', 'KRB', 'BBL', 'DIY', 'ANB', 'DHQ', 'QAD', 'MUT', 'MYS', 'WAS', 'SAL', 'KRK', 'SUL', 'DUH'];
+    private const DISTRICTS = ['حي الحسين', 'حي العباس', 'حي الأسرة', 'حي الملحق', 'حي رمضان', 'حي النقيب', 'حي البلدية', 'حي المعلمين'];
 
-    private const BRANCHES = ['SCI', 'LIT', 'APP', 'ISL'];
-
-    private const CATEGORIES = ['EXTERNAL', 'REPEATER', 'IMPROVEMENT'];
+    /**
+     * Specialization codes with their branch (ReferenceDataSeeder).
+     *
+     * @var list<array{string, string}>
+     */
+    private const SPECIALIZATIONS = [
+        ['COM_ADM', 'COM'], ['COM_ACC', 'COM'], ['APA_HOM', 'APA'], ['APA_DEC', 'APA'], ['AGR_GEN', 'AGR'], ['CIT_HW', 'CIT'],
+        ['IND_ELC', 'IND'], ['IND_ECT', 'IND'], ['IND_MEC', 'IND'], ['IND_CON', 'IND'], ['IND_PET', 'IND'], ['IND_HVAC', 'IND'],
+    ];
 
     private const SCHOOLS = [
         'إعدادية النجاح', 'إعدادية الرافدين', 'ثانوية الفراهيدي', 'إعدادية المتنبي', 'ثانوية بلاد الرافدين', 'إعدادية الخوارزمي',
     ];
+
+    private const INTERMEDIATE_SCHOOLS = ['متوسطة الفرات', 'متوسطة الطف', 'متوسطة الكوثر', 'متوسطة الإمام الحسين'];
+
+    private const GRADES = ['الثالث المتوسط', 'الرابع الإعدادي', 'الخامس الإعدادي', 'السادس الإعدادي'];
 
     private CarbonInterface $clock;
 
@@ -192,14 +202,18 @@ class DemoApplicationsSeeder extends Seeder
             'user_id' => $applicant->id,
             'exam_period_id' => $period->id,
             'full_name_ar' => $nameAr,
-            'full_name_en' => "{$first[1]} {$father[1]} {$grandfather[1]} {$family[1]}",
+            'surname' => $family[0],
             'mother_name_ar' => self::FEMALE_NAMES[($index * 5) % 12][0].' '.self::GRANDFATHER_NAMES[($index + 4) % 10][0],
             'gender' => $gender,
             'birth_date' => Carbon::create(2000, 1, 1)->addDays(($index * 97) % 2500)->toDateString(),
-            'governorate_code' => self::GOVERNORATES[$index % count(self::GOVERNORATES)],
+            'district' => self::DISTRICTS[$index % count(self::DISTRICTS)],
             'school_name' => self::SCHOOLS[$index % count(self::SCHOOLS)].($gender === Gender::Male ? ' للبنين' : ' للبنات'),
-            'branch_code' => self::BRANCHES[intdiv($index, 3) % count(self::BRANCHES)],
-            'category_code' => self::CATEGORIES[intdiv($index, 5) % count(self::CATEGORIES)],
+            'intermediate_school_name' => self::INTERMEDIATE_SCHOOLS[$index % count(self::INTERMEDIATE_SCHOOLS)].($gender === Gender::Male ? ' للبنين' : ' للبنات'),
+            'last_grade' => self::GRADES[$index % count(self::GRADES)],
+            'failed_years' => $index % 3,
+            'left_years' => intdiv($index, 3) % 4,
+            'branch_code' => self::SPECIALIZATIONS[$index % count(self::SPECIALIZATIONS)][1],
+            'category_code' => self::SPECIALIZATIONS[$index % count(self::SPECIALIZATIONS)][0],
         ]);
 
         foreach ($period->documentTypes as $type) {

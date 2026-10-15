@@ -21,7 +21,6 @@ export default function Register({ passwordRules }: Props) {
 
     setLayoutProps({
         title: t('auth.register_title'),
-        description: t('auth.register_description'),
     });
 
     return (
@@ -86,14 +85,7 @@ export default function Register({ passwordRules }: Props) {
                                     required
                                     tabIndex={3}
                                     autoComplete="email"
-                                    aria-describedby="email-hint"
                                 />
-                                <p
-                                    id="email-hint"
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    {t('auth.email_shared_hint')}
-                                </p>
                                 <InputError message={errors.email} />
                             </div>
 

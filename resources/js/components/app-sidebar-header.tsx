@@ -26,6 +26,10 @@ export function AppSidebarHeader({
                 className="flex min-w-0 justify-center empty:hidden"
             />
             <div className="col-start-3 flex min-w-0 items-center justify-end gap-2">
+                <HeaderSlotTarget
+                    name="end"
+                    className="flex shrink-0 items-center gap-2 empty:hidden"
+                />
                 <LanguageSwitcher className="text-white hover:bg-white/10 hover:text-white" />
                 <HistoryNav className="border-s border-white/20 ps-2" />
                 <ExamisMark className="h-9 w-auto shrink-0 border-s border-white/20 ps-3" />
