@@ -2,7 +2,6 @@ import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import {
     CheckCircle2,
     CircleSlash,
-    ClipboardList,
     FileEdit,
     RotateCcw,
     Search,
@@ -91,7 +90,7 @@ const statusAppearance: Partial<
     },
 };
 
-/** Queue cards are not statuses, so they use the brand colours. */
+/** The queue card is not a status, so they use the brand colours. */
 const queueAppearance: Appearance = {
     fill: 'bg-primary dark:bg-(--examis-pearl)',
     avatar: 'text-primary-foreground ring-primary/25 dark:text-(--examis-navy) dark:ring-(--examis-pearl)/25',
@@ -151,20 +150,16 @@ export default function AdminDashboard({ statusCounts, myQueue }: Props) {
         ],
     });
 
-    const awaiting = statusCounts
-        .filter(
-            (item) =>
-                item.status === 'submitted' || item.status === 'resubmitted',
-        )
-        .reduce((sum, item) => sum + item.count, 0);
-
-    /** Status cards follow the bar's order; the queue cards come last. */
+    /**
+     * Status cards follow the bar's order; "under review" is shown only in
+     * the bar (its work is the "my queue" card). The queue card comes last.
+     */
     const cards: Card[] = [
         ...statusOrder.flatMap((status) => {
             const item = statusCounts.find((row) => row.status === status);
             const appearance = statusAppearance[status];
 
-            return item && appearance
+            return item && appearance && status !== 'under_review'
                 ? [
                       {
                           key: status,
@@ -179,14 +174,6 @@ export default function AdminDashboard({ statusCounts, myQueue }: Props) {
                   ]
                 : [];
         }),
-        {
-            key: 'awaiting',
-            label: t('admin.awaiting_review'),
-            count: awaiting,
-            icon: ClipboardList,
-            appearance: queueAppearance,
-            href: admin.applications.index({ query: { status: 'submitted' } }),
-        },
         {
             key: 'my-queue',
             label: t('admin.my_queue'),

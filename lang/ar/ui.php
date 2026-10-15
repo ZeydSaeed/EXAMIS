@@ -265,7 +265,6 @@ return [
     'admin' => [
         'dashboard_title' => 'لوحة الإدارة',
         'dashboard_description' => 'نظرة عامة على الطلبات التي يحق لك الاطلاع عليها.',
-        'awaiting_review' => 'بانتظار التدقيق',
         'my_queue' => 'قيد تدقيقي',
         'by_status' => 'حسب الحالة',
         'search' => 'بحث',

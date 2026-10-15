@@ -265,7 +265,6 @@ return [
     'admin' => [
         'dashboard_title' => 'Admin dashboard',
         'dashboard_description' => 'Overview of the applications you are allowed to see.',
-        'awaiting_review' => 'Awaiting review',
         'my_queue' => 'In my review',
         'by_status' => 'By status',
         'search' => 'Search',

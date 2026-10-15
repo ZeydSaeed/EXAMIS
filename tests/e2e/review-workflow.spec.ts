@@ -94,7 +94,7 @@ test('the header arrows move back and forward through page history', async ({
     await expect(page).toHaveURL(/\/admin\/home$/);
     await page.goto('/admin');
 
-    await page.getByTestId('stat-awaiting').click();
+    await page.getByTestId('stat-submitted').click();
     await expect(page).toHaveURL(/\/admin\/applications/);
 
     await page.getByTestId('history-back').click();
