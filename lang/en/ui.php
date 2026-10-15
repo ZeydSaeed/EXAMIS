@@ -19,8 +19,12 @@ return [
         'processing' => 'Working…',
         'reload' => 'Reload',
         'save' => 'Save',
-        'showing' => 'Showing :from–:to of :total',
         'skip_to_content' => 'Skip to content',
+    ],
+
+    'brand' => [
+        'name_en' => 'EXAMIS — External Examination Application System',
+        'name_ar' => 'منصة التقديم الإلكتروني للامتحانات الخارجية',
     ],
 
     'nav' => [
@@ -264,10 +268,10 @@ return [
         'awaiting_review' => 'Awaiting review',
         'my_queue' => 'In my review',
         'by_status' => 'By status',
-        'applications_description' => 'Results: :total',
         'search' => 'Search',
-        'search_placeholder' => 'Reference, ID number or start of name',
-        'assignment' => 'Assignment',
+        'search_placeholder' => 'Search by name or reference number...',
+        'clear_search' => 'Clear search',
+        'remove_filter' => 'Remove filter',
         'assigned_to_me' => 'Assigned to me',
         'unassigned' => 'Unassigned',
         'assignee' => 'Responsible reviewer',

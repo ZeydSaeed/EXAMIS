@@ -8,7 +8,7 @@
  * submissions — always goes to the network and is never stored. When a
  * navigation fails offline, the static offline page is shown instead.
  */
-const VERSION = 'examis-v1';
+const VERSION = 'examis-v3';
 const STATIC_CACHE = `${VERSION}-static`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const PRECACHE = [

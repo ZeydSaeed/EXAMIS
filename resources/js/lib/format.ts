@@ -45,3 +45,10 @@ export function formatFileSize(bytes: number, locale: string): string {
 
     return `${formatter.format(bytes / (1024 * 1024))} MB`;
 }
+
+export function formatPercent(fraction: number, locale: string): string {
+    return new Intl.NumberFormat(intlLocale(locale), {
+        style: 'percent',
+        maximumFractionDigits: 0,
+    }).format(fraction);
+}

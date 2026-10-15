@@ -160,7 +160,11 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            className="h-16 justify-center group-data-[collapsible=icon]:h-8!"
+                        >
                             <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>

@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { ExamisMark } from '@/components/examis/examis-mark';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { NetworkStatus } from '@/components/network-status';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
@@ -46,7 +47,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                         className="flex min-w-0 items-center gap-2 text-primary-foreground"
                     >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--sis-button-radius)] bg-[var(--sis-oxford)] text-primary-foreground">
-                            <AppLogoIcon className="size-6 fill-current" />
+                            <AppLogoIcon className="size-6" />
                         </span>
                         <span className="grid min-w-0 leading-tight">
                             <span className="truncate font-semibold">
@@ -103,6 +104,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </>
                         )}
+                        <ExamisMark className="ms-1 h-9 w-auto shrink-0" />
                     </nav>
                 </div>
             </header>

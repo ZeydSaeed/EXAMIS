@@ -106,6 +106,34 @@ it('finds applications by reference number', function () {
         ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1)->where('applications.data.0.uuid', $target->uuid));
 });
 
+it('matches every searched word at the start of a name word, ignoring Arabic letter variants', function () {
+    $target = Application::factory()->submitted()->create(['full_name_ar' => 'أحمد محمد علي حسن']);
+    Application::factory()->submitted()->create(['full_name_ar' => 'أحمد خالد سالم']);
+    Application::factory()->submitted()->create(['full_name_ar' => 'سعيد عليان']);
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['q' => 'احمد عل']))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1)->where('applications.data.0.uuid', $target->uuid));
+});
+
+it('finds applications by part of the reference number', function () {
+    $target = Application::factory()->submitted()->create();
+    Application::factory()->submitted()->create();
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['q' => substr((string) $target->reference_number, -6)]))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.uuid', $target->uuid));
+});
+
+it('pages applications by the requested page size within bounds', function () {
+    Application::factory()->submitted()->count(7)->create();
+    $supervisor = staffWith(Role::Supervisor);
+
+    $this->actingAs($supervisor)->get(route('admin.applications.index', ['per_page' => 5, 'page' => 2]))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.per_page', 5)->count('applications.data', 2));
+
+    $this->actingAs($supervisor)->get(route('admin.applications.index', ['per_page' => 1000]))
+        ->assertSessionHasErrors('per_page');
+});
+
 it('treats search input as data, not SQL', function () {
     Application::factory()->submitted()->create();
 

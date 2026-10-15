@@ -19,8 +19,12 @@ return [
         'processing' => 'جارٍ التنفيذ…',
         'reload' => 'إعادة تحميل',
         'save' => 'حفظ',
-        'showing' => 'عرض :from–:to من :total',
         'skip_to_content' => 'انتقل إلى المحتوى',
+    ],
+
+    'brand' => [
+        'name_en' => 'EXAMIS — External Examination Application System',
+        'name_ar' => 'منصة التقديم الإلكتروني للامتحانات الخارجية',
     ],
 
     'nav' => [
@@ -264,10 +268,10 @@ return [
         'awaiting_review' => 'بانتظار التدقيق',
         'my_queue' => 'قيد تدقيقي',
         'by_status' => 'حسب الحالة',
-        'applications_description' => 'عدد النتائج: :total',
         'search' => 'بحث',
-        'search_placeholder' => 'رقم الطلب أو رقم البطاقة أو بداية الاسم',
-        'assignment' => 'الإسناد',
+        'search_placeholder' => 'ابحث بالاسم أو رقم الطلب ...',
+        'clear_search' => 'مسح البحث',
+        'remove_filter' => 'إزالة عامل التصفية',
         'assigned_to_me' => 'المسندة إليّ',
         'unassigned' => 'غير مسندة',
         'assignee' => 'الموظف المسؤول',

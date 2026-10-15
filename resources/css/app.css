@@ -315,6 +315,19 @@
     color: var(--examis-green);
 }
 
+/* Single background for every body row (no zebra striping). */
+.examis-data-table--plain tbody tr:nth-child(even):not(:hover) {
+    background: transparent;
+}
+
+/* Search-term highlight inside table cells. */
+.examis-highlight {
+    border-radius: 0.2rem;
+    background: color-mix(in srgb, var(--examis-gold) 45%, transparent);
+    color: inherit;
+    padding-inline: 0.1rem;
+}
+
 .dark .examis-data-table thead th {
     background: var(--examis-green);
     color: var(--examis-pearl);

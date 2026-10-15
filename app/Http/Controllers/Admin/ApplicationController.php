@@ -23,6 +23,13 @@ class ApplicationController extends Controller
 {
     private const PER_PAGE = 25;
 
+    /**
+     * Arabic letter variants folded to one form so "احمد" also finds "أحمد".
+     *
+     * @var array<string, string>
+     */
+    private const ARABIC_FOLDS = ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ى' => 'ي', 'ة' => 'ه'];
+
     public function index(Request $request): Response
     {
         Gate::authorize('viewAny', Application::class);
@@ -32,6 +39,7 @@ class ApplicationController extends Controller
             'period' => ['nullable', 'integer'],
             'assigned' => ['nullable', Rule::in(['me', 'unassigned'])],
             'q' => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'between:5,100'],
         ]);
 
         $user = $request->user();
@@ -48,7 +56,7 @@ class ApplicationController extends Controller
             // set (DB CHECK); plain column order lets the queue index serve it.
             ->orderBy('submitted_at')
             ->orderBy('id')
-            ->paginate(self::PER_PAGE)
+            ->paginate((int) ($filters['per_page'] ?? self::PER_PAGE))
             ->withQueryString()
             ->through(fn (Application $application): array => [
                 'uuid' => $application->uuid,
@@ -113,19 +121,46 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Exact matches on indexed columns, otherwise a prefix match on the name.
+     * Exact matches on the national ID or reference number, otherwise every
+     * word of the term must start a word of the name (ignoring Arabic letter
+     * variants and diacritics) or appear inside the reference number.
      *
      * @param  Builder<Application>  $query
      */
     private function search(Builder $query, string $term): void
     {
         $term = trim($term);
+        $words = preg_split('/\s+/u', $this->foldArabic($term), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        $query->where(function (Builder $query) use ($term): void {
+        $name = 'full_name_ar';
+        foreach (self::ARABIC_FOLDS as $from => $to) {
+            $name = "REPLACE({$name}, '{$from}', '{$to}')";
+        }
+
+        $query->where(function (Builder $query) use ($term, $words, $name): void {
             $query->where('reference_number', Str::upper($term))
                 ->orWhere('national_id_number', $term)
-                ->orWhere('full_name_ar', 'like', str_replace(['%', '_'], ['\%', '\_'], $term).'%');
+                ->orWhere(function (Builder $query) use ($words, $name): void {
+                    foreach ($words as $word) {
+                        $like = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $word);
+
+                        $query->where(fn (Builder $query) => $query
+                            ->whereRaw("{$name} LIKE ? ESCAPE '!'", [$like.'%'])
+                            ->orWhereRaw("{$name} LIKE ? ESCAPE '!'", ['% '.$like.'%'])
+                            ->orWhereRaw("reference_number LIKE ? ESCAPE '!'", ['%'.Str::upper($like).'%']));
+                    }
+                });
         });
+    }
+
+    /**
+     * Strips Arabic diacritics and tatweel, then folds letter variants.
+     */
+    private function foldArabic(string $text): string
+    {
+        $text = (string) preg_replace('/[\x{064B}-\x{065F}\x{0670}\x{0640}]/u', '', $text);
+
+        return strtr($text, self::ARABIC_FOLDS);
     }
 
     /**

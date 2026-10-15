@@ -33,14 +33,18 @@ export function useTrans() {
             key: string,
             replacements: Record<string, string | number> = {},
         ): string => {
-            let text =
+            const text =
                 lookup(translations as Dictionary | undefined, key) ?? key;
 
-            for (const [name, value] of Object.entries(replacements)) {
-                text = text.replaceAll(`:${name}`, String(value));
-            }
-
-            return text;
+            // One pass over whole placeholder names, so `:to` never eats the
+            // start of `:total`.
+            return text.replace(
+                /:([A-Za-z_]+)/g,
+                (placeholder, name: string) =>
+                    name in replacements
+                        ? String(replacements[name])
+                        : placeholder,
+            );
         },
         [translations],
     );
