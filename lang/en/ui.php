@@ -32,6 +32,7 @@ return [
         'settings' => 'Settings',
         'security' => 'Security',
         'logout' => 'Log out',
+        'staff_home' => 'Home',
         'admin_dashboard' => 'Admin dashboard',
         'applications' => 'Applications',
         'reports' => 'Reports',
@@ -39,6 +40,9 @@ return [
         'content' => 'Portal content',
         'users' => 'Users and roles',
         'audit' => 'Audit log',
+        'previous_page' => 'Previous page',
+        'next_page' => 'Next page',
+        'history' => 'Page history',
         'operations' => 'Operations',
     ],
 

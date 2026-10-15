@@ -61,17 +61,17 @@ CREATE INDEX CONCURRENTLY applications_full_name_ar_trgm ON applications USING g
 
 `EXPLAIN (ANALYZE, BUFFERS)` of the queries the admin screens issue:
 
-| Query | Before | Plan before | After | Plan after |
-| --- | --- | --- | --- | --- |
-| Queue, period + status filter, page 1 | 26.8 ms | Bitmap index `(exam_period_id, status, submitted_at)` + top-N sort | unchanged | same |
-| Paginator count for that filter | 2.1 ms | Index Only Scan | unchanged | same |
-| **Unfiltered queue (supervisor default)** | **194 ms** | Parallel Seq Scan + sort (ordering on expression `submitted_at IS NULL`) | **0.29 ms** (page 200: 4.1 ms) | Index Scan `applications_queue_order_index` |
-| **Reviewer visibility scope** | **88 ms** | BitmapOr + sort of 28k rows | **0.23 ms** | Index Scan `applications_queue_order_index` |
-| **Staff search (reference / ID / name prefix)** | **94 ms** | Parallel Seq Scan (unindexed `LIKE` branch) | **2.6 ms** | BitmapOr of three index scans |
-| Name prefix search | seq scan | — | 1.3 ms | `applications_full_name_ar_prefix_index` (`text_pattern_ops`) |
-| Dashboard counts by status | 42 ms | Seq Scan + HashAggregate | unchanged | acceptable at 100k; cache 60 s if it exceeds ~200 ms at production volume |
-| Report by governorate, one period | 22.6 ms | Bitmap index on period | unchanged | same |
-| Audit viewer page (cursor) | 0.8 ms | Index Scan Backward on PK | unchanged | same |
+| Query                                           | Before     | Plan before                                                              | After                          | Plan after                                                                |
+| ----------------------------------------------- | ---------- | ------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------- |
+| Queue, period + status filter, page 1           | 26.8 ms    | Bitmap index `(exam_period_id, status, submitted_at)` + top-N sort       | unchanged                      | same                                                                      |
+| Paginator count for that filter                 | 2.1 ms     | Index Only Scan                                                          | unchanged                      | same                                                                      |
+| **Unfiltered queue (supervisor default)**       | **194 ms** | Parallel Seq Scan + sort (ordering on expression `submitted_at IS NULL`) | **0.29 ms** (page 200: 4.1 ms) | Index Scan `applications_queue_order_index`                               |
+| **Reviewer visibility scope**                   | **88 ms**  | BitmapOr + sort of 28k rows                                              | **0.23 ms**                    | Index Scan `applications_queue_order_index`                               |
+| **Staff search (reference / ID / name prefix)** | **94 ms**  | Parallel Seq Scan (unindexed `LIKE` branch)                              | **2.6 ms**                     | BitmapOr of three index scans                                             |
+| Name prefix search                              | seq scan   | —                                                                        | 1.3 ms                         | `applications_full_name_ar_prefix_index` (`text_pattern_ops`)             |
+| Dashboard counts by status                      | 42 ms      | Seq Scan + HashAggregate                                                 | unchanged                      | acceptable at 100k; cache 60 s if it exceeds ~200 ms at production volume |
+| Report by governorate, one period               | 22.6 ms    | Bitmap index on period                                                   | unchanged                      | same                                                                      |
+| Audit viewer page (cursor)                      | 0.8 ms     | Index Scan Backward on PK                                                | unchanged                      | same                                                                      |
 
 Fixes shipped in migration `2026_10_14_194309_add_query_indexes_to_applications_table`. The queue no longer orders by `submitted_at IS NULL`, which was redundant because the CHECK constraint guarantees `submitted_at` for non-drafts. Reproduce with `docs/database/explain-checks.sql`.
 

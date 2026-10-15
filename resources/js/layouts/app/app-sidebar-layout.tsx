@@ -15,9 +15,17 @@ export default function AppSidebarLayout({
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
-            <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
+            {/* The shell is pinned to the viewport: the window never scrolls and
+                the header stays put; only an over-long page scrolls inside. */}
+            <AppContent
+                variant="sidebar"
+                className="h-svh min-w-0 overflow-hidden md:h-[calc(100svh-1rem)]"
+            >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <div id="main-content" className="flex flex-1 flex-col">
+                <div
+                    id="main-content"
+                    className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+                >
                     {children}
                 </div>
             </AppContent>

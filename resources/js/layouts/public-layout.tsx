@@ -31,7 +31,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     ] as const;
 
     return (
-        <div className="flex min-h-svh flex-col bg-background">
+        <div className="flex h-svh flex-col overflow-hidden bg-background">
             <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -39,7 +39,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 {t('common.skip_to_content')}
             </a>
 
-            <header className="no-print border-b bg-primary text-primary-foreground">
+            <header className="no-print shrink-0 border-b bg-primary text-primary-foreground">
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
                     <Link
                         href={home()}
@@ -107,42 +107,45 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 </div>
             </header>
 
-            <main id="main-content" className="flex-1">
-                {children}
-            </main>
+            {/* Header pinned; only long content scrolls, never the window. */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+                <main id="main-content" className="flex-[1_0_auto]">
+                    {children}
+                </main>
 
-            <footer className="no-print border-t bg-muted/40">
-                <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-1">
-                        <p className="font-medium">{organization}</p>
-                        <p className="text-muted-foreground">
-                            {t('public.footer_note')}
-                        </p>
-                    </div>
-                    <nav aria-label={t('public.footer_navigation')}>
-                        <ul className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
-                            {footerLinks.map(([slug, label]) => (
-                                <li key={slug}>
+                <footer className="no-print border-t bg-muted/40">
+                    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-1">
+                            <p className="font-medium">{organization}</p>
+                            <p className="text-muted-foreground">
+                                {t('public.footer_note')}
+                            </p>
+                        </div>
+                        <nav aria-label={t('public.footer_navigation')}>
+                            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+                                {footerLinks.map(([slug, label]) => (
+                                    <li key={slug}>
+                                        <Link
+                                            href={pages.show(slug)}
+                                            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                        >
+                                            {label}
+                                        </Link>
+                                    </li>
+                                ))}
+                                <li>
                                     <Link
-                                        href={pages.show(slug)}
+                                        href={track.create()}
                                         className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                     >
-                                        {label}
+                                        {t('public.track_application')}
                                     </Link>
                                 </li>
-                            ))}
-                            <li>
-                                <Link
-                                    href={track.create()}
-                                    className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                                >
-                                    {t('public.track_application')}
-                                </Link>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </footer>
+                            </ul>
+                        </nav>
+                    </div>
+                </footer>
+            </div>
 
             <NetworkStatus />
         </div>

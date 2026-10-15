@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
-use App\Models\ExamPeriod;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,22 +42,9 @@ class DashboardController extends Controller
             ->where('status', ApplicationStatus::UnderReview)
             ->count();
 
-        $periods = ExamPeriod::query()
-            ->whereIn('status', ['open', 'closed'])
-            ->latest('opens_at')
-            ->limit(5)
-            ->get()
-            ->map(fn (ExamPeriod $period): array => [
-                'id' => $period->id,
-                'name' => $period->localizedName(),
-                'status' => $period->status->value,
-                'closes_at' => $period->closes_at->toIso8601String(),
-            ]);
-
         return Inertia::render('admin/dashboard', [
             'statusCounts' => $statusCounts,
             'myQueue' => $myQueue,
-            'periods' => $periods,
         ]);
     }
 }

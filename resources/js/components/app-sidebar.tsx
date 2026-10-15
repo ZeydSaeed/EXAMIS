@@ -6,6 +6,7 @@ import {
     ClipboardList,
     FileText,
     HelpCircle,
+    House,
     LayoutGrid,
     ScrollText,
     ShieldCheck,
@@ -56,6 +57,11 @@ export function AppSidebar() {
     ];
 
     const staffItems: NavItem[] = [
+        {
+            title: t('nav.staff_home'),
+            href: admin.home(),
+            icon: House,
+        },
         {
             title: t('nav.admin_dashboard'),
             href: admin.dashboard(),
@@ -127,7 +133,7 @@ export function AppSidebar() {
     ];
 
     const isStaff = auth.user.account_type === 'staff';
-    const homeHref = isStaff ? admin.dashboard() : dashboard();
+    const homeHref = isStaff ? admin.home() : dashboard();
 
     const footerItems: NavItem[] = isStaff
         ? [

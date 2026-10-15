@@ -25,7 +25,7 @@ it('renders the applicant dashboard with only the applicant\'s own applications'
 });
 
 it('sends staff from the applicant dashboard to the admin area', function () {
-    $this->actingAs(staffWith(Role::Reviewer))->get(route('dashboard'))->assertRedirect(route('admin.dashboard'));
+    $this->actingAs(staffWith(Role::Reviewer))->get(route('dashboard'))->assertRedirect(route('admin.home'));
 });
 
 it('renders the application form with eligible options and what is missing', function () {
@@ -115,7 +115,7 @@ it('treats search input as data, not SQL', function () {
 
 it('renders every admin section for an administrator', function (string $route) {
     $this->actingAs(staffWith(Role::Administrator))->get(route($route))->assertOk();
-})->with(['admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.audit.index', 'admin.operations', 'admin.reports.index']);
+})->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.audit.index', 'admin.operations', 'admin.reports.index']);
 
 it('creates an exam period with its document requirements', function () {
     $type = DocumentType::factory()->create();

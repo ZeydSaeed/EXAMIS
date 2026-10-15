@@ -86,3 +86,20 @@ test('a reviewer cannot see the decision buttons', async ({ page }) => {
     ).toBeVisible();
     await expect(page.getByTestId('transition-accepted')).toHaveCount(0);
 });
+
+test('the header arrows move back and forward through page history', async ({
+    page,
+}) => {
+    await login(page, 'supervisor');
+    await expect(page).toHaveURL(/\/admin\/home$/);
+    await page.goto('/admin');
+
+    await page.getByTestId('stat-awaiting').click();
+    await expect(page).toHaveURL(/\/admin\/applications/);
+
+    await page.getByTestId('history-back').click();
+    await expect(page).toHaveURL(/\/admin$/);
+
+    await page.getByTestId('history-forward').click();
+    await expect(page).toHaveURL(/\/admin\/applications/);
+});

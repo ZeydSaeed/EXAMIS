@@ -14,14 +14,14 @@ class DashboardController extends Controller
 {
     /**
      * Applicant home: their applications plus periods currently open.
-     * Staff are sent to the administration area.
+     * Staff are sent to their home page.
      */
     public function __invoke(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
 
         if ($user->isStaff()) {
-            return to_route('admin.dashboard');
+            return to_route('admin.home');
         }
 
         $applications = $user->applications()

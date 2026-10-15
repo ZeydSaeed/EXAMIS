@@ -67,23 +67,40 @@
 
 :root {
     /* Approved EXAMIS palette */
-    --examis-deep: #355764;
-    --examis-sage: #5a8f7b;
-    --examis-cyan: #81cacf;
-    --examis-sun: #ffea11;
-    --examis-surface: color-mix(in srgb, var(--examis-cyan) 14%, white);
+    --examis-navy: #0b1849;
+    --examis-green: #124d1c;
+    --examis-gold: #e4b028;
+    --examis-pearl: #ebede3;
+    --examis-mint: #eaf9f3;
+    --examis-surface: var(--examis-pearl);
     --examis-card: #ffffff;
 
-    /* Compat aliases used by chrome components */
-    --sis-night: var(--examis-deep);
-    --sis-oxford: var(--examis-deep);
-    --sis-steel: var(--examis-sage);
-    --sis-mist: var(--examis-cyan);
-    --sis-pearl: var(--examis-surface);
-    --sis-hover: color-mix(in srgb, var(--examis-cyan) 55%, white);
-    --sis-ribbon: color-mix(in srgb, var(--examis-cyan) 28%, white);
-    --sis-blush: #e9afa3;
-    --sis-caption: var(--examis-sun);
+    /* Legacy aliases (chrome / welcome still reference these names) */
+    --examis-deep: var(--examis-navy);
+    --examis-sage: var(--examis-green);
+    --examis-cyan: var(--examis-pearl);
+    --examis-sun: var(--examis-gold);
+    --sis-night: var(--examis-navy);
+    --sis-oxford: var(--examis-navy);
+    --sis-steel: var(--examis-green);
+    --sis-mist: color-mix(
+        in srgb,
+        var(--examis-green) 35%,
+        var(--examis-pearl)
+    );
+    --sis-pearl: var(--examis-pearl);
+    --sis-hover: color-mix(
+        in srgb,
+        var(--examis-gold) 28%,
+        var(--examis-pearl)
+    );
+    --sis-ribbon: color-mix(
+        in srgb,
+        var(--examis-gold) 18%,
+        var(--examis-pearl)
+    );
+    --sis-blush: #c45c5c;
+    --sis-caption: var(--examis-gold);
     --sis-button-radius: 0.375rem;
     --sis-field-radius: 0.375rem;
     --sis-surface-radius: 0.5rem;
@@ -91,84 +108,89 @@
     /* Table SSOT — organization matches SIS drafts/data tables */
     --examis-table-radius: 0.65rem;
     --examis-table-line-width: 1px;
-    --examis-table-line-color: var(--examis-deep);
+    --examis-table-line-color: var(--examis-navy);
     --examis-table-line: var(--examis-table-line-width) solid
         var(--examis-table-line-color);
     --examis-table-font-size: 0.875rem;
     --examis-table-header-weight: 700;
     --examis-table-row-h: 2.35rem;
 
-    --background: var(--examis-surface);
-    --foreground: var(--examis-deep);
+    /* Page background for every screen (light mode); cards stay on --card. */
+    --background: var(--examis-mint);
+    --foreground: var(--examis-navy);
     --card: var(--examis-card);
-    --card-foreground: var(--examis-deep);
+    --card-foreground: var(--examis-navy);
     --popover: var(--examis-card);
-    --popover-foreground: var(--examis-deep);
-    --primary: var(--examis-deep);
-    --primary-foreground: #ffffff;
-    --secondary: var(--examis-sage);
-    --secondary-foreground: #ffffff;
-    --muted: color-mix(in srgb, var(--examis-cyan) 32%, white);
-    --muted-foreground: color-mix(in srgb, var(--examis-deep) 72%, black);
-    --accent: var(--examis-cyan);
-    --accent-foreground: var(--examis-deep);
-    --destructive: #c45c5c;
+    --popover-foreground: var(--examis-navy);
+    --primary: var(--examis-navy);
+    --primary-foreground: var(--examis-pearl);
+    --secondary: var(--examis-green);
+    --secondary-foreground: var(--examis-pearl);
+    --muted: color-mix(in srgb, var(--examis-navy) 8%, var(--examis-pearl));
+    --muted-foreground: color-mix(in srgb, var(--examis-navy) 68%, #000000);
+    --accent: var(--examis-gold);
+    --accent-foreground: var(--examis-navy);
+    --destructive: #a33b3b;
     --destructive-foreground: #ffffff;
-    --border: color-mix(in srgb, var(--examis-deep) 22%, white);
-    --input: color-mix(in srgb, var(--examis-cyan) 25%, white);
-    --ring: var(--examis-sage);
-    --success: var(--examis-sage);
-    --warning: color-mix(in srgb, var(--examis-sun) 70%, #b8860b);
-    --info: var(--examis-cyan);
-    --chart-1: var(--examis-deep);
-    --chart-2: var(--examis-sage);
-    --chart-3: var(--examis-cyan);
-    --chart-4: var(--examis-sun);
-    --chart-5: color-mix(in srgb, var(--examis-sage) 50%, var(--examis-deep));
+    --border: color-mix(in srgb, var(--examis-navy) 18%, var(--examis-pearl));
+    --input: color-mix(in srgb, var(--examis-navy) 10%, var(--examis-pearl));
+    --ring: var(--examis-gold);
+    --success: var(--examis-green);
+    --warning: var(--examis-gold);
+    --info: color-mix(in srgb, var(--examis-navy) 55%, var(--examis-green));
+    --chart-1: var(--examis-navy);
+    --chart-2: var(--examis-green);
+    --chart-3: var(--examis-gold);
+    --chart-4: color-mix(in srgb, var(--examis-navy) 40%, var(--examis-pearl));
+    --chart-5: color-mix(in srgb, var(--examis-green) 50%, var(--examis-gold));
     --radius: 0.625rem;
-    --sidebar: var(--examis-deep);
-    --sidebar-foreground: #ffffff;
-    --sidebar-primary: var(--examis-sun);
-    --sidebar-primary-foreground: var(--examis-deep);
-    --sidebar-accent: var(--examis-sage);
-    --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: color-mix(in srgb, var(--examis-deep) 70%, black);
-    --sidebar-ring: var(--examis-cyan);
+    --sidebar: var(--examis-navy);
+    --sidebar-foreground: var(--examis-pearl);
+    --sidebar-primary: var(--examis-gold);
+    --sidebar-primary-foreground: var(--examis-navy);
+    --sidebar-accent: var(--examis-green);
+    --sidebar-accent-foreground: var(--examis-pearl);
+    --sidebar-border: color-mix(in srgb, var(--examis-navy) 75%, #000000);
+    --sidebar-ring: var(--examis-gold);
 }
 
 .dark {
-    --examis-surface: color-mix(in srgb, var(--examis-deep) 88%, black);
-    --examis-card: color-mix(in srgb, var(--examis-deep) 78%, black);
+    --examis-surface: color-mix(in srgb, var(--examis-navy) 92%, #000000);
+    --examis-card: color-mix(in srgb, var(--examis-navy) 82%, #000000);
     --background: var(--examis-surface);
-    --foreground: #f4fbfb;
+    --foreground: var(--examis-pearl);
     --card: var(--examis-card);
-    --card-foreground: #f4fbfb;
+    --card-foreground: var(--examis-pearl);
     --popover: var(--examis-card);
-    --popover-foreground: #f4fbfb;
-    --primary: var(--examis-cyan);
-    --primary-foreground: var(--examis-deep);
-    --secondary: var(--examis-sage);
-    --secondary-foreground: #ffffff;
-    --muted: color-mix(in srgb, var(--examis-deep) 70%, black);
-    --muted-foreground: color-mix(in srgb, var(--examis-cyan) 70%, white);
-    --accent: var(--examis-sage);
-    --accent-foreground: #ffffff;
+    --popover-foreground: var(--examis-pearl);
+    --primary: var(--examis-gold);
+    --primary-foreground: var(--examis-navy);
+    --secondary: var(--examis-green);
+    --secondary-foreground: var(--examis-pearl);
+    --muted: color-mix(in srgb, var(--examis-navy) 70%, #000000);
+    --muted-foreground: color-mix(
+        in srgb,
+        var(--examis-pearl) 75%,
+        transparent
+    );
+    --accent: var(--examis-green);
+    --accent-foreground: var(--examis-pearl);
     --destructive: #e07a7a;
     --destructive-foreground: #1a1010;
-    --border: color-mix(in srgb, var(--examis-cyan) 35%, transparent);
-    --input: color-mix(in srgb, var(--examis-deep) 65%, black);
-    --ring: var(--examis-sun);
-    --success: #7bc4a4;
-    --warning: var(--examis-sun);
-    --info: var(--examis-cyan);
-    --sidebar: color-mix(in srgb, var(--examis-deep) 92%, black);
-    --sidebar-foreground: #f4fbfb;
-    --sidebar-primary: var(--examis-sun);
-    --sidebar-primary-foreground: var(--examis-deep);
-    --sidebar-accent: var(--examis-sage);
-    --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: color-mix(in srgb, var(--examis-cyan) 25%, transparent);
-    --sidebar-ring: var(--examis-cyan);
+    --border: color-mix(in srgb, var(--examis-pearl) 22%, transparent);
+    --input: color-mix(in srgb, var(--examis-navy) 70%, #000000);
+    --ring: var(--examis-gold);
+    --success: #3d9a4a;
+    --warning: var(--examis-gold);
+    --info: color-mix(in srgb, var(--examis-gold) 40%, var(--examis-pearl));
+    --sidebar: color-mix(in srgb, var(--examis-navy) 95%, #000000);
+    --sidebar-foreground: var(--examis-pearl);
+    --sidebar-primary: var(--examis-gold);
+    --sidebar-primary-foreground: var(--examis-navy);
+    --sidebar-accent: var(--examis-green);
+    --sidebar-accent-foreground: var(--examis-pearl);
+    --sidebar-border: color-mix(in srgb, var(--examis-pearl) 18%, transparent);
+    --sidebar-ring: var(--examis-gold);
 }
 
 @layer base {
@@ -240,8 +262,8 @@
     top: 0;
     z-index: 2;
     height: var(--examis-table-row-h);
-    background: var(--examis-deep);
-    color: #ffffff;
+    background: var(--examis-navy);
+    color: var(--examis-pearl);
     font-weight: var(--examis-table-header-weight);
     white-space: nowrap;
     box-shadow: none;
@@ -270,36 +292,36 @@
 }
 
 .examis-data-table tbody tr:nth-child(even) {
-    background: color-mix(in srgb, var(--examis-cyan) 14%, var(--card));
+    background: color-mix(in srgb, var(--examis-pearl) 70%, var(--card));
 }
 
 .examis-data-table tbody tr:hover {
-    background: color-mix(in srgb, var(--examis-cyan) 32%, var(--card));
+    background: color-mix(in srgb, var(--examis-gold) 22%, var(--card));
 }
 
 .examis-data-table tbody tr:focus-visible {
-    outline: 2px solid var(--examis-sun);
+    outline: 2px solid var(--examis-gold);
     outline-offset: -2px;
 }
 
 .examis-data-table a {
-    color: var(--examis-deep);
+    color: var(--examis-navy);
     font-weight: 600;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
 }
 
 .examis-data-table a:hover {
-    color: var(--examis-sage);
+    color: var(--examis-green);
 }
 
 .dark .examis-data-table thead th {
-    background: var(--examis-sage);
-    color: #ffffff;
+    background: var(--examis-green);
+    color: var(--examis-pearl);
 }
 
 .dark .examis-data-table {
-    --examis-table-line-color: var(--examis-cyan);
+    --examis-table-line-color: var(--examis-gold);
 }
 
 @media print {

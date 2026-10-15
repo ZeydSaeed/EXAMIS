@@ -85,6 +85,7 @@ Route::middleware(['auth', 'verified', 'can:admin.access', 'staff.2fa'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::inertia('home', 'admin/home')->name('home');
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
         Route::get('applications', [Admin\ApplicationController::class, 'index'])->name('applications.index');

@@ -1,11 +1,11 @@
 <html dir="{{ $direction }}">
 <head>
     <style>
-        body { font-family: dejavusans; font-size: 11pt; color: #355764; }
-        .header { border-bottom: 2px solid #355764; padding-bottom: 8px; margin-bottom: 14px; }
-        .org { font-size: 15pt; font-weight: bold; color: #355764; }
+        body { font-family: dejavusans; font-size: 11pt; color: #0b1849; }
+        .header { border-bottom: 2px solid #0b1849; padding-bottom: 8px; margin-bottom: 14px; }
+        .org { font-size: 15pt; font-weight: bold; color: #0b1849; }
         .title { font-size: 13pt; margin-top: 4px; }
-        .reference-box { border: 1.5px solid #5a8f7b; padding: 10px; text-align: center; margin: 12px 0; }
+        .reference-box { border: 1.5px solid #e4b028; padding: 10px; text-align: center; margin: 12px 0; }
         .reference-label { font-size: 10pt; color: #4b5563; }
         .reference { font-size: 20pt; font-weight: bold; letter-spacing: 1px; direction: ltr; }
         table.data { width: 100%; border-collapse: collapse; }

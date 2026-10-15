@@ -10,7 +10,7 @@
     "display": "standalone",
     "orientation": "any",
     "background_color": "#ffffff",
-    "theme_color": "#355764",
+    "theme_color": "#0b1849",
     "categories": ["education", "government"],
     "icons": [
         {

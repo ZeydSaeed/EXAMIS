@@ -33,9 +33,19 @@ Never run these scripts against production. `tests/load/lib/common.js` refuses p
 
 ## 3. Results
 
-| Date | Environment (CPU/RAM/DB) | Scenario | Peak VUs | Req/s | p50 | p95 | p99 | Errors | Notes                                                                                                                                                  |
-| ---- | ------------------------ | -------- | -------- | ----- | --- | --- | --- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| —    | —                        | —        | —        | —     | —   | —   | —   | —      | **Not executed**: k6 is not installed in this environment and no staging stack exists (Blocked B6). The scripts are written but have not yet been run. |
+Environment for all runs below: **single developer workstation** (Windows 10, Laravel Herd: nginx + **5 php-cgi workers**, PostgreSQL 18.2 with default settings: `shared_buffers=128MB`, `max_connections=100`). k6 v2.3.0 (official binary, checksum verified) ran **on the same machine**. Isolated database `examis_load` with 1000 synthetic accounts. Production-like app mode (`APP_DEBUG=false`, config/route/view/event cache, OPcache). CPU was at 90–100% during load, shared between k6, PHP, PostgreSQL and nginx.
+
+| Date       | Scenario                                             | Peak VUs reached            | Req/s           | p50    | p95                           | Errors | Integrity                                                      | Notes                                         |
+| ---------- | ---------------------------------------------------- | --------------------------- | --------------- | ------ | ----------------------------- | ------ | -------------------------------------------------------------- | --------------------------------------------- |
+| 2026-10-14 | `smoke.js`                                           | 2                           | 1.9             | 217 ms | read 421 ms / write 883 ms    | 0%     | all 14 checks pass incl. "resubmit returns the same reference" | baseline                                      |
+| 2026-10-14 | `normal-load.js` (25→100→250, 30 s ramp / 90 s hold) | **26** (aborted in stage 1) | 6.5             | 2.55 s | read 4.89 s / write 5.36 s    | 0.49%  | 304/304 checks pass                                            | thresholds breached → run stopped as designed |
+| 2026-10-14 | same, after fix below (`DB_PERSISTENT=true`)         | **26** (aborted in stage 1) | **13.6** (2.1×) | 865 ms | read **2.1 s** / write 3.76 s | 0.83%  | 609/616 checks (6 login + 1 home timeouts under saturation)    | still above target on this hardware           |
+
+**Finding and fix:** a new PostgreSQL connection costs 60–95 ms on Windows (one OS process per backend plus SCRAM). Each request opened one, so the session lookup alone dominated latency. Measured in-process: `/login` 204 ms → 75 ms with persistent connections. Added the opt-in `DB_PERSISTENT` setting (`config/database.php`). Production should use PgBouncer instead (`OPERATIONS.md`).
+
+**Verdict:** the targets (p95 read ≤ 1 s, write ≤ 2 s) are **not met on this workstation** beyond ~25 concurrent virtual users. The bottleneck is the workstation, not a data or locking problem: CPU is saturated, Herd has 5 PHP workers, and the load generator competes for the same CPU. No integrity errors occurred: the concurrency proof in `docs/database/SCHEMA.md` (120 simultaneous submissions) found zero duplicate references. **The 1000-user target remains unverified** and must be tested on a staging stack sized per `OPERATIONS.md` §3 (2× 4 vCPU app nodes with PHP-FPM, a separate PostgreSQL host, and k6 on a separate load generator).
+
+Raw outputs: `storage/load-results/*.json|*.log|*.csv`.
 
 ## 4. Optimizations already in place (design, not yet measured)
 

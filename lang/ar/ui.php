@@ -32,6 +32,7 @@ return [
         'settings' => 'الإعدادات',
         'security' => 'الأمان',
         'logout' => 'تسجيل الخروج',
+        'staff_home' => 'الصفحة الرئيسية',
         'admin_dashboard' => 'لوحة الإدارة',
         'applications' => 'الطلبات',
         'reports' => 'التقارير',
@@ -39,6 +40,9 @@ return [
         'content' => 'محتوى البوابة',
         'users' => 'المستخدمون والأدوار',
         'audit' => 'سجل التدقيق',
+        'previous_page' => 'الصفحة السابقة',
+        'next_page' => 'الصفحة التالية',
+        'history' => 'التنقل بين الصفحات',
         'operations' => 'مراقبة التشغيل',
     ],
 
