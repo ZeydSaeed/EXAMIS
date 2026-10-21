@@ -4,7 +4,7 @@ import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
+import { fontsource } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
@@ -13,10 +13,11 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
             fonts: [
-                bunny('IBM Plex Sans Arabic', {
+                fontsource('IBM Plex Sans Arabic', {
                     weights: [400, 500, 600, 700],
+                    subsets: ['arabic', 'latin'],
                 }),
-                bunny('Instrument Sans', {
+                fontsource('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
             ],
