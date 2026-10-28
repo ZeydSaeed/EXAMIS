@@ -148,7 +148,7 @@ return [
         'apply_now' => 'Create an account and apply',
         'moe_logo' => 'Ministry of Education logo',
         'vocational_logo' => 'General Directorate of Vocational Education logo',
-        'footer' => 'Ministry of Education - General Directorate of Vocational Education',
+        'footer' => 'Ministry of Education - Karbala Education Directorate - Vocational Education Department',
     ],
 
     'student' => [
