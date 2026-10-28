@@ -369,6 +369,26 @@
         display: none !important;
     }
 
+    /* A page that has a print sheet prints only that sheet, not the app UI. */
+    body:has(.print-sheet) {
+        background: #fff !important;
+    }
+
+    body:has(.print-sheet) * {
+        visibility: hidden;
+    }
+
+    body:has(.print-sheet) .print-sheet,
+    body:has(.print-sheet) .print-sheet * {
+        visibility: visible;
+    }
+
+    body:has(.print-sheet) .print-sheet {
+        position: absolute;
+        inset-inline: 0;
+        top: 0;
+    }
+
     .examis-data-table {
         overflow: visible;
         border-color: #000;
