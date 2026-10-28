@@ -51,6 +51,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Student accounts (ADR-0009)
+    |--------------------------------------------------------------------------
+    |
+    | Students sign in with one identifier. A remembered device lets them in
+    | directly; any other device must present the private access code, which
+    | is locked after `access_code_attempts_per_hour` failures per account.
+    |
+    */
+
+    'students' => [
+        'trusted_device_days' => (int) env('EXAMIS_TRUSTED_DEVICE_DAYS', 180),
+        'access_code_attempts_per_hour' => (int) env('EXAMIS_ACCESS_CODE_ATTEMPTS_PER_HOUR', 10),
+        'student_number_min' => 10000,
+        'student_number_max' => 99999,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Applicant documents
     |--------------------------------------------------------------------------
     |

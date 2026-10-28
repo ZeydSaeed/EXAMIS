@@ -77,6 +77,23 @@ class UserFactory extends Factory
         });
     }
 
+    /**
+     * A password-less student account (ADR-0009) with a phone number, QR id,
+     * student number and the access code "ABCDE-23456".
+     */
+    public function student(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email' => null,
+            'password' => null,
+            'phone' => '0770'.fake()->unique()->numerify('#######'),
+            'public_id' => (string) Str::uuid(),
+            'student_number' => fake()->unique()->numberBetween(10000, 99999),
+            'access_code' => 'ABCDE-23456',
+            'access_code_issued_at' => now(),
+        ]);
+    }
+
     public function deactivated(): static
     {
         return $this->state(fn (array $attributes) => [

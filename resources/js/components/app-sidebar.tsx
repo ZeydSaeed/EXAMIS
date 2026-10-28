@@ -7,6 +7,7 @@ import {
     FileText,
     HelpCircle,
     House,
+    IdCard,
     LayoutGrid,
     ScrollText,
     ShieldCheck,
@@ -31,6 +32,7 @@ import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
 import notifications from '@/routes/notifications';
 import pages from '@/routes/pages';
+import student from '@/routes/student';
 import type { NavItem } from '@/types';
 
 /**
@@ -53,6 +55,11 @@ export function AppSidebar() {
             title: t('nav.notifications'),
             href: notifications.index(),
             icon: Bell,
+        },
+        {
+            title: t('nav.student_card'),
+            href: student.card(),
+            icon: IdCard,
         },
     ];
 

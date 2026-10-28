@@ -1,7 +1,9 @@
 <?php
 
 use App\Enums\AccountType;
+use App\Models\AuditEvent;
 use App\Models\User;
+use App\Services\Students\TrustedDevices;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
@@ -10,53 +12,73 @@ beforeEach(function () {
 });
 
 test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
-
-    $response->assertOk();
+    $this->get(route('register'))->assertOk();
 });
 
-test('new users can register', function () {
+test('a student registers with a username and a mobile number only', function () {
     $response = $this->post(route('register.store'), [
         'username' => 'test.user',
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'phone' => '0770 123 4567',
         'terms' => '1',
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
-    expect(User::query()->where('username', 'test.user')->sole()->account_type)->toBe(AccountType::Applicant);
+    $response->assertRedirect(route('student.card', absolute: false));
+
+    $user = User::query()->where('username', 'test.user')->sole();
+
+    expect($user->account_type)->toBe(AccountType::Applicant)
+        ->and($user->phone)->toBe('07701234567')
+        ->and($user->password)->toBeNull()
+        ->and($user->email)->toBeNull()
+        ->and($user->public_id)->not->toBeNull()
+        ->and($user->student_number)->toBeGreaterThanOrEqual(10000)->toBeLessThanOrEqual(99999)
+        ->and($user->access_code)->not->toBeNull()
+        ->and(AuditEvent::query()->where('action', 'student.registered')->where('subject_id', $user->id)->exists())->toBeTrue();
 });
 
-test('a new applicant goes straight to the dashboard and is shown their username', function () {
+test('the access code is shown once on the student card and stored only as a hash', function () {
     $this->post(route('register.store'), [
         'username' => 'new.student',
-        'name' => 'New Student',
-        'email' => 'student@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'phone' => '07701234567',
         'terms' => '1',
-    ])->assertRedirect(route('dashboard', absolute: false))
-        ->assertInertiaFlash('toast.message', __('auth.registered', ['username' => 'new.student']));
+    ])->assertInertiaFlash('toast.message', __('auth.registered', ['username' => 'new.student']));
 
-    $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->component('applicant/dashboard'));
+    $code = null;
+
+    $this->get(route('student.card'))->assertInertia(function (Assert $page) use (&$code) {
+        $page->component('applicant/student-card')
+            ->where('accessCode', fn ($value) => is_string($value) && preg_match('/^[A-Z2-9]{5}-[A-Z2-9]{5}$/', $value) === 1)
+            ->where('qr.url', fn (string $url) => str_contains($url, '/s/'))
+            ->etc();
+        $code = $page->toArray()['props']['accessCode'];
+    });
+
+    $user = User::query()->where('username', 'new.student')->sole();
+    expect($user->getRawOriginal('access_code'))->not->toBe($code);
+
+    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
 });
 
-test('several accounts may share one email address', function () {
-    User::factory()->create(['email' => 'family@example.com']);
-
+test('the registering browser is remembered when the student asks', function () {
     $this->post(route('register.store'), [
-        'username' => 'second.child',
-        'name' => 'Second Child',
-        'email' => 'family@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'username' => 'own.device',
+        'phone' => '07701234567',
+        'trust_device' => '1',
         'terms' => '1',
-    ])->assertSessionHasNoErrors();
+    ])->assertCookie(TrustedDevices::COOKIE);
 
-    expect(User::query()->where('email', 'family@example.com')->count())->toBe(2);
+    expect(User::query()->where('username', 'own.device')->sole()->trustedDevices()->count())->toBe(1);
+});
+
+test('a shared device is not remembered at registration', function () {
+    $this->post(route('register.store'), [
+        'username' => 'cafe.device',
+        'phone' => '07701234568',
+        'terms' => '1',
+    ])->assertCookieMissing(TrustedDevices::COOKIE);
+
+    expect(User::query()->where('username', 'cafe.device')->sole()->trustedDevices()->count())->toBe(0);
 });
 
 test('registration rejects a username that is already taken', function () {
@@ -64,23 +86,55 @@ test('registration rejects a username that is already taken', function () {
 
     $this->post(route('register.store'), [
         'username' => 'Taken.Name',
-        'name' => 'Someone Else',
-        'email' => 'other@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'phone' => '07701234567',
         'terms' => '1',
     ])->assertSessionHasErrors('username');
 
     $this->assertGuest();
 });
 
+test('registration rejects a mobile number registered to another account', function () {
+    User::factory()->student()->create(['phone' => '07701234567']);
+
+    $this->post(route('register.store'), [
+        'username' => 'second.account',
+        'phone' => '0770-123-4567',
+        'terms' => '1',
+    ])->assertSessionHasErrors(['phone' => __('validation.custom.phone.unique')]);
+
+    $this->assertGuest();
+});
+
+test('registration rejects usernames made of digits only', function () {
+    $this->post(route('register.store'), [
+        'username' => '12345',
+        'phone' => '07701234567',
+        'terms' => '1',
+    ])->assertSessionHasErrors('username');
+});
+
+test('registration rejects a malformed mobile number', function () {
+    $this->post(route('register.store'), [
+        'username' => 'bad.phone',
+        'phone' => '123',
+        'terms' => '1',
+    ])->assertSessionHasErrors('phone');
+});
+
+test('arabic-indic digits and the 00 prefix are normalized', function () {
+    $this->post(route('register.store'), [
+        'username' => 'arabic.digits',
+        'phone' => '٠٠٩٦٤٧٧٠١٢٣٤٥٦٧',
+        'terms' => '1',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::query()->where('username', 'arabic.digits')->sole()->phone)->toBe('+9647701234567');
+});
+
 test('registration requires accepting the terms', function () {
     $this->post(route('register.store'), [
         'username' => 'no.terms',
-        'name' => 'No Terms',
-        'email' => 'no-terms@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'phone' => '07701234567',
     ])->assertSessionHasErrors('terms');
 });
 

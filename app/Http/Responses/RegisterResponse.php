@@ -2,20 +2,22 @@
 
 namespace App\Http\Responses;
 
+use App\Services\Students\TrustedDevices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
-use Laravel\Fortify\Fortify;
 
 /**
- * Sends a new applicant straight to their dashboard and shows the username
- * they will sign in with (ADR-0002), since there is no email verification
- * step that would repeat it.
+ * Sends a new student to their sign-in card, which shows their student
+ * number, QR code and the one-time access code (ADR-0009). The registering
+ * browser is remembered unless the student said it is a shared device.
  */
 class RegisterResponse implements RegisterResponseContract
 {
+    public function __construct(private TrustedDevices $devices) {}
+
     /**
      * @param  Request  $request
      */
@@ -25,12 +27,16 @@ class RegisterResponse implements RegisterResponseContract
             return new JsonResponse('', 201);
         }
 
+        if ($request->boolean('trust_device') && $request->user() !== null) {
+            $this->devices->trust($request, $request->user());
+        }
+
         Inertia::flash('toast', [
             'type' => 'success',
             'message' => __('auth.registered', ['username' => $request->user()?->username]),
             'duration' => 15000,
         ]);
 
-        return redirect()->intended(Fortify::redirects('register'));
+        return to_route('student.card');
     }
 }

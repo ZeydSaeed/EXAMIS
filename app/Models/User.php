@@ -23,9 +23,14 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $username
  * @property string $name
- * @property string $email
+ * @property string|null $email
  * @property CarbonImmutable|null $email_verified_at
- * @property string $password
+ * @property string|null $password
+ * @property string|null $public_id
+ * @property int|null $student_number
+ * @property string|null $phone
+ * @property string|null $access_code
+ * @property CarbonImmutable|null $access_code_issued_at
  * @property AccountType $account_type
  * @property string $locale
  * @property CarbonImmutable|null $deactivated_at
@@ -37,8 +42,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['username', 'name', 'email', 'password', 'locale'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Fillable(['username', 'name', 'email', 'password', 'phone', 'locale'])]
+#[Hidden(['password', 'access_code', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -73,7 +78,33 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             'account_type' => AccountType::class,
             'deactivated_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'access_code' => 'hashed',
+            'access_code_issued_at' => 'datetime',
+            'student_number' => 'integer',
         ];
+    }
+
+    /**
+     * The student number and QR identity are permanent once assigned: they
+     * are printed on cards and forms, so profile edits must never move them.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (User $user): void {
+            foreach (['student_number', 'public_id'] as $attribute) {
+                if ($user->getOriginal($attribute) !== null && $user->isDirty($attribute)) {
+                    throw new \LogicException("users.{$attribute} is immutable once assigned.");
+                }
+            }
+        });
+    }
+
+    /**
+     * @return HasMany<TrustedDevice, $this>
+     */
+    public function trustedDevices(): HasMany
+    {
+        return $this->hasMany(TrustedDevice::class);
     }
 
     /**
@@ -108,6 +139,11 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     public function isApplicant(): bool
     {
         return $this->account_type === AccountType::Applicant;
+    }
+
+    public function hasPassword(): bool
+    {
+        return $this->password !== null;
     }
 
     public function isActive(): bool

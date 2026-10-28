@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
@@ -74,14 +73,11 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            'canResetPassword' => Route::has('password.request'),
             'canRegister' => Route::has('register'),
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]));
+        Fortify::registerView(fn () => Inertia::render('auth/register'));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
@@ -102,6 +98,20 @@ class FortifyServiceProvider extends ServiceProvider
 
             return [
                 Limit::perMinute(5)->by($throttleKey),
+                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('student-login', function (Request $request) {
+            return [
+                Limit::perMinute(10)->by('student-login|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('student-code', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by('student-code|'.$request->session()->getId().'|'.$request->ip()),
                 Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
             ];
         });

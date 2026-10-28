@@ -6,6 +6,8 @@ import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { selectClassName, textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { StatusBadge } from '@/components/examis/status-badge';
+import type { StudentAccount } from '@/components/examis/student-account-card';
+import { StudentAccountCard } from '@/components/examis/student-account-card';
 import { Timeline } from '@/components/examis/timeline';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,8 @@ type Props = {
     canViewDocuments: boolean;
     canAssign: boolean;
     reviewers: { id: number; name: string }[];
+    student: StudentAccount;
+    canResetStudentAccess: boolean;
 };
 
 function TransitionButton({
@@ -110,6 +114,8 @@ export default function AdminApplicationShow({
     canViewDocuments,
     canAssign,
     reviewers,
+    student,
+    canResetStudentAccess,
 }: Props) {
     const { t, locale } = useTrans();
     const assignment = useForm<{ assignee_id: number | null }>({
@@ -307,6 +313,10 @@ export default function AdminApplicationShow({
                     </div>
 
                     <aside className="space-y-6">
+                        <StudentAccountCard
+                            student={student}
+                            canResetAccess={canResetStudentAccess}
+                        />
                         <section
                             className="rounded-xl border bg-card p-4"
                             aria-labelledby="assignment"

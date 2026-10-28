@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Applicant;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\StaffLoginController;
+use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Public;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +32,33 @@ Route::get('verify/{token}', [Public\ReceiptVerificationController::class, 'show
 
 /*
 |--------------------------------------------------------------------------
+| Student sign-in (one identifier + trusted device or access code, ADR-0009)
+|--------------------------------------------------------------------------
+|
+| GET /login (Fortify) renders the student form. Staff sign in with a
+| password at /staff/login, which posts to Fortify's own login endpoint.
+|
+*/
+
+Route::middleware('guest')->group(function () {
+    Route::get('staff/login', StaffLoginController::class)->name('staff.login');
+
+    Route::post('student/login', [StudentLoginController::class, 'store'])
+        ->middleware('throttle:student-login')
+        ->name('student.login');
+    Route::get('student/verify', [StudentLoginController::class, 'code'])->name('student.code');
+    Route::post('student/verify', [StudentLoginController::class, 'verify'])
+        ->middleware('throttle:student-code')
+        ->name('student.verify');
+});
+
+Route::get('s/{publicId}', [StudentLoginController::class, 'qr'])
+    ->whereUuid('publicId')
+    ->middleware('throttle:student-login')
+    ->name('student.qr');
+
+/*
+|--------------------------------------------------------------------------
 | Password reset (by username, see ADR-0002)
 |--------------------------------------------------------------------------
 */
@@ -53,6 +82,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', Applicant\DashboardController::class)->name('dashboard');
+
+    Route::get('student/card', [Applicant\StudentCardController::class, 'show'])->name('student.card');
+    Route::post('student/access-code', [Applicant\StudentCardController::class, 'regenerate'])
+        ->middleware('throttle:6,1')
+        ->name('student.access-code');
 
     Route::middleware('throttle:application-writes')->group(function () {
         Route::post('applications', [Applicant\ApplicationController::class, 'store'])->name('applications.store');
@@ -112,6 +146,7 @@ Route::middleware(['auth', 'can:admin.access', 'staff.2fa'])
             Route::post('users', [Admin\StaffUserController::class, 'store'])->name('users.store');
             Route::put('users/{user}/roles', [Admin\StaffUserController::class, 'updateRoles'])->name('users.roles');
             Route::put('users/{user}/status', [Admin\StaffUserController::class, 'updateStatus'])->name('users.status');
+            Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
 
         Route::get('audit', [Admin\AuditLogController::class, 'index'])->middleware('can:audit.view')->name('audit.index');

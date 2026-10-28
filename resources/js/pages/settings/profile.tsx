@@ -2,10 +2,12 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
+import { MobileInput } from '@/components/examis/mobile-input';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-trans';
 import { edit } from '@/routes/profile';
 import type { Auth } from '@/types';
 
@@ -15,6 +17,8 @@ type PageProps = {
 
 export default function Profile() {
     const { auth } = usePage<PageProps>().props;
+    const { t } = useTrans();
+    const isStudent = auth.user.account_type === 'applicant';
 
     return (
         <>
@@ -64,9 +68,9 @@ export default function Profile() {
                                     id="email"
                                     type="email"
                                     className="mt-1 block w-full"
-                                    defaultValue={auth.user.email}
+                                    defaultValue={auth.user.email ?? ''}
                                     name="email"
-                                    required
+                                    required={!isStudent}
                                     autoComplete="username"
                                     placeholder="Email address"
                                 />
@@ -76,6 +80,31 @@ export default function Profile() {
                                     message={errors.email}
                                 />
                             </div>
+
+                            {isStudent && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="phone">
+                                        {t('auth.mobile')}
+                                    </Label>
+
+                                    <MobileInput
+                                        id="phone"
+                                        className="mt-1 block w-full"
+                                        defaultValue={auth.user.phone ?? ''}
+                                        name="phone"
+                                        required
+                                        autoComplete="tel"
+                                        placeholder={t(
+                                            'auth.mobile_placeholder',
+                                        )}
+                                    />
+
+                                    <InputError
+                                        className="mt-2"
+                                        message={errors.phone}
+                                    />
+                                </div>
+                            )}
 
                             <div className="flex items-center gap-4">
                                 <Button
@@ -90,7 +119,7 @@ export default function Profile() {
                 </Form>
             </div>
 
-            <DeleteUser />
+            {!isStudent && <DeleteUser />}
         </>
     );
 }

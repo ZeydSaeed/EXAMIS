@@ -4,6 +4,7 @@ return [
     'custom' => [
         'username' => [
             'regex' => 'The username may contain only lowercase English letters, digits and . _ -',
+            'not_regex' => 'The username cannot consist of digits only.',
         ],
         'full_name_ar' => [
             'regex' => 'The full name must be written in Arabic letters.',
@@ -16,6 +17,7 @@ return [
         ],
         'phone' => [
             'regex' => 'The phone number must contain 10 to 15 digits.',
+            'unique' => 'This mobile number is already registered to another account. Sign in with it or contact support.',
         ],
         'national_id_number' => [
             'regex' => 'The ID number must be 6 to 20 letters or digits.',

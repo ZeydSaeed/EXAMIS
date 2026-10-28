@@ -39,11 +39,15 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's profile.
+     * Delete the user's profile. Student accounts own applications and
+     * administrative records, which are never hard-deleted without an
+     * approved retention policy, so they cannot delete themselves.
      */
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        abort_if($user->isApplicant(), 403);
 
         Auth::logout();
 

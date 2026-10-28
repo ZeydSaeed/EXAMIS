@@ -50,8 +50,8 @@ test('email verification status is unchanged when the email address is unchanged
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+test('staff can delete their account', function () {
+    $user = User::factory()->staff()->create();
 
     $response = $this
         ->actingAs($user)
@@ -65,6 +65,29 @@ test('user can delete their account', function () {
 
     $this->assertGuest();
     expect($user->fresh())->toBeNull();
+});
+
+test('students cannot delete their account or its records', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertForbidden();
+
+    expect($user->fresh())->not->toBeNull();
+});
+
+test('students can update their mobile number without changing their student number', function () {
+    $user = User::factory()->student()->create();
+    $number = $user->student_number;
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), ['name' => 'Student Name', 'phone' => '0770 123 4599'])
+        ->assertSessionHasNoErrors();
+
+    $user->refresh();
+    expect($user->phone)->toBe('07701234599')
+        ->and($user->student_number)->toBe($number);
 });
 
 test('correct password must be provided to delete account', function () {
