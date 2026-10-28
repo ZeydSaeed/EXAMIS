@@ -31,7 +31,7 @@ knows it impersonate the student.
   (other devices are signed out). An administrator (`users.manage`) can
   reset it after an in-person identity check, and the reset is audited.
 - Staff keep username + password + 2FA at `/staff/login` (Fortify's
-  `POST /login`). Older applicant accounts with a password can still use it.
+  `POST /login`). Applicants no longer have passwords.
 - Student numbers are allocated randomly, with retry on unique violation,
   each attempt in its own savepoint. A scan fallback runs when the range
   is crowded. When the range is exhausted, allocation stops and the
