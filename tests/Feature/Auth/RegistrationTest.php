@@ -37,7 +37,7 @@ test('a student registers with a username and a mobile number only', function ()
         ->and(AuditEvent::query()->where('action', 'student.registered')->where('subject_id', $user->id)->exists())->toBeTrue();
 });
 
-test('the access code is shown once on the student card and stored only as a hash', function () {
+test('the access code is shown once on the student card and stored in plain text', function () {
     $this->post(route('register.store'), [
         'username' => 'new.student',
         'phone' => '07701234567',
@@ -55,7 +55,7 @@ test('the access code is shown once on the student card and stored only as a has
     });
 
     $user = User::query()->where('username', 'new.student')->sole();
-    expect($user->getRawOriginal('access_code'))->not->toBe($code);
+    expect($user->getRawOriginal('access_code'))->toBe($code);
 
     $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
 });

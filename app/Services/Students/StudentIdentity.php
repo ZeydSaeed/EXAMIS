@@ -136,7 +136,9 @@ class StudentIdentity
 
     /**
      * Issue a new private access code, replacing any previous one. The plain
-     * code is returned once for display and only its hash is stored.
+     * code is returned for display and stored as plain text, as the owner
+     * decided (ADR-0009): anyone who can read the users table or a backup
+     * can read every code.
      */
     public function issueAccessCode(User $user): string
     {
@@ -164,7 +166,14 @@ class StudentIdentity
             return false;
         }
 
-        return Hash::check(substr($code, 0, 5).'-'.substr($code, 5), $user->access_code);
+        $code = substr($code, 0, 5).'-'.substr($code, 5);
+
+        // Codes issued before they were stored in plain text are hashes.
+        if (str_starts_with($user->access_code, '$')) {
+            return Hash::check($code, $user->access_code);
+        }
+
+        return hash_equals($user->access_code, $code);
     }
 
     private function tryStudentNumber(User $user, int $candidate): bool

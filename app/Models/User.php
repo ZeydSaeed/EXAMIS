@@ -74,7 +74,6 @@ class User extends Authenticatable implements HasLocalePreference
             'account_type' => AccountType::class,
             'deactivated_at' => 'datetime',
             'last_login_at' => 'datetime',
-            'access_code' => 'hashed',
             'access_code_issued_at' => 'datetime',
             'student_number' => 'integer',
         ];

@@ -14,7 +14,11 @@ knows it impersonate the student.
 
 - Registration creates a permanent account with a random `public_id` (QR),
   a unique five-digit `student_number` (10000–99999, UNIQUE + CHECK) and a
-  private **access code** (`XXXXX-XXXXX`, stored hashed, shown once).
+  private **access code** (`XXXXX-XXXXX`, shown once). The owner chose
+  to store it in **plain text** (2026-10-29): anyone who can read the
+  `users` table or a database backup can read every code and sign in as
+  any student. Codes issued earlier remain bcrypt hashes and are still
+  accepted.
 - `/login` takes one identifier. If the browser holds a valid **trusted
   device** cookie for that account, the student is signed in. Otherwise
   the access code is required. Unknown identifiers go through the same

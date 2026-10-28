@@ -20,9 +20,8 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Create a student account from a username and a mobile number only
      * (ADR-0009). The number is not verified: no SMS or WhatsApp message is
-     * sent. The one-time access code is flashed for the welcome card and is
-     * never stored in plain text. Staff accounts are created by
-     * administrators only.
+     * sent. The access code is flashed for the welcome card and stored in
+     * plain text. Staff accounts are created by administrators only.
      *
      * @param  array<string, string>  $input
      */

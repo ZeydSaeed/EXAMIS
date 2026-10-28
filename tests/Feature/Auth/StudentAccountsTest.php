@@ -6,6 +6,7 @@ use App\Models\AuditEvent;
 use App\Models\User;
 use App\Services\Students\StudentIdentity;
 use App\Services\Students\TrustedDevices;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -255,4 +256,14 @@ test('password-less students are sent from security settings to their card', fun
     $this->actingAs(User::factory()->student()->create())
         ->get(route('security.edit'))
         ->assertRedirect(route('student.card'));
+});
+
+test('codes issued before plain-text storage are still accepted', function () {
+    $user = User::factory()->student()->create();
+    $user->forceFill(['access_code' => Hash::make('ABCDE-23456')])->save();
+
+    $identity = app(StudentIdentity::class);
+
+    expect($identity->checkAccessCode($user->fresh(), 'abcde23456'))->toBeTrue()
+        ->and($identity->checkAccessCode($user->fresh(), 'ABCDE-23457'))->toBeFalse();
 });
