@@ -7,12 +7,13 @@ use App\Models\Application;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
  * Tells the applicant their application changed status. Contains only the
  * reference number, status and reviewer reason: no personal data.
+ * Delivered in the portal only: email addresses are not verified
+ * (ADR-0009), so nothing is mailed to an address that may not be theirs.
  */
 class ApplicationStatusChanged extends Notification implements ShouldQueue
 {
@@ -39,24 +40,7 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
      */
     public function via(User $notifiable): array
     {
-        return $notifiable->hasVerifiedEmail() ? ['database', 'mail'] : ['database'];
-    }
-
-    public function toMail(User $notifiable): MailMessage
-    {
-        $message = (new MailMessage)
-            ->subject(__('notifications.status_changed.subject', ['reference' => $this->application->reference_number]))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
-            ->line(__('notifications.status_changed.line', [
-                'reference' => $this->application->reference_number,
-                'status' => $this->status->label(),
-            ]));
-
-        if ($this->reason !== null) {
-            $message->line(__('notifications.status_changed.reason', ['reason' => $this->reason]));
-        }
-
-        return $message->action(__('notifications.status_changed.action'), route('applications.show', $this->application));
+        return ['database'];
     }
 
     /**

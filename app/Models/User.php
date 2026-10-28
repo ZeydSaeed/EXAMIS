@@ -15,8 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\Contracts\PasskeyUser;
-use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
@@ -24,7 +22,6 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $username
  * @property string $name
  * @property string|null $email
- * @property CarbonImmutable|null $email_verified_at
  * @property string|null $password
  * @property string|null $public_id
  * @property int|null $student_number
@@ -44,10 +41,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  */
 #[Fillable(['username', 'name', 'email', 'password', 'phone', 'locale'])]
 #[Hidden(['password', 'access_code', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements HasLocalePreference, PasskeyUser
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * @var array<string, mixed>
@@ -72,7 +69,6 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'account_type' => AccountType::class,

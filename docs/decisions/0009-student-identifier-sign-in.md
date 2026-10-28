@@ -38,6 +38,11 @@ knows it impersonate the student.
   account works without a number. The number and `public_id` cannot be
   changed once assigned.
 - Students cannot delete their own account (retention policy pending).
+- Clean-up (migration `2026_10_29_010000`): `users.email_verified_at` and
+  the `passkeys` table were dropped. Applicant passwords, emails and
+  remember tokens were cleared. Status changes now reach students as
+  in-portal notifications only. Older students sign in after an
+  administrator issues them an access code.
 
 ## Consequences
 

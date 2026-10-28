@@ -35,7 +35,6 @@ class LoadTestSeeder extends Seeder
                 'username' => sprintf('loadtest.%04d', $number),
                 'name' => 'مستخدم اختبار حمل '.$number,
                 'email' => 'loadtest@examis.test',
-                'email_verified_at' => $now,
                 'password' => $password,
                 'account_type' => 'applicant',
                 'locale' => 'ar',

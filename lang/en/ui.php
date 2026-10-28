@@ -139,10 +139,6 @@ return [
         'staff_login_description' => 'Enter your staff username and password',
         'staff_login_link' => 'Staff sign-in',
         'student_login_link' => 'Student sign-in',
-        'passkey_sign_in' => 'Sign in with a passkey',
-        'or_continue_with_username' => 'Or continue with your username',
-        'confirm_with_passkey' => 'Confirm with passkey',
-        'or_confirm_with_password' => 'Or confirm with password',
     ],
 
     'student' => [

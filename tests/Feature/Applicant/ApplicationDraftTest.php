@@ -4,7 +4,6 @@ use App\Enums\ApplicationStatus;
 use App\Enums\Role;
 use App\Models\Application;
 use App\Models\ExamPeriod;
-use App\Models\User;
 
 beforeEach(function () {
     seedReferenceData();
@@ -51,14 +50,6 @@ describe('starting an application', function () {
         $this->actingAs(staffWith(Role::Reviewer))
             ->post(route('applications.store'), ['exam_period_id' => $period->id])
             ->assertForbidden();
-    });
-
-    it('does not require a verified email address', function () {
-        $period = ExamPeriod::factory()->create();
-
-        $this->actingAs(User::factory()->unverified()->create())
-            ->post(route('applications.store'), ['exam_period_id' => $period->id])
-            ->assertRedirect(route('applications.edit', Application::query()->sole()));
     });
 });
 

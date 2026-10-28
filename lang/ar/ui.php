@@ -139,10 +139,6 @@ return [
         'staff_login_description' => 'أدخل اسم المستخدم وكلمة المرور الخاصة بحساب الموظف',
         'staff_login_link' => 'دخول الموظفين',
         'student_login_link' => 'دخول الطلبة',
-        'passkey_sign_in' => 'تسجيل الدخول بمفتاح المرور',
-        'or_continue_with_username' => 'أو المتابعة باسم المستخدم',
-        'confirm_with_passkey' => 'التأكيد بمفتاح المرور',
-        'or_confirm_with_password' => 'أو التأكيد بكلمة المرور',
     ],
 
     'student' => [
