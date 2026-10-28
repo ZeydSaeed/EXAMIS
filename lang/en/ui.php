@@ -141,6 +141,19 @@ return [
         'student_login_link' => 'Student sign-in',
     ],
 
+    'start' => [
+        'title' => 'External Examinations Applications',
+        'department' => 'Vocational Education Department',
+        'tagline' => 'An online portal to submit and follow external examination applications easily and securely.',
+        'apply_now' => 'Create an account and apply',
+        'portal' => 'Open periods and instructions',
+        'track' => 'Track an application',
+        'more' => 'More links',
+        'moe_logo' => 'Ministry of Education logo',
+        'vocational_logo' => 'General Directorate of Vocational Education logo',
+        'footer' => 'Ministry of Education - General Directorate of Vocational Education',
+    ],
+
     'student' => [
         'account' => 'Student account',
         'student_number' => 'Student number',

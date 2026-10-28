@@ -134,3 +134,15 @@ it('encrypts page history and rotates the key at logout', function () {
 
     expect($this->get('/')->viewData('page')['clearHistory'] ?? false)->toBeTrue();
 });
+
+it('opens on the standalone start page with both logos, and keeps the portal home at /portal', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('start')
+            ->where('canRegister', true));
+
+    expect(route('home', absolute: false))->toBe('/portal')
+        ->and(public_path('images/moe-iraq-logo.png'))->toBeFile()
+        ->and(public_path('images/vocational-education-logo.png'))->toBeFile();
+});

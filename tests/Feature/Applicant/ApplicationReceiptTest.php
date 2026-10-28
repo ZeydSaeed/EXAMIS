@@ -75,8 +75,9 @@ it('prints the verified personal photo in the photo box', function () {
     $photo->forceFill(['status' => DocumentStatus::Pending])->save();
     $withoutVerifiedPhoto = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
 
-    expect($withPhoto)->toContain('/Subtype /Image')
-        ->and($withoutVerifiedPhoto)->not->toContain('/Subtype /Image')
+    // The authority logo (when provided) is an image too, so compare counts.
+    expect(substr_count($withPhoto, '/Subtype /Image'))
+        ->toBeGreaterThan(substr_count($withoutVerifiedPhoto, '/Subtype /Image'))
         ->and(extractPdfText($withoutVerifiedPhoto))->toContain(visualOrder('الصورة الشخصية'));
 });
 

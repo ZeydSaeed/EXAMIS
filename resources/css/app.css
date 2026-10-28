@@ -406,3 +406,15 @@
         border-color: #000;
     }
 }
+
+/* Entrance of the start page blocks (used with motion-safe only). */
+@keyframes start-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
