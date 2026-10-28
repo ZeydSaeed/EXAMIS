@@ -1,11 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, LogIn, Search, UserPlus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { ExamisMark } from '@/components/examis/examis-mark';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { dashboard, home, login, register } from '@/routes';
-import track from '@/routes/track';
+import { dashboard, login, register } from '@/routes';
 
 type Props = {
     canRegister: boolean;
@@ -55,13 +54,11 @@ export default function Start({ canRegister }: Props) {
                             decoding="async"
                             draggable={false}
                         />
-                        <div className="rounded-3xl bg-white/80 p-3 shadow-[var(--examis-navy)]/10 shadow-xl ring-1 ring-black/5 backdrop-blur sm:p-4 dark:bg-white/10 dark:ring-white/15">
-                            <ExamisMark
-                                surface="light"
-                                title={name}
-                                className="size-20 sm:size-28"
-                            />
-                        </div>
+                        <ExamisMark
+                            surface="light"
+                            title={name}
+                            className="size-24 drop-shadow-md sm:size-36"
+                        />
                         <img
                             src="/images/vocational-education-logo.png"
                             alt={t('start.vocational_logo')}
@@ -133,26 +130,6 @@ export default function Start({ canRegister }: Props) {
                             </>
                         )}
                     </div>
-
-                    <nav
-                        aria-label={t('start.more')}
-                        className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm motion-safe:animate-[start-rise_0.7s_0.45s_ease-out_both]"
-                    >
-                        <Link
-                            href={home()}
-                            className="inline-flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
-                        >
-                            {t('start.portal')}
-                            <Forward className="size-4" aria-hidden />
-                        </Link>
-                        <Link
-                            href={track.create()}
-                            className="inline-flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
-                        >
-                            <Search className="size-4" aria-hidden />
-                            {t('start.track')}
-                        </Link>
-                    </nav>
                 </main>
 
                 <footer className="px-4 pb-6 text-center text-xs text-[var(--examis-navy)]/60 dark:text-white/50">
