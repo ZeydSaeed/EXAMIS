@@ -1,12 +1,15 @@
 import { Head, setLayoutProps, useForm, usePage } from '@inertiajs/react';
 import { KeyRound, Printer, ShieldAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDateTime } from '@/lib/format';
 import student from '@/routes/student';
+
+const noSubscription = () => () => {};
 
 type Props = {
     student: {
@@ -30,10 +33,17 @@ export default function StudentCard({
     qr,
     accessCode,
 }: Props) {
-    const { t, locale } = useTrans();
+    const { t, locale, isRtl } = useTrans();
     const { organization } = usePage().props;
     const [open, setOpen] = useState(false);
     const regenerate = useForm({});
+    // The print sheet lives directly under <body> so print CSS can hide the
+    // whole app around it; there is no <body> during server rendering.
+    const printTarget = useSyncExternalStore(
+        noSubscription,
+        () => document.body,
+        () => null,
+    );
 
     setLayoutProps({
         breadcrumbs: [{ title: t('nav.student_card'), href: student.card() }],
@@ -189,48 +199,55 @@ export default function StudentCard({
             </PageContainer>
 
             {/* Printed instead of the page; never includes the access code. */}
-            <section
-                className="print-sheet hidden bg-white p-8 text-black print:block"
-                aria-hidden
-            >
-                <div className="mx-auto max-w-xl rounded-xl border-2 border-black p-6">
-                    <div className="mb-6 border-b border-black pb-3 text-center">
-                        <p className="text-sm">{organization}</p>
-                        <h1 className="mt-1 text-xl font-bold">
-                            {t('student.card_title')}
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <div
-                            className="shrink-0"
-                            // Server-generated SVG from mpdf/qrcode; contains no user input.
-                            dangerouslySetInnerHTML={{ __html: qr.svg }}
-                        />
-                        <dl className="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-3">
-                            <dt>{t('student.student_number')}</dt>
-                            <dd>
-                                <bdi
-                                    dir="ltr"
-                                    className="text-2xl font-bold tracking-widest"
-                                >
-                                    {account.student_number ?? '—'}
-                                </bdi>
-                            </dd>
-                            <dt>{t('auth.username')}</dt>
-                            <dd>
-                                <bdi dir="ltr">{account.username}</bdi>
-                            </dd>
-                            <dt>{t('auth.mobile')}</dt>
-                            <dd>
-                                <bdi dir="ltr">{account.phone ?? '—'}</bdi>
-                            </dd>
-                        </dl>
-                    </div>
-                    <p className="mt-6 border-t border-black pt-3 text-xs">
-                        {t('student.qr_hint')}
-                    </p>
-                </div>
-            </section>
+            {printTarget &&
+                createPortal(
+                    <section
+                        className="print-sheet hidden bg-white text-black"
+                        dir={isRtl ? 'rtl' : 'ltr'}
+                        aria-hidden
+                    >
+                        <div className="w-full max-w-xl rounded-xl border-2 border-black p-6">
+                            <div className="mb-6 border-b border-black pb-3 text-center">
+                                <p className="text-sm">{organization}</p>
+                                <h1 className="mt-1 text-xl font-bold">
+                                    {t('student.card_title')}
+                                </h1>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <div
+                                    className="shrink-0"
+                                    // Server-generated SVG from mpdf/qrcode; contains no user input.
+                                    dangerouslySetInnerHTML={{ __html: qr.svg }}
+                                />
+                                <dl className="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-3">
+                                    <dt>{t('student.student_number')}</dt>
+                                    <dd>
+                                        <bdi
+                                            dir="ltr"
+                                            className="text-2xl font-bold tracking-widest"
+                                        >
+                                            {account.student_number ?? '—'}
+                                        </bdi>
+                                    </dd>
+                                    <dt>{t('auth.username')}</dt>
+                                    <dd>
+                                        <bdi dir="ltr">{account.username}</bdi>
+                                    </dd>
+                                    <dt>{t('auth.mobile')}</dt>
+                                    <dd>
+                                        <bdi dir="ltr">
+                                            {account.phone ?? '—'}
+                                        </bdi>
+                                    </dd>
+                                </dl>
+                            </div>
+                            <p className="mt-6 border-t border-black pt-3 text-xs">
+                                {t('student.qr_hint')}
+                            </p>
+                        </div>
+                    </section>,
+                    printTarget,
+                )}
         </>
     );
 }
