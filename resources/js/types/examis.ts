@@ -17,6 +17,8 @@ export type ApplicationForm = {
     mother_first_name: string | null;
     mother_father_name: string | null;
     birth_date: string | null;
+    birth_place_code: string | null;
+    birth_place_other: string | null;
     gender: 'male' | 'female' | null;
     national_id_number: string | null;
     phone: string | null;
@@ -79,6 +81,7 @@ export type Application = {
     labels: {
         governorate: string | null;
         school_governorate: string | null;
+        birth_place: string | null;
         branch: string | null;
         category: string | null;
         gender: string | null;

@@ -44,6 +44,8 @@ class ApplicationResource extends JsonResource
                 'mother_first_name' => $this->mother_first_name,
                 'mother_father_name' => $this->mother_father_name,
                 'birth_date' => $this->birth_date?->format('Y-m-d'),
+                'birth_place_code' => $this->birth_place_code,
+                'birth_place_other' => $this->birth_place_other,
                 'gender' => $this->gender?->value,
                 'national_id_number' => $this->national_id_number,
                 'phone' => $this->phone,
@@ -60,6 +62,7 @@ class ApplicationResource extends JsonResource
             'labels' => [
                 'governorate' => $referenceData->name(ReferenceType::Governorate, $this->governorate_code),
                 'school_governorate' => $referenceData->name(ReferenceType::Governorate, $this->school_governorate_code),
+                'birth_place' => $this->birthPlace(),
                 'branch' => $referenceData->name(ReferenceType::Branch, $this->branch_code),
                 'category' => $referenceData->name(ReferenceType::Category, $this->category_code),
                 'gender' => $this->gender !== null ? __('applications.gender.'.$this->gender->value) : null,

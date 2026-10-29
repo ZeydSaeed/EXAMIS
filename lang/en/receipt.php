@@ -14,6 +14,7 @@ return [
     'day' => 'Day',
     'month' => 'Month',
     'year' => 'Year',
+    'birth_place' => 'Place of birth',
     'gender' => 'Gender',
     'mother_name' => "Mother's name",
     'address' => 'Permanent address',

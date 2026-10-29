@@ -121,6 +121,44 @@ describe('saving a draft', function () {
             ->toBe(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
     });
 
+    it('stores the place of birth as a governorate or as written text for "other"', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), [
+                'lock_version' => 1,
+                'birth_place_code' => 'OTHER',
+                'birth_place_other' => '  طهران  ',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $application->refresh();
+        expect($application->birth_place_code)->toBe('OTHER')
+            ->and($application->birth_place_other)->toBe('طهران')
+            ->and($application->birthPlace())->toBe('طهران');
+
+        // Choosing a governorate drops the written place.
+        $this->put(route('applications.update', $application), [
+            'lock_version' => $application->lock_version,
+            'birth_place_code' => 'BGD',
+            'birth_place_other' => 'طهران',
+        ])->assertSessionHasNoErrors();
+
+        $application->refresh();
+        expect($application->birth_place_other)->toBeNull()
+            ->and($application->birthPlace())->toBe('بغداد');
+    });
+
+    it('rejects an unknown place of birth and requires the written place for "other"', function () {
+        $application = Application::factory()->complete()->create(['birth_place_code' => 'OTHER', 'birth_place_other' => null]);
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'birth_place_code' => 'ATLANTIS'])
+            ->assertSessionHasErrors('birth_place_code');
+
+        expect($application->fresh()->missingFields())->toContain('birth_place_other');
+    });
+
     it('accepts only a known governorate for the last school', function () {
         $application = Application::factory()->create();
 

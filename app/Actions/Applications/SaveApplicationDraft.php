@@ -46,10 +46,7 @@ class SaveApplicationDraft
 
             // A submitted application must stay complete while it is edited.
             if ($locked->status->isAwaitingReview()) {
-                $blank = array_values(array_filter(
-                    Application::REQUIRED_FOR_SUBMISSION,
-                    fn (string $field): bool => blank($locked->getAttribute($field)),
-                ));
+                $blank = $locked->missingFields();
 
                 if ($blank !== []) {
                     throw DomainRuleViolation::requiredAfterSubmission($blank);

@@ -21,7 +21,7 @@ return [
             'regex' => 'The :attribute must be written in Arabic letters.',
         ],
         'username' => [
-            'regex' => 'The username may contain only lowercase English letters, digits and . _ -',
+            'regex' => 'The username may contain only Arabic or English letters, digits and . _ -',
             'not_regex' => 'The username cannot consist of digits only.',
         ],
         'full_name_ar' => [
@@ -46,6 +46,8 @@ return [
     ],
 
     'attributes' => [
+        'birth_place_code' => 'place of birth',
+        'birth_place_other' => 'place of birth',
         'student_name' => 'Student\'s name',
         'father_name' => 'Father\'s name',
         'grandfather_name' => 'Grandfather\'s name',

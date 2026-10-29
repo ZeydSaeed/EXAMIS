@@ -14,6 +14,7 @@ return [
     'day' => 'يوم',
     'month' => 'شهر',
     'year' => 'سنة',
+    'birth_place' => 'محل الولادة',
     'gender' => 'الجنس',
     'mother_name' => 'اسم الأم',
     'address' => 'عنوان السكن الدائم',

@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\ApplicationStatus;
 use App\Enums\Gender;
 use App\Enums\Permission;
+use App\Enums\ReferenceType;
+use App\Services\ReferenceData;
 use Carbon\CarbonImmutable;
 use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,6 +36,8 @@ use Illuminate\Support\Str;
  * @property string|null $mother_first_name
  * @property string|null $mother_father_name
  * @property CarbonImmutable|null $birth_date
+ * @property string|null $birth_place_code
+ * @property string|null $birth_place_other
  * @property Gender|null $gender
  * @property string|null $national_id_number
  * @property string|null $phone
@@ -89,7 +93,8 @@ class Application extends Model
      */
     public const FORM_FIELDS = [
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
-        'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
+        'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+        'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
         'school_name', 'school_governorate_code', 'branch_code', 'category_code', 'other_info',
     ];
@@ -99,7 +104,8 @@ class Application extends Model
      */
     public const REQUIRED_FOR_SUBMISSION = [
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
-        'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
+        'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code',
+        'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
         'school_name', 'school_governorate_code', 'branch_code', 'category_code',
     ];
@@ -124,6 +130,12 @@ class Application extends Model
     public const NAME_PARTS = ['student_name', 'father_name', 'grandfather_name', 'great_grandfather_name'];
 
     public const MOTHER_NAME_PARTS = ['mother_first_name', 'mother_father_name'];
+
+    /**
+     * `birth_place_code` value for a place outside the governorate list;
+     * the place is then written in `birth_place_other`.
+     */
+    public const BIRTH_PLACE_OTHER = 'OTHER';
 
     protected static function booted(): void
     {
@@ -287,10 +299,7 @@ class Application extends Model
      */
     public function missingRequirements(): array
     {
-        $missingFields = array_values(array_filter(
-            self::REQUIRED_FOR_SUBMISSION,
-            fn (string $field): bool => blank($this->getAttribute($field)),
-        ));
+        $missingFields = $this->missingFields();
 
         $verifiedTypeIds = $this->currentDocuments
             ->reject(fn (ApplicationDocument $document): bool => $document->isRejected())
@@ -304,6 +313,39 @@ class Application extends Model
             ->all();
 
         return ['fields' => $missingFields, 'documents' => array_values($missingDocuments)];
+    }
+
+    /**
+     * Required fields still blank, including the written place of birth when
+     * "other" is chosen.
+     *
+     * @return list<string>
+     */
+    public function missingFields(): array
+    {
+        $missing = array_values(array_filter(
+            self::REQUIRED_FOR_SUBMISSION,
+            fn (string $field): bool => blank($this->getAttribute($field)),
+        ));
+
+        if ($this->birth_place_code === self::BIRTH_PLACE_OTHER && blank($this->birth_place_other)) {
+            $missing[] = 'birth_place_other';
+        }
+
+        return $missing;
+    }
+
+    /**
+     * The place of birth for display: the governorate name, or the place
+     * written in when "other" was chosen.
+     */
+    public function birthPlace(): ?string
+    {
+        if ($this->birth_place_code === self::BIRTH_PLACE_OTHER) {
+            return $this->birth_place_other;
+        }
+
+        return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->birth_place_code);
     }
 
     public function isReadyForSubmission(): bool

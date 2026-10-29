@@ -54,6 +54,7 @@ export function applicationSummarySections(
                     joinName(form.mother_first_name, form.mother_father_name),
                 ],
                 [t('fields.birth_date'), form.birth_date],
+                [t('fields.birth_place'), application.labels.birth_place],
                 [t('fields.gender'), application.labels.gender],
                 [t('fields.national_id_number'), form.national_id_number],
             ],

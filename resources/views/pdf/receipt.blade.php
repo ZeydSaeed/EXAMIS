@@ -89,6 +89,13 @@
         </tr>
     </table>
 
+    <table class="form">
+        <tr>
+            <td class="label" style="width: 22%;">{{ __('receipt.birth_place') }}</td>
+            <td>{!! $value($application->birthPlace()) !!}</td>
+        </tr>
+    </table>
+
     <table class="form" style="width: 50%;">
         <tr>
             <td class="label" style="width: 44%;">{{ __('receipt.gender') }}</td>

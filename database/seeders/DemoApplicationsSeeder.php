@@ -205,6 +205,7 @@ class DemoApplicationsSeeder extends Seeder
             'mother_father_name' => self::GRANDFATHER_NAMES[($index + 4) % 10][0],
             'gender' => $gender,
             'birth_date' => Carbon::create(2000, 1, 1)->addDays(($index * 97) % 2500)->toDateString(),
+            'birth_place_code' => 'KRB',
             'district' => self::DISTRICTS[$index % count(self::DISTRICTS)],
             'school_name' => self::SCHOOLS[$index % count(self::SCHOOLS)].($gender === Gender::Male ? ' للبنين' : ' للبنات'),
             'school_governorate_code' => 'KRB',

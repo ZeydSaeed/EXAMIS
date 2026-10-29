@@ -42,6 +42,7 @@ class ApplicationFactory extends Factory
             'mother_first_name' => 'فاطمة',
             'mother_father_name' => 'جاسم',
             'birth_date' => '2006-03-15',
+            'birth_place_code' => 'KRB',
             'gender' => Gender::Male,
             'national_id_number' => fake()->unique()->numerify('19##########'),
             'phone' => fake()->numerify('0770#######'),

@@ -43,6 +43,11 @@ class SaveApplicationRequest extends FormRequest
             'mother_first_name' => $namePart,
             'mother_father_name' => $namePart,
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before:-10 years', 'after:1940-01-01'],
+            'birth_place_code' => ['nullable', 'string', Rule::in([
+                ...app(ReferenceData::class)->codes(ReferenceType::Governorate),
+                Application::BIRTH_PLACE_OTHER,
+            ])],
+            'birth_place_other' => ['nullable', 'string', 'min:2', 'max:100'],
             'gender' => ['nullable', Rule::enum(Gender::class)],
             'national_id_number' => ['nullable', 'string', 'regex:/^[0-9A-Za-z]{6,20}$/'],
             'phone' => ['nullable', 'string', 'regex:/^\+?[0-9]{10,15}$/'],
@@ -73,10 +78,15 @@ class SaveApplicationRequest extends FormRequest
             }
         }
 
-        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'district', 'school_name', 'other_info'] as $field) {
+        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'district', 'school_name', 'other_info'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = trim((string) preg_replace('/\s+/u', ' ', $this->input($field)));
             }
+        }
+
+        // A written place of birth only goes with "other".
+        if ($this->has('birth_place_code') && $this->input('birth_place_code') !== Application::BIRTH_PLACE_OTHER) {
+            $normalized['birth_place_other'] = null;
         }
 
         // The mobile number is the account's (only the owner edits a draft).

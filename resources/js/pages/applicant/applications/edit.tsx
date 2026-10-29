@@ -61,6 +61,9 @@ type FormData = ApplicationForm & { lock_version: number };
 
 type TextField = keyof ApplicationForm;
 
+/** `birth_place_code` for a place outside the governorate list. */
+const BIRTH_PLACE_OTHER = 'OTHER';
+
 const STEPS = [
     'personal',
     'contact',
@@ -78,6 +81,8 @@ const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
         'mother_first_name',
         'mother_father_name',
         'birth_date',
+        'birth_place_code',
+        'birth_place_other',
         'gender',
         'national_id_number',
     ],
@@ -145,9 +150,6 @@ export default function EditApplication({
             ),
         );
     const isCorrection = application.status === 'requires_correction';
-    const awaitingReview =
-        application.status === 'submitted' ||
-        application.status === 'resubmitted';
 
     const save = (afterSave?: () => void) => {
         form.put(applications.update.url(application.uuid), {
@@ -455,6 +457,74 @@ export default function EditApplication({
                                 >
                                     {input('birth_date', { type: 'date' })}
                                 </Field>
+                                <Field
+                                    id="birth_place_code"
+                                    label={t('fields.birth_place')}
+                                    error={form.errors.birth_place_code}
+                                    required
+                                >
+                                    <select
+                                        id="birth_place_code"
+                                        name="birth_place_code"
+                                        className={selectClassName}
+                                        value={form.data.birth_place_code ?? ''}
+                                        onChange={(event) =>
+                                            form.setData((data) => ({
+                                                ...data,
+                                                birth_place_code:
+                                                    event.target.value || null,
+                                                // The written place only goes with "other".
+                                                birth_place_other:
+                                                    event.target.value ===
+                                                    BIRTH_PLACE_OTHER
+                                                        ? data.birth_place_other
+                                                        : null,
+                                            }))
+                                        }
+                                        aria-invalid={
+                                            form.errors.birth_place_code
+                                                ? true
+                                                : undefined
+                                        }
+                                        aria-describedby={describedBy(
+                                            'birth_place_code',
+                                            undefined,
+                                            form.errors.birth_place_code,
+                                        )}
+                                        data-test="birth-place"
+                                    >
+                                        <option value="">
+                                            {t('common.choose')}
+                                        </option>
+                                        {options.governorates.map((item) => (
+                                            <option
+                                                key={item.code}
+                                                value={item.code}
+                                            >
+                                                {optionName(item)}
+                                            </option>
+                                        ))}
+                                        <option value={BIRTH_PLACE_OTHER}>
+                                            {t(
+                                                'fields.birth_place_other_option',
+                                            )}
+                                        </option>
+                                    </select>
+                                </Field>
+                                {form.data.birth_place_code ===
+                                    BIRTH_PLACE_OTHER && (
+                                    <Field
+                                        id="birth_place_other"
+                                        label={t('fields.birth_place_other')}
+                                        error={form.errors.birth_place_other}
+                                        required
+                                        className="sm:col-span-2"
+                                    >
+                                        {input('birth_place_other', {
+                                            autoFocus: true,
+                                        })}
+                                    </Field>
+                                )}
                                 <Field
                                     id="gender"
                                     label={t('fields.gender')}
@@ -901,112 +971,75 @@ export default function EditApplication({
                             </Alert>
                         )}
 
-                        {awaitingReview ? (
-                            // Already submitted: edits are saved as made; nothing to send again.
-                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-                                <p
-                                    className="flex items-start gap-2 text-sm leading-relaxed"
-                                    data-test="submitted-edit-note"
+                        <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    id="declaration"
+                                    checked={submission.data.declaration}
+                                    onCheckedChange={(checked) =>
+                                        submission.setData(
+                                            'declaration',
+                                            checked === true,
+                                        )
+                                    }
+                                    disabled={!isReady}
+                                    aria-describedby={
+                                        submission.errors.declaration
+                                            ? 'declaration-error'
+                                            : undefined
+                                    }
+                                />
+                                <Label
+                                    htmlFor="declaration"
+                                    className="leading-relaxed font-normal"
                                 >
-                                    <CheckCircle2
-                                        className="mt-0.5 size-4 shrink-0 text-success"
-                                        aria-hidden
-                                    />
-                                    {t('applicant.submitted_edit_note')}
+                                    {t('applicant.declaration')}
+                                </Label>
+                            </div>
+                            {submission.errors.declaration && (
+                                <p
+                                    id="declaration-error"
+                                    className="text-sm text-destructive"
+                                >
+                                    {submission.errors.declaration}
                                 </p>
-                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => goTo(step - 1)}
-                                    >
-                                        {t('common.previous')}
-                                    </Button>
-                                    <Button size="lg" asChild>
-                                        <Link
-                                            href={applications.show(
-                                                application.uuid,
-                                            )}
-                                            data-test="back-to-application"
-                                        >
-                                            {t('applicant.back_to_application')}
-                                        </Link>
-                                    </Button>
-                                </div>
+                            )}
+                            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => goTo(step - 1)}
+                                >
+                                    {t('common.previous')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="lg"
+                                    onClick={submit}
+                                    disabled={
+                                        !isReady ||
+                                        !submission.data.declaration ||
+                                        submission.processing
+                                    }
+                                    data-test="submit-application"
+                                >
+                                    {submission.processing ? (
+                                        <Spinner />
+                                    ) : isReady ? (
+                                        <Send
+                                            className="size-4"
+                                            aria-hidden
+                                        />
+                                    ) : (
+                                        <CheckCircle2
+                                            className="size-4"
+                                            aria-hidden
+                                        />
+                                    )}
+                                    {t('applicant.submit')}
+                                </Button>
                             </div>
-                        ) : (
-                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-                                <div className="flex items-start gap-3">
-                                    <Checkbox
-                                        id="declaration"
-                                        checked={submission.data.declaration}
-                                        onCheckedChange={(checked) =>
-                                            submission.setData(
-                                                'declaration',
-                                                checked === true,
-                                            )
-                                        }
-                                        disabled={!isReady}
-                                        aria-describedby={
-                                            submission.errors.declaration
-                                                ? 'declaration-error'
-                                                : undefined
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="declaration"
-                                        className="leading-relaxed font-normal"
-                                    >
-                                        {t('applicant.declaration')}
-                                    </Label>
-                                </div>
-                                {submission.errors.declaration && (
-                                    <p
-                                        id="declaration-error"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {submission.errors.declaration}
-                                    </p>
-                                )}
-                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => goTo(step - 1)}
-                                    >
-                                        {t('common.previous')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        size="lg"
-                                        onClick={submit}
-                                        disabled={
-                                            !isReady ||
-                                            !submission.data.declaration ||
-                                            submission.processing
-                                        }
-                                        data-test="submit-application"
-                                    >
-                                        {submission.processing ? (
-                                            <Spinner />
-                                        ) : isReady ? (
-                                            <Send
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                        ) : (
-                                            <CheckCircle2
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                        )}
-                                        {isCorrection
-                                            ? t('applicant.resubmit')
-                                            : t('applicant.submit')}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </section>
                 )}
             </PageContainer>
