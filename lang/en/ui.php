@@ -185,6 +185,7 @@ return [
         'qr_hint' => 'Keep this code to return to the sign-in portal. It contains no personal data.',
         'card_title' => 'Student card',
         'card_description' => 'Your student number and QR code are permanent and do not change when you edit your account.',
+        'open_card' => 'View and print the student card',
         'print_card' => 'Print card',
         'access_code' => 'Access code',
         'code_title' => 'Verify your identity',

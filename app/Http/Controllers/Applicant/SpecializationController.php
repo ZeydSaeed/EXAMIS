@@ -20,9 +20,9 @@ use Inertia\Response;
 /**
  * The step right after registration: the student picks the branch and
  * specialization they apply for. The choice is saved into their draft for
- * the open exam period, so the application form starts with it. The
- * one-time access code flashed at registration is kept until the student
- * card shows it.
+ * the open exam period and the student continues straight to the
+ * application form. The one-time access code flashed at registration is
+ * kept until the form shows it.
  */
 class SpecializationController extends Controller
 {
@@ -88,7 +88,7 @@ class SpecializationController extends Controller
 
         $audit->record('application.specialization_chosen', $application, $validated);
 
-        return to_route('student.card');
+        return to_route('applications.edit', $application);
     }
 
     /**

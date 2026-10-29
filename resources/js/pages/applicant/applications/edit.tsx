@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { AccessCodeNotice } from '@/components/examis/access-code-notice';
 import { DocumentUploader } from '@/components/examis/document-uploader';
 import {
     describedBy,
@@ -58,6 +59,8 @@ type Props = {
         categories: ReferenceOption[];
     };
     step: number;
+    /** Present once, right after registration. */
+    accessCode: string | null;
 };
 
 type FormData = ApplicationForm & { lock_version: number };
@@ -107,6 +110,7 @@ export default function EditApplication({
     instructions,
     options,
     step: initialStep,
+    accessCode,
 }: Props) {
     const { t, locale } = useTrans();
     const [step, setStep] = useState(
@@ -317,6 +321,10 @@ export default function EditApplication({
                         />
                     }
                 />
+
+                {accessCode && (
+                    <AccessCodeNotice code={accessCode} showCardLink />
+                )}
 
                 {isCorrection && (
                     <Alert>

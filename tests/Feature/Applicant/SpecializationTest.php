@@ -16,7 +16,7 @@ beforeEach(function () {
     seedReferenceData();
 });
 
-test('registration leads to the branch and specialization page, then to the card with the access code', function () {
+test('registration leads to the branch and specialization page, then to the application form with the access code', function () {
     ExamPeriod::factory()->create();
 
     $this->withSession([ApplicationTermsController::SESSION_KEY => now()->toIso8601String()])
@@ -31,12 +31,19 @@ test('registration leads to the branch and specialization page, then to the card
         ->where('branches.0.specializations.0.name', 'كهرباء')
         ->has('branches', 5));
 
-    $this->post(route('apply.specialization.store'), ['branch_code' => 'IND', 'category_code' => 'IND_ELC'])
-        ->assertRedirect(route('student.card'));
+    $response = $this->post(route('apply.specialization.store'), ['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
+    $application = Application::query()->sole();
+    $response->assertRedirect(route('applications.edit', $application));
 
-    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page
+    $this->get(route('applications.edit', $application))->assertInertia(fn (Assert $page) => $page
+        ->component('applicant/applications/edit')
+        ->where('application.form.branch_code', 'IND')
+        ->where('application.form.category_code', 'IND_ELC')
         ->where('accessCode', fn ($code) => is_string($code) && $code !== '')
         ->etc());
+
+    // Shown once only.
+    $this->get(route('applications.edit', $application))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
 });
 
 test('the choice is saved into the draft for the open period and audited', function () {
@@ -45,7 +52,7 @@ test('the choice is saved into the draft for the open period and audited', funct
 
     $this->actingAs($student)
         ->post(route('apply.specialization.store'), ['branch_code' => 'COM', 'category_code' => 'COM_ACC'])
-        ->assertRedirect(route('student.card'));
+        ->assertRedirect();
 
     $application = Application::query()->where('user_id', $student->id)->sole();
 

@@ -1,7 +1,8 @@
 import { Head, setLayoutProps, useForm, usePage } from '@inertiajs/react';
-import { KeyRound, Printer, ShieldAlert } from 'lucide-react';
+import { KeyRound, Printer } from 'lucide-react';
 import { useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
+import { AccessCodeNotice } from '@/components/examis/access-code-notice';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { Button } from '@/components/ui/button';
@@ -69,31 +70,7 @@ export default function StudentCard({
                     }
                 />
 
-                {accessCode && (
-                    <section
-                        role="status"
-                        className="rounded-xl border border-warning/50 bg-warning/10 p-4 sm:p-6"
-                        aria-labelledby="new-code"
-                    >
-                        <h2
-                            id="new-code"
-                            className="flex items-center gap-2 font-semibold"
-                        >
-                            <ShieldAlert className="size-5" aria-hidden />
-                            {t('student.new_code_title')}
-                        </h2>
-                        <p
-                            dir="ltr"
-                            className="my-4 text-center font-mono text-2xl font-bold tracking-[0.3em] sm:text-3xl"
-                            data-test="access-code"
-                        >
-                            {accessCode}
-                        </p>
-                        <p className="text-sm leading-relaxed">
-                            {t('student.new_code_text')}
-                        </p>
-                    </section>
-                )}
+                {accessCode && <AccessCodeNotice code={accessCode} />}
 
                 <div className="grid gap-6 md:grid-cols-[auto_1fr]">
                     <section

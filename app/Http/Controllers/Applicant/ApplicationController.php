@@ -76,6 +76,8 @@ class ApplicationController extends Controller
                 'categories' => $this->eligible($referenceData->items(ReferenceType::Category), $period->eligible_category_codes),
             ],
             'step' => $request->integer('step', 1),
+            // Shown once, right after registration (ADR-0009).
+            'accessCode' => $request->session()->get('student.access_code'),
         ]);
     }
 
