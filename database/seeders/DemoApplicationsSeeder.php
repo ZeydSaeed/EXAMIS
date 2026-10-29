@@ -106,10 +106,6 @@ class DemoApplicationsSeeder extends Seeder
         'إعدادية النجاح', 'إعدادية الرافدين', 'ثانوية الفراهيدي', 'إعدادية المتنبي', 'ثانوية بلاد الرافدين', 'إعدادية الخوارزمي',
     ];
 
-    private const INTERMEDIATE_SCHOOLS = ['متوسطة الفرات', 'متوسطة الطف', 'متوسطة الكوثر', 'متوسطة الإمام الحسين'];
-
-    private const GRADES = ['الثالث المتوسط', 'الرابع الإعدادي', 'الخامس الإعدادي', 'السادس الإعدادي'];
-
     private CarbonInterface $clock;
 
     public function __construct(
@@ -211,10 +207,7 @@ class DemoApplicationsSeeder extends Seeder
             'birth_date' => Carbon::create(2000, 1, 1)->addDays(($index * 97) % 2500)->toDateString(),
             'district' => self::DISTRICTS[$index % count(self::DISTRICTS)],
             'school_name' => self::SCHOOLS[$index % count(self::SCHOOLS)].($gender === Gender::Male ? ' للبنين' : ' للبنات'),
-            'intermediate_school_name' => self::INTERMEDIATE_SCHOOLS[$index % count(self::INTERMEDIATE_SCHOOLS)].($gender === Gender::Male ? ' للبنين' : ' للبنات'),
-            'last_grade' => self::GRADES[$index % count(self::GRADES)],
-            'failed_years' => $index % 3,
-            'left_years' => intdiv($index, 3) % 4,
+            'school_governorate_code' => 'KRB',
             'branch_code' => self::SPECIALIZATIONS[$index % count(self::SPECIALIZATIONS)][1],
             'category_code' => self::SPECIALIZATIONS[$index % count(self::SPECIALIZATIONS)][0],
         ]);

@@ -61,8 +61,8 @@
             <td>{!! $value($application->school_name) !!}</td>
         </tr>
         <tr>
-            <td class="label">{{ __('receipt.intermediate_school') }}</td>
-            <td>{!! $value($application->intermediate_school_name) !!}</td>
+            <td class="label">{{ __('receipt.school_governorate') }}</td>
+            <td>{!! $value($schoolGovernorate) !!}</td>
         </tr>
     </table>
 
@@ -127,37 +127,9 @@
 
     <table class="form">
         <tr>
-            <td class="label" style="width: 27%;">{{ __('receipt.last_grade') }}</td>
-            <td>{!! $value($application->last_grade) !!}</td>
-        </tr>
-        <tr>
-            <td class="label">{{ __('receipt.failed_years') }}</td>
-            <td>{!! $value($application->failed_years) !!}</td>
-        </tr>
-        <tr>
-            <td class="label">{{ __('receipt.left_years') }}</td>
-            <td>{!! $value($application->left_years) !!}</td>
-        </tr>
-        <tr>
-            <td class="label">{{ __('receipt.other_info') }}</td>
+            <td class="label" style="width: 27%;">{{ __('receipt.other_info') }}</td>
             <td>{!! $value($application->other_info) !!}</td>
         </tr>
-    </table>
-
-    <table class="form">
-        <tr>
-            <td class="label" rowspan="5" style="width: 9%; text-align: center; font-size: 9.5pt;">{{ __('receipt.issued_documents') }}</td>
-            <td class="head" style="width: 14%;">{{ __('receipt.document_number') }}</td>
-            <td class="head" style="width: 16%;">{{ __('receipt.document_date') }}</td>
-            <td class="head">{{ __('receipt.document_recipient') }}</td>
-        </tr>
-        @foreach ($issuedDocuments as $document)
-            <tr>
-                <td class="center ltr" style="height: 6.6mm;">{!! $value($document['number'] ?? null) !!}</td>
-                <td class="center ltr" style="height: 6.6mm;">{!! $value($document['date'] ?? null) !!}</td>
-                <td style="height: 6.6mm;">{!! $value($document['recipient'] ?? null) !!}</td>
-            </tr>
-        @endforeach
     </table>
 
     <table class="form">

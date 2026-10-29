@@ -46,15 +46,11 @@ use Illuminate\Support\Str;
  * @property string|null $governorate_code
  * @property string|null $directorate_code
  * @property string|null $school_name
- * @property string|null $intermediate_school_name
- * @property string|null $last_grade
- * @property int|null $failed_years
- * @property int|null $left_years
+ * @property string|null $school_governorate_code
  * @property string|null $branch_code
  * @property string|null $category_code
  * @property int|null $previous_exam_year
  * @property string|null $other_info
- * @property list<array{number: string|null, date: string|null, recipient: string|null}>|null $issued_documents
  * @property CarbonImmutable|null $declaration_accepted_at
  * @property CarbonImmutable|null $submitted_at
  * @property CarbonImmutable|null $last_submitted_at
@@ -95,8 +91,7 @@ class Application extends Model
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
         'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
-        'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
-        'branch_code', 'category_code', 'other_info', 'issued_documents',
+        'school_name', 'school_governorate_code', 'branch_code', 'category_code', 'other_info',
     ];
 
     /**
@@ -106,8 +101,7 @@ class Application extends Model
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
         'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
-        'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
-        'branch_code', 'category_code',
+        'school_name', 'school_governorate_code', 'branch_code', 'category_code',
     ];
 
     /**
@@ -175,9 +169,6 @@ class Application extends Model
             'birth_date' => 'date',
             'lock_version' => 'integer',
             'previous_exam_year' => 'integer',
-            'failed_years' => 'integer',
-            'left_years' => 'integer',
-            'issued_documents' => 'array',
             'declaration_accepted_at' => 'datetime',
             'submitted_at' => 'datetime',
             'last_submitted_at' => 'datetime',

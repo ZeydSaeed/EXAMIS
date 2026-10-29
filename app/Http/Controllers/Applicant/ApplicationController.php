@@ -64,15 +64,13 @@ class ApplicationController extends Controller
         }
 
         $application->load(['examPeriod.documentTypes', 'currentDocuments.documentType']);
-        $period = $application->examPeriod;
 
         return Inertia::render('applicant/applications/edit', [
             'application' => ApplicationResource::make($application)->resolve(),
             'documentTypes' => $this->documentTypes($application),
             'missing' => $application->missingRequirements(),
             'options' => [
-                'branches' => $this->eligible($referenceData->items(ReferenceType::Branch), $period->eligible_branch_codes),
-                'categories' => $this->eligible($referenceData->items(ReferenceType::Category), $period->eligible_category_codes),
+                'governorates' => $referenceData->items(ReferenceType::Governorate),
             ],
             'step' => $request->integer('step', 1),
         ]);
@@ -106,19 +104,5 @@ class ApplicationController extends Controller
                 'is_photo' => $type->is_photo,
             ])
             ->all());
-    }
-
-    /**
-     * @param  list<array{code: string, parent_code: string|null, name_ar: string, name_en: string}>  $items
-     * @param  list<string>|null  $eligibleCodes
-     * @return list<array{code: string, parent_code: string|null, name_ar: string, name_en: string}>
-     */
-    private function eligible(array $items, ?array $eligibleCodes): array
-    {
-        if ($eligibleCodes === null) {
-            return $items;
-        }
-
-        return array_values(array_filter($items, fn (array $item): bool => in_array($item['code'], $eligibleCodes, true)));
     }
 }

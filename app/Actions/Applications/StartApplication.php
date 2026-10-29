@@ -83,7 +83,7 @@ class StartApplication
 
         return $latest->only([
             ...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS,
-            'birth_date', 'gender', 'national_id_number', 'district', 'mahalla', 'alley', 'house_number', 'school_name', 'intermediate_school_name',
+            'birth_date', 'gender', 'national_id_number', 'district', 'mahalla', 'alley', 'house_number', 'school_name', 'school_governorate_code',
         ]);
     }
 }

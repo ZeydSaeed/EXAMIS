@@ -2,8 +2,10 @@
 
 namespace App\Services\Receipts;
 
+use App\Enums\ReferenceType;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
+use App\Services\ReferenceData;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Config\ConfigVariables;
@@ -76,7 +78,7 @@ class ReceiptRenderer
             'hasPhoto' => $photo !== null,
             'nameParts' => array_values($application->only(Application::NAME_PARTS)),
             'motherNameParts' => array_values($application->only(Application::MOTHER_NAME_PARTS)),
-            'issuedDocuments' => array_pad(array_slice($application->issued_documents ?? [], 0, 4), 4, null),
+            'schoolGovernorate' => app(ReferenceData::class)->name(ReferenceType::Governorate, $application->school_governorate_code),
             'verificationUrl' => route('receipts.verify', $application->verification_token),
             'generatedAt' => now(),
         ])->render());

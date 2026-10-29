@@ -93,20 +93,8 @@ export async function completeApplicationForm(page: Page): Promise<void> {
 
     await expect(page.locator('#school_name')).toBeVisible();
     await page.locator('#school_name').fill('إعدادية الفردوس للبنات');
-    await page
-        .locator('#intermediate_school_name')
-        .fill('متوسطة الكوثر للبنات');
-    await page.locator('#last_grade').fill('الخامس الإعدادي');
-    await page.locator('#failed_years').fill('0');
-    await page.locator('#left_years').fill('1');
-    await page.locator('#branch_code').selectOption('COM');
-    await page.locator('#category_code').selectOption('COM_ACC');
-    await page.getByTestId('add-issued-document').click();
-    await page.locator('#issued_documents_0_number').fill('1452');
-    await page.locator('#issued_documents_0_date').fill('2025-09-01');
-    await page
-        .locator('#issued_documents_0_recipient')
-        .fill('مديرية تربية كربلاء');
+    await page.locator('#school_governorate_code').selectOption('KRB');
+    // The branch and specialization are chosen on their own page.
     await page.getByTestId('next-step').click();
 
     await uploadDocument(page, 'participation_request', pdfFile('request.pdf'));

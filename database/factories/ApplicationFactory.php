@@ -50,10 +50,7 @@ class ApplicationFactory extends Factory
             'alley' => (string) fake()->numberBetween(1, 60),
             'house_number' => (string) fake()->numberBetween(1, 200),
             'school_name' => 'إعدادية النجاح للبنين',
-            'intermediate_school_name' => 'متوسطة الفرات للبنين',
-            'last_grade' => 'الخامس الإعدادي',
-            'failed_years' => 0,
-            'left_years' => 1,
+            'school_governorate_code' => 'KRB',
             'branch_code' => 'IND',
             'category_code' => 'IND_ELC',
         ]);

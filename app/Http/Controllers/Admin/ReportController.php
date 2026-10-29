@@ -66,8 +66,8 @@ class ReportController extends Controller
             fwrite($output, "\xEF\xBB\xBF");
             fputcsv($output, [
                 'reference_number', 'status', 'full_name_ar', 'mother_name_ar', 'gender', 'birth_date', 'phone',
-                'district', 'mahalla', 'alley', 'house_number', 'last_school', 'intermediate_school', 'last_grade',
-                'failed_years', 'left_years', 'branch', 'specialization', 'submitted_at',
+                'district', 'mahalla', 'alley', 'house_number', 'last_school', 'school_governorate',
+                'branch', 'specialization', 'submitted_at',
             ], escape: '');
 
             Application::query()
@@ -89,10 +89,7 @@ class ReportController extends Controller
                         (string) $application->alley,
                         (string) $application->house_number,
                         (string) $application->school_name,
-                        (string) $application->intermediate_school_name,
-                        (string) $application->last_grade,
-                        (string) $application->failed_years,
-                        (string) $application->left_years,
+                        (string) $referenceData->name(ReferenceType::Governorate, $application->school_governorate_code),
                         (string) $referenceData->name(ReferenceType::Branch, $application->branch_code),
                         (string) $referenceData->name(ReferenceType::Category, $application->category_code),
                         (string) $application->submitted_at?->toIso8601String(),

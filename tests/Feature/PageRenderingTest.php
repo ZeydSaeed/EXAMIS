@@ -28,16 +28,16 @@ it('sends staff from the applicant dashboard to the admin area', function () {
     $this->actingAs(staffWith(Role::Reviewer))->get(route('dashboard'))->assertRedirect(route('admin.home'));
 });
 
-it('renders the application form with eligible options and what is missing', function () {
+it('renders the application form with the governorates and what is missing', function () {
     $application = readyDraft();
-    $application->examPeriod->update(['eligible_branch_codes' => ['IND']]);
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))
         ->assertInertia(fn (Assert $page) => $page
             ->component('applicant/applications/edit')
             ->where('application.lock_version', 1)
-            ->has('options.branches', 1)
-            ->where('options.branches.0.code', 'IND')
+            ->has('options.governorates', 18)
+            ->missing('options.branches')
+            ->where('application.labels.school_governorate', 'كربلاء')
             ->has('documentTypes', 1)
             ->where('missing.fields', [])
             ->where('missing.documents', []));

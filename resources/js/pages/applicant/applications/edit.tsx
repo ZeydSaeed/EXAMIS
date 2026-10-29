@@ -9,11 +9,9 @@ import {
 import {
     AlertTriangle,
     CheckCircle2,
-    Plus,
     RefreshCw,
     Save,
     Send,
-    Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -37,11 +35,11 @@ import { applicationSummary } from '@/lib/application-summary';
 import { formatDate } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
+import apply from '@/routes/apply';
 import type {
     Application,
     ApplicationForm,
     DocumentRequirement,
-    IssuedDocument,
     MissingRequirements,
     ReferenceOption,
 } from '@/types';
@@ -51,19 +49,15 @@ type Props = {
     documentTypes: DocumentRequirement[];
     missing: MissingRequirements;
     options: {
-        branches: ReferenceOption[];
-        /** Specializations; `parent_code` is the branch. */
-        categories: ReferenceOption[];
+        /** For the governorate of the last school. */
+        governorates: ReferenceOption[];
     };
     step: number;
 };
 
 type FormData = ApplicationForm & { lock_version: number };
 
-type TextField = Exclude<keyof ApplicationForm, 'issued_documents'>;
-
-/** Rows of "documents issued for study purposes" on the official form. */
-const MAX_ISSUED_DOCUMENTS = 4;
+type TextField = keyof ApplicationForm;
 
 const STEPS = [
     'personal',
@@ -88,14 +82,10 @@ const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
     contact: ['district', 'mahalla', 'alley', 'house_number', 'phone'],
     education: [
         'school_name',
-        'intermediate_school_name',
-        'last_grade',
-        'failed_years',
-        'left_years',
+        'school_governorate_code',
         'branch_code',
         'category_code',
         'other_info',
-        'issued_documents',
     ],
     documents: [],
     review: [],
@@ -249,29 +239,11 @@ export default function EditApplication({
         </select>
     );
 
-    const specializations = options.categories.filter(
-        (item) => item.parent_code === form.data.branch_code,
-    );
-    const chooseBranch = (branch: string | null) =>
-        form.setData((data) => ({
-            ...data,
-            branch_code: branch,
-            category_code: options.categories.some(
-                (item) =>
-                    item.code === data.category_code &&
-                    item.parent_code === branch,
-            )
-                ? data.category_code
-                : null,
-        }));
     const folderColorKey = `fields.folder_colors.${form.data.branch_code}`;
     const folderColorHint =
         form.data.branch_code && t(folderColorKey) !== folderColorKey
             ? t('fields.folder_color', { color: t(folderColorKey) })
             : undefined;
-    const issuedDocuments = form.data.issued_documents ?? [];
-    const setIssuedDocuments = (rows: IssuedDocument[]) =>
-        form.setData('issued_documents', rows);
     const documentsByType = Object.fromEntries(
         (application.documents ?? []).map((document) => [
             document.document_type,
@@ -602,111 +574,65 @@ export default function EditApplication({
                                     {input('school_name')}
                                 </Field>
                                 <Field
-                                    id="intermediate_school_name"
-                                    label={t('fields.intermediate_school_name')}
-                                    error={form.errors.intermediate_school_name}
-                                    required
-                                >
-                                    {input('intermediate_school_name')}
-                                </Field>
-                                <Field
-                                    id="last_grade"
-                                    label={t('fields.last_grade')}
-                                    hint={t('fields.last_grade_hint')}
-                                    error={form.errors.last_grade}
-                                    required
-                                    className="sm:col-span-2"
-                                >
-                                    {input('last_grade')}
-                                </Field>
-                                <Field
-                                    id="failed_years"
-                                    label={t('fields.failed_years')}
-                                    hint={t('fields.years_hint')}
-                                    error={form.errors.failed_years}
-                                    required
-                                >
-                                    {input('failed_years', {
-                                        type: 'number',
-                                        inputMode: 'numeric',
-                                        dir: 'ltr',
-                                        min: 0,
-                                        max: 20,
-                                    })}
-                                </Field>
-                                <Field
-                                    id="left_years"
-                                    label={t('fields.left_years')}
-                                    hint={t('fields.years_hint')}
-                                    error={form.errors.left_years}
-                                    required
-                                >
-                                    {input('left_years', {
-                                        type: 'number',
-                                        inputMode: 'numeric',
-                                        dir: 'ltr',
-                                        min: 0,
-                                        max: 20,
-                                    })}
-                                </Field>
-                                <Field
-                                    id="branch_code"
-                                    label={t('fields.branch')}
-                                    hint={folderColorHint}
-                                    error={form.errors.branch_code}
-                                    required
-                                >
-                                    <select
-                                        id="branch_code"
-                                        name="branch_code"
-                                        className={selectClassName}
-                                        value={form.data.branch_code ?? ''}
-                                        onChange={(event) =>
-                                            chooseBranch(
-                                                event.target.value || null,
-                                            )
-                                        }
-                                        aria-invalid={
-                                            form.errors.branch_code
-                                                ? true
-                                                : undefined
-                                        }
-                                        aria-describedby={describedBy(
-                                            'branch_code',
-                                            folderColorHint,
-                                            form.errors.branch_code,
-                                        )}
-                                    >
-                                        <option value="">
-                                            {t('common.choose')}
-                                        </option>
-                                        {options.branches.map((item) => (
-                                            <option
-                                                key={item.code}
-                                                value={item.code}
-                                            >
-                                                {optionName(item)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </Field>
-                                <Field
-                                    id="category_code"
-                                    label={t('fields.category')}
-                                    error={form.errors.category_code}
+                                    id="school_governorate_code"
+                                    label={t('fields.school_governorate')}
+                                    error={form.errors.school_governorate_code}
                                     required
                                 >
                                     {select(
-                                        'category_code',
-                                        specializations.map((item) => ({
+                                        'school_governorate_code',
+                                        options.governorates.map((item) => ({
                                             value: item.code,
                                             label: optionName(item),
                                         })),
-                                        form.data.branch_code
-                                            ? t('common.choose')
-                                            : t('fields.choose_branch_first'),
                                     )}
                                 </Field>
+                                {/* Chosen on the branch page after registration; read-only here. */}
+                                <Field
+                                    id="branch_readonly"
+                                    label={t('fields.branch')}
+                                    hint={folderColorHint}
+                                >
+                                    <Input
+                                        id="branch_readonly"
+                                        value={application.labels.branch ?? '—'}
+                                        readOnly
+                                        aria-readonly
+                                        aria-describedby={
+                                            folderColorHint
+                                                ? 'branch_readonly-hint'
+                                                : undefined
+                                        }
+                                        className="bg-muted"
+                                        data-test="branch-readonly"
+                                    />
+                                </Field>
+                                <Field
+                                    id="category_readonly"
+                                    label={t('fields.category')}
+                                >
+                                    <Input
+                                        id="category_readonly"
+                                        value={
+                                            application.labels.category ?? '—'
+                                        }
+                                        readOnly
+                                        aria-readonly
+                                        className="bg-muted"
+                                        data-test="category-readonly"
+                                    />
+                                </Field>
+                                {!form.data.branch_code && (
+                                    <p className="text-sm sm:col-span-2">
+                                        {t('fields.branch_not_chosen')}{' '}
+                                        <Link
+                                            href={apply.specialization()}
+                                            className="font-medium underline underline-offset-4"
+                                        >
+                                            {t('fields.choose_branch_link')}
+                                        </Link>
+                                    </p>
+                                )}
                                 <Field
                                     id="other_info"
                                     label={t('fields.other_info')}
@@ -740,150 +666,6 @@ export default function EditApplication({
                                         )}
                                     />
                                 </Field>
-                                <fieldset className="grid gap-3 sm:col-span-2">
-                                    <legend className="text-sm font-medium">
-                                        {t('fields.issued_documents')}
-                                    </legend>
-                                    <p className="-mt-1 text-xs text-muted-foreground">
-                                        {t('fields.issued_documents_hint', {
-                                            max: MAX_ISSUED_DOCUMENTS,
-                                        })}
-                                    </p>
-                                    {issuedDocuments.map((row, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_2fr_auto] sm:items-end"
-                                            data-test={`issued-document-${index}`}
-                                        >
-                                            {(
-                                                [
-                                                    [
-                                                        'number',
-                                                        'fields.document_number',
-                                                        {
-                                                            dir: 'ltr',
-                                                        },
-                                                    ],
-                                                    [
-                                                        'date',
-                                                        'fields.document_date',
-                                                        { type: 'date' },
-                                                    ],
-                                                    [
-                                                        'recipient',
-                                                        'fields.document_recipient',
-                                                        {},
-                                                    ],
-                                                ] as const
-                                            ).map(([key, label, props]) => {
-                                                const id = `issued_documents_${index}_${key}`;
-                                                const error =
-                                                    errors[
-                                                        `issued_documents.${index}.${key}`
-                                                    ];
-
-                                                return (
-                                                    <Field
-                                                        key={key}
-                                                        id={id}
-                                                        label={t(label)}
-                                                        error={error}
-                                                    >
-                                                        <Input
-                                                            id={id}
-                                                            value={
-                                                                row[key] ?? ''
-                                                            }
-                                                            onChange={(event) =>
-                                                                setIssuedDocuments(
-                                                                    issuedDocuments.map(
-                                                                        (
-                                                                            item,
-                                                                            position,
-                                                                        ) =>
-                                                                            position ===
-                                                                            index
-                                                                                ? {
-                                                                                      ...item,
-                                                                                      [key]:
-                                                                                          event
-                                                                                              .target
-                                                                                              .value ||
-                                                                                          null,
-                                                                                  }
-                                                                                : item,
-                                                                    ),
-                                                                )
-                                                            }
-                                                            aria-invalid={
-                                                                error
-                                                                    ? true
-                                                                    : undefined
-                                                            }
-                                                            aria-describedby={describedBy(
-                                                                id,
-                                                                undefined,
-                                                                error,
-                                                            )}
-                                                            {...props}
-                                                        />
-                                                    </Field>
-                                                );
-                                            })}
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    setIssuedDocuments(
-                                                        issuedDocuments.filter(
-                                                            (_, position) =>
-                                                                position !==
-                                                                index,
-                                                        ),
-                                                    )
-                                                }
-                                                aria-label={t(
-                                                    'fields.remove_document',
-                                                )}
-                                                title={t(
-                                                    'fields.remove_document',
-                                                )}
-                                            >
-                                                <Trash2
-                                                    className="size-4"
-                                                    aria-hidden
-                                                />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                    {issuedDocuments.length <
-                                        MAX_ISSUED_DOCUMENTS && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            className="justify-self-start"
-                                            onClick={() =>
-                                                setIssuedDocuments([
-                                                    ...issuedDocuments,
-                                                    {
-                                                        number: null,
-                                                        date: null,
-                                                        recipient: null,
-                                                    },
-                                                ])
-                                            }
-                                            data-test="add-issued-document"
-                                        >
-                                            <Plus
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                            {t('fields.add_document')}
-                                        </Button>
-                                    )}
-                                </fieldset>
                             </div>
                         )}
 

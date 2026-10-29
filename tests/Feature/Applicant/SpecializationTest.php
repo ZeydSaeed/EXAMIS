@@ -112,3 +112,15 @@ test('staff are sent away from this page', function () {
         ->get(route('apply.specialization'))
         ->assertRedirect(route('dashboard'));
 });
+
+test('only branches eligible in the period are offered and accepted', function () {
+    ExamPeriod::factory()->create(['eligible_branch_codes' => ['IND']]);
+    $student = User::factory()->student()->create();
+
+    $this->actingAs($student)->get(route('apply.specialization'))->assertInertia(fn (Assert $page) => $page
+        ->has('branches', 1)
+        ->where('branches.0.code', 'IND'));
+
+    $this->post(route('apply.specialization.store'), ['branch_code' => 'COM', 'category_code' => 'COM_ACC'])
+        ->assertSessionHasErrors('branch_code');
+});

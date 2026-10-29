@@ -44,6 +44,7 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         'great_grandfather_name' => 'جاسم',
         'mother_first_name' => 'زهراء',
         'mother_father_name' => 'كاظم',
+        'school_governorate_code' => 'BGD',
         'reference_number' => 'EX2027-0000019',
     ]);
 
@@ -61,7 +62,8 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($text)->toContain(visualOrder('عبد الكريم'))
         ->and($text)->toContain(visualOrder('زهراء'))
         ->and($text)->toContain(visualOrder('كاظم'))
-        ->and($text)->toContain(visualOrder('متوسطة الفرات للبنين'))
+        // The last school's governorate ("كربلاء" would not do: its lam-alef is one glyph).
+        ->and($text)->toContain(visualOrder('بغداد'))
         ->and($text)->toContain(visualOrder('حي الحسين'))
         ->and($text)->toContain('2026-2027')
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);

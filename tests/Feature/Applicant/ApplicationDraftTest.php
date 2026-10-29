@@ -70,13 +70,11 @@ describe('saving a draft', function () {
                 'surname' => 'الموسوي',
                 'phone' => '07999999999',
                 'mahalla' => '٦٣٠',
-                'failed_years' => '٠',
+                'school_name' => 'إعدادية الصناعة',
+                'school_governorate_code' => 'BGD',
+                'intermediate_school_name' => 'لم يعد يُجمع',
                 'branch_code' => 'COM',
                 'category_code' => 'COM_ACC',
-                'issued_documents' => [
-                    ['number' => '1452', 'date' => '2025-09-01', 'recipient' => 'مديرية تربية كربلاء'],
-                    ['number' => null, 'date' => null, 'recipient' => null],
-                ],
             ])
             ->assertSessionHasNoErrors();
 
@@ -89,11 +87,11 @@ describe('saving a draft', function () {
             // The mobile number is the account's, whatever the request sends.
             ->and($application->phone)->toBe('07701234567')
             ->and($application->mahalla)->toBe('630')
-            ->and($application->failed_years)->toBe(0)
-            ->and($application->category_code)->toBe('COM_ACC')
-            ->and($application->issued_documents)->toBe([
-                ['number' => '1452', 'date' => '2025-09-01', 'recipient' => 'مديرية تربية كربلاء'],
-            ])
+            ->and($application->school_governorate_code)->toBe('BGD')
+            ->and($application->getAttributes())->not->toHaveKey('intermediate_school_name')
+            // The branch and specialization are chosen on their own page only.
+            ->and($application->branch_code)->toBeNull()
+            ->and($application->category_code)->toBeNull()
             ->and($application->lock_version)->toBe(2);
     });
 
@@ -107,28 +105,27 @@ describe('saving a draft', function () {
         expect($application->fresh()->governorate_code)->toBe(Application::GOVERNORATE_CODE);
     });
 
-    it('requires the specialization to belong to the chosen branch', function () {
-        $application = Application::factory()->create();
+    it('keeps the branch and specialization chosen on their page', function () {
+        $application = Application::factory()->create(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
 
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
                 'branch_code' => 'COM',
-                'category_code' => 'IND_ELC',
+                'category_code' => 'COM_ACC',
             ])
-            ->assertSessionHasErrors(['category_code' => __('applications.errors.specialization_branch')]);
+            ->assertSessionHasNoErrors();
+
+        expect($application->fresh()->only(['branch_code', 'category_code']))
+            ->toBe(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
     });
 
-    it('accepts at most four issued documents', function () {
+    it('accepts only a known governorate for the last school', function () {
         $application = Application::factory()->create();
-        $row = ['number' => '1', 'date' => '2025-01-01', 'recipient' => 'مدرسة'];
 
         $this->actingAs($application->user)
-            ->put(route('applications.update', $application), [
-                'lock_version' => 1,
-                'issued_documents' => array_fill(0, 5, $row),
-            ])
-            ->assertSessionHasErrors('issued_documents');
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'school_governorate_code' => 'XXX'])
+            ->assertSessionHasErrors('school_governorate_code');
     });
 
     it('rejects a save based on a stale version instead of overwriting', function () {
@@ -152,21 +149,12 @@ describe('saving a draft', function () {
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
                 'father_name' => 'Ali',
-                'branch_code' => 'ATLANTIS',
+                'school_governorate_code' => 'ATLANTIS',
             ])
             ->assertSessionHasErrors([
                 'father_name' => 'يجب كتابة اسم الأب بالأحرف العربية فقط.',
-                'branch_code' => 'القيمة المختارة في الفرع غير صالحة.',
+                'school_governorate_code' => 'القيمة المختارة في المحافظة غير صالحة.',
             ]);
-    });
-
-    it('only offers branches eligible for the period', function () {
-        $period = ExamPeriod::factory()->create(['eligible_branch_codes' => ['IND']]);
-        $application = Application::factory()->create(['exam_period_id' => $period->id]);
-
-        $this->actingAs($application->user)
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'branch_code' => 'COM'])
-            ->assertSessionHasErrors('branch_code');
     });
 
     it('answers 404 when another applicant tries to edit', function () {

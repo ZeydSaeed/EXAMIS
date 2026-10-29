@@ -25,12 +25,6 @@ export function applicationSummary(
     ]
         .filter(Boolean)
         .join(t('fields.address_separator'));
-    const documents = (form.issued_documents ?? [])
-        .map((row) =>
-            [row.number, row.date, row.recipient].filter(Boolean).join(' — '),
-        )
-        .filter(Boolean)
-        .join('\n');
 
     return [
         [
@@ -52,14 +46,10 @@ export function applicationSummary(
         [t('fields.address'), address || null],
         [t('fields.phone'), form.phone],
         [t('fields.school_name'), form.school_name],
-        [t('fields.intermediate_school_name'), form.intermediate_school_name],
-        [t('fields.last_grade'), form.last_grade],
-        [t('fields.failed_years'), form.failed_years],
-        [t('fields.left_years'), form.left_years],
+        [t('fields.school_governorate'), application.labels.school_governorate],
         [t('fields.branch'), application.labels.branch],
         [t('fields.category'), application.labels.category],
         [t('fields.other_info'), form.other_info],
-        [t('fields.issued_documents'), documents || null],
     ];
 }
 
