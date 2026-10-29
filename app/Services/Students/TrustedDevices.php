@@ -81,10 +81,13 @@ class TrustedDevices
 
     /**
      * Forget every remembered device of the account, optionally keeping the
-     * one making this request. Returns how many were revoked.
+     * one making this request, and rotate the remember token so every
+     * "remember me" session ends too. Returns how many devices were revoked.
      */
     public function revokeAll(User $user, ?TrustedDevice $except = null): int
     {
+        $user->forceFill(['remember_token' => Str::random(60)])->save();
+
         return $user->trustedDevices()
             ->whereNull('revoked_at')
             ->when($except !== null, fn ($query) => $query->whereKeyNot($except->id))

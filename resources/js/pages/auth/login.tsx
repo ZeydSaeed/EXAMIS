@@ -6,6 +6,7 @@ import { MobileInput } from '@/components/examis/mobile-input';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -166,6 +167,17 @@ export default function Login({ status, canRegister }: Props) {
                                     </>
                                 )}
                                 <InputError message={errors.identifier} />
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Checkbox
+                                    id="remember"
+                                    name="remember"
+                                    value="1"
+                                />
+                                <Label htmlFor="remember">
+                                    {t('auth.remember_me')}
+                                </Label>
                             </div>
 
                             <Button

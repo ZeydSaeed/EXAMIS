@@ -22,11 +22,14 @@ use Laravel\Fortify\Fortify;
  * identifier is never enough on its own: the browser must be a remembered
  * device of that account, or the student must enter their private access
  * code. Unknown identifiers go through the same code step so the form does
- * not reveal which accounts exist.
+ * not reveal which accounts exist. "Remember me" keeps the session signed
+ * in after the browser closes.
  */
 class StudentLoginController extends Controller
 {
     private const PENDING = 'student_login.id';
+
+    private const REMEMBER = 'student_login.remember';
 
     public function __construct(
         private StudentIdentity $identity,
@@ -36,7 +39,12 @@ class StudentLoginController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $request->validate(['identifier' => ['required', 'string', 'max:64']]);
+        $request->validate([
+            'identifier' => ['required', 'string', 'max:64'],
+            'remember' => ['nullable', 'boolean'],
+        ]);
+
+        $request->session()->put(self::REMEMBER, $request->boolean('remember'));
 
         return $this->begin($request, $this->identity->findByIdentifier((string) $request->input('identifier')));
     }
@@ -56,6 +64,8 @@ class StudentLoginController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
         }
+
+        $request->session()->forget(self::REMEMBER);
 
         return $this->begin($request, $this->identity->findByPublicId($publicId));
     }
@@ -125,9 +135,10 @@ class StudentLoginController extends Controller
 
     private function signIn(Request $request, User $user): RedirectResponse
     {
+        $remember = (bool) $request->session()->pull(self::REMEMBER, false);
         $request->session()->forget(self::PENDING);
 
-        Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user, $remember);
         $request->session()->regenerate();
 
         return redirect()->intended(Fortify::redirects('login'));

@@ -25,6 +25,10 @@ knows it impersonate the student.
   code step, so the form does not reveal which accounts exist.
 - Trusted devices: encrypted HttpOnly cookie `id|token`; only the SHA-256
   of the token is stored; 180-day expiry; revocable.
+- "Remember me" (2026-10-29), opt-in on `/login`: the session survives
+  closing the browser through Laravel's remember cookie. Revoking devices
+  (code regeneration or an administrator reset) rotates `remember_token`,
+  so those sessions end as well.
 - The QR encodes `/s/{public_id}`: no personal data, and it goes through
   the same checks. It is not an open key to the account.
 - Code attempts are limited per account (10/hour) as well as per IP and

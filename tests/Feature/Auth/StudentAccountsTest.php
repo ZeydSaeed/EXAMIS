@@ -67,6 +67,35 @@ test('the correct access code signs in and can remember the device', function ()
     expect($user->trustedDevices()->count())->toBe(1);
 });
 
+test('remember me keeps the student signed in after the browser closes', function () {
+    $user = User::factory()->student()->create();
+
+    $this->post(route('student.login'), ['identifier' => $user->username, 'remember' => '1']);
+
+    $response = $this->post(route('student.verify'), ['access_code' => 'abcde23456'])
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $response->assertCookie(auth()->guard('web')->getRecallerName());
+    expect($user->fresh()->remember_token)->not->toBeNull();
+});
+
+test('without remember me the sign-in lasts only for the session', function () {
+    $user = User::factory()->student()->create();
+
+    $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
+        ->post(route('student.login'), ['identifier' => $user->username])
+        ->assertRedirect(route('dashboard', absolute: false))
+        ->assertCookieMissing(auth()->guard('web')->getRecallerName());
+});
+
+test('revoking devices also ends remember me sessions', function () {
+    $user = User::factory()->student()->create(['remember_token' => 'old-token']);
+
+    app(TrustedDevices::class)->revokeAll($user);
+
+    expect($user->fresh()->remember_token)->not->toBe('old-token');
+});
+
 test('a wrong access code fails with a generic message and is audited', function () {
     $user = User::factory()->student()->create();
 
