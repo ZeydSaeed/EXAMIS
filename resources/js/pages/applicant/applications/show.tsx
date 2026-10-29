@@ -101,19 +101,9 @@ export default function ShowApplication({
                         t('applicant.application')
                     }
                     description={
-                        application.reference_number ? (
-                            <>
-                                {t('track.reference_number')}:{' '}
-                                <bdi
-                                    dir="ltr"
-                                    className="font-semibold text-foreground"
-                                >
-                                    {application.reference_number}
-                                </bdi>
-                            </>
-                        ) : (
-                            t('applicant.not_submitted_yet')
-                        )
+                        application.reference_number
+                            ? undefined
+                            : t('applicant.not_submitted_yet')
                     }
                     actions={
                         <>
