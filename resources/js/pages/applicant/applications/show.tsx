@@ -49,8 +49,7 @@ export default function ShowApplication({
         breadcrumbs: [
             { title: t('nav.my_applications'), href: dashboard() },
             {
-                title:
-                    application.reference_number ?? t('applicant.application'),
+                title: t('applicant.application'),
                 href: applications.show(application.uuid),
             },
         ],
