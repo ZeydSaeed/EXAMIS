@@ -60,6 +60,7 @@ return [
         'national_id_number' => 'national ID number',
         'school_name' => 'last school',
         'school_governorate_code' => 'governorate',
+        'last_grade' => 'last grade',
         'branch_code' => 'branch',
         'category_code' => 'specialization',
         'document_type' => 'document type',

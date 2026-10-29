@@ -55,6 +55,7 @@ class ApplicationResource extends JsonResource
                 'house_number' => $this->house_number,
                 'school_name' => $this->school_name,
                 'school_governorate_code' => $this->school_governorate_code,
+                'last_grade' => $this->last_grade,
                 'branch_code' => $this->branch_code,
                 'category_code' => $this->category_code,
                 'other_info' => $this->other_info,

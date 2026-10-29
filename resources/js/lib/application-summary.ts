@@ -76,6 +76,7 @@ export function applicationSummarySections(
                     t('fields.school_governorate'),
                     application.labels.school_governorate,
                 ],
+                [t('fields.last_grade'), form.last_grade],
                 [t('fields.branch'), application.labels.branch],
                 [t('fields.category'), application.labels.category],
                 [t('fields.other_info'), form.other_info],

@@ -133,6 +133,7 @@ return [
         'phone' => 'رقم الهاتف',
         'school_name' => 'اسم آخر مدرسة كان فيها الطالب',
         'school_governorate_code' => 'المحافظة',
+        'last_grade' => 'آخر صف كان فيه الطالب',
         'branch_code' => 'الفرع',
         'category_code' => 'الاختصاص',
         'document_type' => 'نوع المستند',

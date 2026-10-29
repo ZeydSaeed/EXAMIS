@@ -51,6 +51,7 @@ use Illuminate\Support\Str;
  * @property string|null $directorate_code
  * @property string|null $school_name
  * @property string|null $school_governorate_code
+ * @property string|null $last_grade
  * @property string|null $branch_code
  * @property string|null $category_code
  * @property int|null $previous_exam_year
@@ -96,7 +97,7 @@ class Application extends Model
         'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
         'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
-        'school_name', 'school_governorate_code', 'branch_code', 'category_code', 'other_info',
+        'school_name', 'school_governorate_code', 'last_grade', 'branch_code', 'category_code', 'other_info',
     ];
 
     /**

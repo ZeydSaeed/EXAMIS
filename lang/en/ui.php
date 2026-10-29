@@ -296,6 +296,7 @@ return [
         'address' => 'Permanent address',
         'school_name' => 'Last school the student attended',
         'school_governorate' => 'Governorate',
+        'last_grade' => 'Last grade the student attended',
         'branch_not_chosen' => 'You have not chosen your branch and specialization yet.',
         'choose_branch_link' => 'Choose the branch and specialization',
         'branch' => 'Branch',

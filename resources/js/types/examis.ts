@@ -29,6 +29,8 @@ export type ApplicationForm = {
     /** The last school attended. */
     school_name: string | null;
     school_governorate_code: string | null;
+    /** The last grade the student attended. */
+    last_grade: string | null;
     branch_code: string | null;
     /** The specialization within the branch. */
     category_code: string | null;

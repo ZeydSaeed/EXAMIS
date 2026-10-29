@@ -90,6 +90,7 @@ const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
     education: [
         'school_name',
         'school_governorate_code',
+        'last_grade',
         'branch_code',
         'category_code',
         'other_info',
@@ -664,6 +665,14 @@ export default function EditApplication({
                                             label: optionName(item),
                                         })),
                                     )}
+                                </Field>
+                                <Field
+                                    id="last_grade"
+                                    label={t('fields.last_grade')}
+                                    error={form.errors.last_grade}
+                                    className="sm:col-span-2"
+                                >
+                                    {input('last_grade', { maxLength: 60 })}
                                 </Field>
                                 {/* Chosen on the branch page after registration; read-only here. */}
                                 <Field

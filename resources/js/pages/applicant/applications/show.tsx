@@ -1,4 +1,4 @@
-import { Head, Link, setLayoutProps, useForm, usePage } from "@inertiajs/react";
+import { Head, Link, setLayoutProps, useForm, usePage } from '@inertiajs/react';
 import {
     CheckCircle2,
     FileDown,
@@ -6,28 +6,28 @@ import {
     Pencil,
     Printer,
     XCircle,
-} from "lucide-react";
-import { useState } from "react";
-import { ApplicationSummaryTable } from "@/components/examis/application-summary-table";
-import { ConfirmDialog } from "@/components/examis/confirm-dialog";
-import { textareaClassName } from "@/components/examis/field";
-import { PageContainer, PageHeader } from "@/components/examis/page-header";
-import { StatusBadge } from "@/components/examis/status-badge";
-import { Timeline } from "@/components/examis/timeline";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useTrans } from "@/hooks/use-trans";
-import { applicationSummary } from "@/lib/application-summary";
-import { formatDateTime, formatFileSize } from "@/lib/format";
-import { dashboard } from "@/routes";
-import applications from "@/routes/applications";
-import apply from "@/routes/apply";
+} from 'lucide-react';
+import { useState } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
+import { ConfirmDialog } from '@/components/examis/confirm-dialog';
+import { textareaClassName } from '@/components/examis/field';
+import { PageContainer, PageHeader } from '@/components/examis/page-header';
+import { StatusBadge } from '@/components/examis/status-badge';
+import { Timeline } from '@/components/examis/timeline';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
+import { formatDateTime, formatFileSize } from '@/lib/format';
+import { dashboard } from '@/routes';
+import applications from '@/routes/applications';
+import apply from '@/routes/apply';
 import type {
     Application,
     DocumentRequirement,
     MissingRequirements,
-} from "@/types";
+} from '@/types';
 
 type Props = {
     application: Application;
@@ -44,13 +44,13 @@ export default function ShowApplication({
     const { t, locale } = useTrans();
     const { flash } = usePage();
     const [withdrawOpen, setWithdrawOpen] = useState(false);
-    const withdrawal = useForm({ reason: "", confirm: true });
+    const withdrawal = useForm({ reason: '', confirm: true });
 
     setLayoutProps({
         breadcrumbs: [
-            { title: t("nav.my_applications"), href: dashboard() },
+            { title: t('nav.my_applications'), href: dashboard() },
             {
-                title: t("applicant.application"),
+                title: t('applicant.application'),
                 href: applications.show(application.uuid),
             },
         ],
@@ -60,8 +60,13 @@ export default function ShowApplication({
         flash as { submitted?: { reference_number: string | null } }
     ).submitted;
     const awaitingReview =
-        application.status === "submitted" ||
-        application.status === "resubmitted";
+        application.status === 'submitted' ||
+        application.status === 'resubmitted';
+    const nextStep = (
+        ['submitted', 'resubmitted', 'under_review'] as string[]
+    ).includes(application.status)
+        ? t(`applicant.next_step.${application.status}`)
+        : null;
     const latestReason = [...(application.events ?? [])]
         .reverse()
         .find((event) => event.reason)?.reason;
@@ -70,7 +75,7 @@ export default function ShowApplication({
 
     return (
         <>
-            <Head title={t("applicant.application")} />
+            <Head title={t('applicant.application')} />
             <PageContainer className="max-w-4xl">
                 {submitted && (
                     <Alert
@@ -79,20 +84,28 @@ export default function ShowApplication({
                     >
                         <CheckCircle2 className="size-5 text-success" />
                         <AlertTitle className="text-base">
-                            {t("applicant.submitted_title")}
+                            {t('applicant.submitted_title')}
                         </AlertTitle>
+                        {nextStep && (
+                            <AlertDescription
+                                className="text-foreground"
+                                data-test="submission-next-step"
+                            >
+                                {nextStep}
+                            </AlertDescription>
+                        )}
                     </Alert>
                 )}
 
                 <PageHeader
                     title={
                         application.exam_period?.name ??
-                        t("applicant.application")
+                        t('applicant.application')
                     }
                     description={
                         application.reference_number
                             ? undefined
-                            : t("applicant.not_submitted_yet")
+                            : t('applicant.not_submitted_yet')
                     }
                     actions={
                         <>
@@ -101,21 +114,22 @@ export default function ShowApplication({
                                 label={application.status_label}
                                 className="text-sm"
                             />
-                            {can.edit && awaitingReview && (
-                                // Submitted, not yet under review: edit from the branch choice on.
-                                <Button asChild>
-                                    <Link
-                                        href={apply.specialization()}
-                                        data-test="edit-submitted"
-                                    >
-                                        <Pencil
-                                            className="size-4"
-                                            aria-hidden
-                                        />
-                                        {t("applicant.edit_application")}
-                                    </Link>
-                                </Button>
-                            )}
+                            {can.edit &&
+                                awaitingReview && (
+                                    // Submitted, not yet under review: edit from the branch choice on.
+                                    <Button asChild>
+                                        <Link
+                                            href={apply.specialization()}
+                                            data-test="edit-submitted"
+                                        >
+                                            <Pencil
+                                                className="size-4"
+                                                aria-hidden
+                                            />
+                                            {t('applicant.edit_application')}
+                                        </Link>
+                                    </Button>
+                                )}
                             {can.edit && !awaitingReview && (
                                 <Button asChild>
                                     <Link
@@ -127,11 +141,11 @@ export default function ShowApplication({
                                             className="size-4"
                                             aria-hidden
                                         />
-                                        {application.status === "draft"
+                                        {application.status === 'draft'
                                             ? t(
-                                                  "applicant.continue_application",
+                                                  'applicant.continue_application',
                                               )
-                                            : t("applicant.edit_correction")}
+                                            : t('applicant.edit_correction')}
                                     </Link>
                                 </Button>
                             )}
@@ -149,7 +163,7 @@ export default function ShowApplication({
                                             className="size-4"
                                             aria-hidden
                                         />
-                                        {t("applicant.receipt")}
+                                        {t('applicant.receipt')}
                                     </a>
                                 </Button>
                             )}
@@ -157,12 +171,12 @@ export default function ShowApplication({
                     }
                 />
 
-                {application.status === "requires_correction" &&
+                {application.status === 'requires_correction' &&
                     latestReason && (
                         <Alert className="border-warning/50 bg-warning/10">
                             <FileText className="size-4" />
                             <AlertTitle>
-                                {t("applicant.reviewer_notes")}
+                                {t('applicant.reviewer_notes')}
                             </AlertTitle>
                             <AlertDescription className="whitespace-pre-line text-foreground">
                                 {latestReason}
@@ -170,11 +184,11 @@ export default function ShowApplication({
                         </Alert>
                     )}
 
-                {application.status === "rejected" && latestReason && (
+                {application.status === 'rejected' && latestReason && (
                     <Alert variant="destructive">
                         <XCircle className="size-4" />
                         <AlertTitle>
-                            {t("applicant.rejection_reason")}
+                            {t('applicant.rejection_reason')}
                         </AlertTitle>
                         <AlertDescription className="whitespace-pre-line">
                             {latestReason}
@@ -189,14 +203,14 @@ export default function ShowApplication({
                             aria-labelledby="summary"
                         >
                             <h2 id="summary" className="mb-4 font-semibold">
-                                {t("applicant.summary")}
+                                {t('applicant.summary')}
                             </h2>
                             <ApplicationSummaryTable
-                                caption={t("applicant.summary")}
+                                caption={t('applicant.summary')}
                                 rows={[
                                     ...applicationSummary(application, t),
                                     [
-                                        t("applications.submitted_at"),
+                                        t('applications.submitted_at'),
                                         formatDateTime(
                                             application.submitted_at,
                                             locale,
@@ -211,11 +225,11 @@ export default function ShowApplication({
                             aria-labelledby="documents"
                         >
                             <h2 id="documents" className="mb-4 font-semibold">
-                                {t("applicant.steps.documents")}
+                                {t('applicant.steps.documents')}
                             </h2>
                             {(application.documents ?? []).length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {t("documents.none")}
+                                    {t('documents.none')}
                                 </p>
                             ) : (
                                 <ul className="divide-y text-sm">
@@ -233,8 +247,8 @@ export default function ShowApplication({
                                                 <span className="text-muted-foreground">
                                                     {t(
                                                         `documents.status.${document.status}`,
-                                                    )}{" "}
-                                                    ·{" "}
+                                                    )}{' '}
+                                                    ·{' '}
                                                     {formatFileSize(
                                                         document.size_bytes,
                                                         locale,
@@ -250,7 +264,7 @@ export default function ShowApplication({
                                                             aria-hidden
                                                         />
                                                         {t(
-                                                            "documents.download",
+                                                            'documents.download',
                                                         )}
                                                     </a>
                                                 )}
@@ -268,7 +282,7 @@ export default function ShowApplication({
                             aria-labelledby="history"
                         >
                             <h2 id="history" className="mb-4 font-semibold">
-                                {t("applicant.history")}
+                                {t('applicant.history')}
                             </h2>
                             <Timeline events={application.events ?? []} />
                         </section>
@@ -276,19 +290,19 @@ export default function ShowApplication({
                         {can.withdraw && (
                             <section className="no-print rounded-xl border border-destructive/30 p-4">
                                 <h2 className="mb-2 font-semibold">
-                                    {t("applicant.withdraw_title")}
+                                    {t('applicant.withdraw_title')}
                                 </h2>
                                 <p className="mb-3 text-sm text-muted-foreground">
-                                    {t("applicant.withdraw_text")}
+                                    {t('applicant.withdraw_text')}
                                 </p>
                                 <ConfirmDialog
                                     title={t(
-                                        "applicant.withdraw_confirm_title",
+                                        'applicant.withdraw_confirm_title',
                                     )}
                                     description={t(
-                                        "applicant.withdraw_confirm_text",
+                                        'applicant.withdraw_confirm_text',
                                     )}
-                                    confirmLabel={t("applicant.withdraw")}
+                                    confirmLabel={t('applicant.withdraw')}
                                     destructive
                                     open={withdrawOpen}
                                     onOpenChange={setWithdrawOpen}
@@ -307,7 +321,7 @@ export default function ShowApplication({
                                     body={
                                         <div className="grid gap-2">
                                             <Label htmlFor="withdraw-reason">
-                                                {t("applicant.withdraw_reason")}
+                                                {t('applicant.withdraw_reason')}
                                             </Label>
                                             <textarea
                                                 id="withdraw-reason"
@@ -316,7 +330,7 @@ export default function ShowApplication({
                                                 value={withdrawal.data.reason}
                                                 onChange={(event) =>
                                                     withdrawal.setData(
-                                                        "reason",
+                                                        'reason',
                                                         event.target.value,
                                                     )
                                                 }
@@ -328,7 +342,7 @@ export default function ShowApplication({
                                         variant="outline"
                                         className="w-full border-destructive/40 text-destructive"
                                     >
-                                        {t("applicant.withdraw")}
+                                        {t('applicant.withdraw')}
                                     </Button>
                                 </ConfirmDialog>
                             </section>

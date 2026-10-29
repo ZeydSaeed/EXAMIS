@@ -45,6 +45,7 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         'mother_first_name' => 'زهراء',
         'mother_father_name' => 'كاظم',
         'school_governorate_code' => 'BGD',
+        'last_grade' => 'الرابع',
         'reference_number' => 'EX2027-0000019',
     ]);
 
@@ -56,7 +57,7 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($pdf)->toContain('/MediaBox [0 0 595.280 841.890]');
 
     $text = extractPdfText($pdf);
-    expect($text)->toContain('EX2027-0000019')
+    expect($text)->not->toContain('EX2027-0000019')
         ->and($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
         ->and($text)->toContain(visualOrder('عبد الرحمن'))
         ->and($text)->toContain(visualOrder('عبد الكريم'))
@@ -65,8 +66,37 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         // The last school's governorate ("كربلاء" would not do: its lam-alef is one glyph).
         ->and($text)->toContain(visualOrder('بغداد'))
         ->and($text)->toContain(visualOrder('حي الحسين'))
-        ->and($text)->toContain('2026-2027')
+        ->and($text)->toContain(visualOrder('الرابع'))
+        ->and($text)->toContain('2027-2026')
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);
+});
+
+it('follows the form with the request letter, the information form, the required documents and the student card', function () {
+    $application = Application::factory()->submitted()->create(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
+
+    $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+    $user = $application->user->refresh();
+
+    $text = extractPdfText($pdf);
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
+        ->and($text)->toContain(visualOrder('السيد مدير عام تربية'))
+        ->and($text)->toContain(visualOrder('استمارة معلومات الطالب الخاصة بالتقديم'))
+        ->and($text)->toContain(visualOrder('المستمسكات المطلوبة'))
+        ->and($text)->not->toContain(visualOrder('استمارة اختبار'))
+        ->and($text)->toContain(visualOrder('بطاقة الطالب'))
+        ->and($user->student_number)->not->toBeNull()
+        ->and($text)->toContain((string) $user->student_number);
+});
+
+it('adds the test form for computer assembly and maintenance only', function () {
+    $application = Application::factory()->submitted()->create(['branch_code' => 'CIT', 'category_code' => 'CIT_HW']);
+
+    $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+
+    $text = extractPdfText($pdf);
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(6)
+        ->and($text)->toContain(visualOrder('استمارة اختبار'))
+        ->and($text)->toContain(visualOrder('إعدادية العباس المهنية'));
 });
 
 it('prints the verified personal photo in the photo box', function () {

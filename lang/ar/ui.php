@@ -296,6 +296,7 @@ return [
         'address' => 'عنوان السكن الدائم',
         'school_name' => 'اسم آخر مدرسة كان فيها الطالب',
         'school_governorate' => 'المحافظة',
+        'last_grade' => 'آخر صف كان فيه الطالب',
         'branch_not_chosen' => 'لم تختر الفرع والاختصاص بعد.',
         'choose_branch_link' => 'اختر الفرع والاختصاص',
         'branch' => 'الفرع',

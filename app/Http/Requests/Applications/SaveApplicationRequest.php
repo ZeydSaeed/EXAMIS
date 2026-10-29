@@ -57,6 +57,7 @@ class SaveApplicationRequest extends FormRequest
             'house_number' => $houseNumber,
             'school_name' => ['nullable', 'string', 'min:3', 'max:150'],
             'school_governorate_code' => ['nullable', 'string', Rule::in(app(ReferenceData::class)->codes(ReferenceType::Governorate))],
+            'last_grade' => ['nullable', 'string', 'max:60'],
             'other_info' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -78,7 +79,7 @@ class SaveApplicationRequest extends FormRequest
             }
         }
 
-        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'district', 'school_name', 'other_info'] as $field) {
+        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'district', 'school_name', 'last_grade', 'other_info'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = trim((string) preg_replace('/\s+/u', ' ', $this->input($field)));
             }

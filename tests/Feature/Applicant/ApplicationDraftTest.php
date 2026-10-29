@@ -73,6 +73,7 @@ describe('saving a draft', function () {
                 'mahalla' => '٦٣٠',
                 'school_name' => 'إعدادية الصناعة',
                 'school_governorate_code' => 'BGD',
+                'last_grade' => '  الخامس   الإعدادي ',
                 'intermediate_school_name' => 'لم يعد يُجمع',
                 'branch_code' => 'COM',
                 'category_code' => 'COM_ACC',
@@ -89,6 +90,7 @@ describe('saving a draft', function () {
             ->and($application->phone)->toBe('07701234567')
             ->and($application->mahalla)->toBe('630')
             ->and($application->school_governorate_code)->toBe('BGD')
+            ->and($application->last_grade)->toBe('الخامس الإعدادي')
             ->and($application->getAttributes())->not->toHaveKey('intermediate_school_name')
             // The branch and specialization are chosen on their own page only.
             ->and($application->branch_code)->toBeNull()
