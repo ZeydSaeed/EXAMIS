@@ -97,11 +97,7 @@ export async function completeApplicationForm(page: Page): Promise<void> {
     // The branch and specialization are chosen on their own page.
     await page.getByTestId('next-step').click();
 
-    await uploadDocument(page, 'participation_request', pdfFile('request.pdf'));
-    await uploadDocument(page, 'national_id', pdfFile('id.pdf'));
-    await uploadDocument(page, 'father_id', pdfFile('father.pdf'));
-    await uploadDocument(page, 'mother_id', pdfFile('mother.pdf'));
-    await uploadDocument(page, 'residence_card', pdfFile('residence.pdf'));
+    // Only the personal photo is uploaded; the rest go in the paper file.
     await uploadDocument(page, 'personal_photo', pngFile());
 
     await page.getByTestId('next-step').click();

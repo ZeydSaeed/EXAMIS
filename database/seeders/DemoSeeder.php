@@ -41,8 +41,9 @@ class DemoSeeder extends Seeder
                 TEXT,
         ]);
 
+        // Only the personal photo is uploaded; the other documents go in the paper file.
         $required = DocumentType::query()
-            ->whereIn('code', ['participation_request', 'national_id', 'father_id', 'mother_id', 'residence_card', 'personal_photo'])
+            ->whereIn('code', ['personal_photo'])
             ->pluck('id');
 
         $period->documentTypes()->sync(
