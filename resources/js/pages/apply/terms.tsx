@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, Check, ScrollText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useState } from 'react';
 import { BrandBackdrop } from '@/components/examis/brand-backdrop';
 import { ExamisMark } from '@/components/examis/examis-mark';
@@ -22,8 +22,8 @@ type Props = {
 };
 
 /**
- * Step 1 of applying: read the application terms (the published
- * "eligibility" content page) and accept them; step 2 is registration.
+ * Before registering, the student reads the application terms (the
+ * published "eligibility" content page) and accepts them.
  */
 export default function ApplicationTerms({ title, terms, updatedAt }: Props) {
     const { t, locale, isRtl } = useTrans();
@@ -52,32 +52,7 @@ export default function ApplicationTerms({ title, terms, updatedAt }: Props) {
                 </header>
 
                 <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-40 sm:px-6 sm:pt-12">
-                    <ol
-                        aria-label={t('apply.steps')}
-                        className="mb-8 flex items-center gap-3 text-sm motion-safe:animate-[start-rise_0.6s_ease-out_both]"
-                    >
-                        <li className="flex items-center gap-2 font-semibold">
-                            <span className="flex size-7 items-center justify-center rounded-full bg-[var(--examis-navy)] text-xs text-white dark:bg-[var(--examis-gold)] dark:text-[var(--examis-navy)]">
-                                1
-                            </span>
-                            {t('apply.step_terms')}
-                        </li>
-                        <li
-                            aria-hidden
-                            className="h-px flex-1 bg-[var(--examis-navy)]/15 dark:bg-white/15"
-                        />
-                        <li className="flex items-center gap-2 text-[var(--examis-navy)]/55 dark:text-white/50">
-                            <span className="flex size-7 items-center justify-center rounded-full border border-current text-xs">
-                                2
-                            </span>
-                            {t('apply.step_account')}
-                        </li>
-                    </ol>
-
-                    <div className="mb-6 flex items-start gap-4 motion-safe:animate-[start-rise_0.6s_0.1s_ease-out_both]">
-                        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--examis-green)] text-white shadow-[var(--examis-green)]/25 shadow-lg">
-                            <ScrollText className="size-6" aria-hidden />
-                        </span>
+                    <div className="mb-6 motion-safe:animate-[start-rise_0.6s_ease-out_both]">
                         <div className="space-y-1">
                             <p className="text-sm font-medium text-[var(--examis-green)] dark:text-emerald-300">
                                 {t('start.department')}

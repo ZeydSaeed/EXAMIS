@@ -142,9 +142,6 @@ return [
     ],
 
     'apply' => [
-        'steps' => 'Application steps',
-        'step_terms' => 'Application terms',
-        'step_account' => 'Create account',
         'terms_title' => 'Application terms',
         'terms_intro' => 'Please read all the application terms before creating your account.',
         'updated_on' => 'Last updated: :date.',
