@@ -25,8 +25,8 @@ class DemoSeeder extends Seeder
         }
 
         $period = ExamPeriod::query()->updateOrCreate(['code' => 'EX2027'], [
-            'name_ar' => 'الدورة الأولى للامتحانات الخارجية ٢٠٢٧',
-            'name_en' => 'External examinations, first round 2027',
+            'name_ar' => 'الامتحانات التمهيدية للطلبة الخارجيين للدراسة المهنية العامة',
+            'name_en' => 'Preliminary Examinations for External Students of General Vocational Study',
             'academic_year' => '2026-2027',
             'status' => ExamPeriodStatus::Open,
             'opens_at' => now()->subWeek(),
