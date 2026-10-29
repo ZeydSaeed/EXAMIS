@@ -43,8 +43,8 @@ it('renders the application form with the governorates and what is missing', fun
             ->where('missing.documents', []));
 });
 
-it('redirects from the form to the summary once submitted', function () {
-    $application = Application::factory()->submitted()->create();
+it('redirects from the form to the summary once the review has started', function () {
+    $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))
         ->assertRedirect(route('applications.show', $application));

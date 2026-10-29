@@ -16,6 +16,7 @@ return [
         'not_eligible' => 'This choice is not eligible for this exam period.',
         'document_limit' => 'The maximum number of attachments for this application has been reached.',
         'assignee_not_eligible' => 'The selected user is not allowed to review applications.',
+        'required_after_submission' => 'Your application has been submitted, so required fields cannot be left empty. Fill them in, then save.',
         'specialization_branch' => 'The chosen specialization does not belong to the selected branch.',
     ],
 

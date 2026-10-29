@@ -14,6 +14,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDate, formatDateTime } from '@/lib/format';
 import applications from '@/routes/applications';
+import apply from '@/routes/apply';
 import type { Application } from '@/types';
 
 type Props = {
@@ -158,50 +159,47 @@ export default function ApplicantDashboard({
                                                 />
                                             </div>
                                             <p className="text-sm text-muted-foreground">
-                                                {application.reference_number ? (
-                                                    <>
-                                                        {t(
-                                                            'track.reference_number',
-                                                        )}
-                                                        :{' '}
-                                                        <bdi
-                                                            dir="ltr"
-                                                            className="font-medium text-foreground"
-                                                        >
-                                                            {
-                                                                application.reference_number
-                                                            }
-                                                        </bdi>
-                                                    </>
-                                                ) : (
-                                                    t('applicant.last_saved', {
-                                                        date: formatDateTime(
-                                                            application.updated_at,
-                                                            locale,
-                                                        ),
-                                                    })
-                                                )}
+                                                {t('applicant.last_saved', {
+                                                    date: formatDateTime(
+                                                        application.updated_at,
+                                                        locale,
+                                                    ),
+                                                })}
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
-                                            {application.is_editable && (
-                                                <Button asChild>
-                                                    <Link
-                                                        href={applications.edit(
-                                                            application.uuid,
-                                                        )}
-                                                    >
-                                                        {application.status ===
-                                                        'draft'
-                                                            ? t(
-                                                                  'applicant.continue_application',
-                                                              )
-                                                            : t(
-                                                                  'applicant.respond_to_correction',
-                                                              )}
-                                                    </Link>
-                                                </Button>
-                                            )}
+                                            {application.is_editable &&
+                                                (application.status ===
+                                                    'submitted' ||
+                                                application.status ===
+                                                    'resubmitted' ? (
+                                                    <Button asChild>
+                                                        <Link
+                                                            href={apply.specialization()}
+                                                        >
+                                                            {t(
+                                                                'applicant.edit_application',
+                                                            )}
+                                                        </Link>
+                                                    </Button>
+                                                ) : (
+                                                    <Button asChild>
+                                                        <Link
+                                                            href={applications.edit(
+                                                                application.uuid,
+                                                            )}
+                                                        >
+                                                            {application.status ===
+                                                            'draft'
+                                                                ? t(
+                                                                      'applicant.continue_application',
+                                                                  )
+                                                                : t(
+                                                                      'applicant.respond_to_correction',
+                                                                  )}
+                                                        </Link>
+                                                    </Button>
+                                                ))}
                                             <Button variant="outline" asChild>
                                                 <Link
                                                     href={applications.show(

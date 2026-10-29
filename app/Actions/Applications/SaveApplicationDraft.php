@@ -32,7 +32,8 @@ class SaveApplicationDraft
                 throw DomainRuleViolation::staleVersion();
             }
 
-            if ($locked->status === ApplicationStatus::Draft && ! $locked->examPeriod->isAcceptingApplications()) {
+            if (($locked->status === ApplicationStatus::Draft || $locked->status->isAwaitingReview())
+                && ! $locked->examPeriod->isAcceptingApplications()) {
                 throw DomainRuleViolation::periodClosed();
             }
 
@@ -43,10 +44,23 @@ class SaveApplicationDraft
                 return $locked;
             }
 
+            // A submitted application must stay complete while it is edited.
+            if ($locked->status->isAwaitingReview()) {
+                $blank = array_values(array_filter(
+                    Application::REQUIRED_FOR_SUBMISSION,
+                    fn (string $field): bool => blank($locked->getAttribute($field)),
+                ));
+
+                if ($blank !== []) {
+                    throw DomainRuleViolation::requiredAfterSubmission($blank);
+                }
+            }
+
             $locked->lock_version++;
             $locked->save();
 
-            if ($locked->status === ApplicationStatus::RequiresCorrection) {
+            // Changes after submission are shown to reviewers in the history.
+            if ($locked->status !== ApplicationStatus::Draft) {
                 $locked->events()->create([
                     'actor_id' => $actor->id,
                     'type' => ApplicationEventType::DataCorrected,

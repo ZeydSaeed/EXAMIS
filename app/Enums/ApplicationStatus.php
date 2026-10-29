@@ -70,9 +70,21 @@ enum ApplicationStatus: string
     /**
      * Statuses in which the applicant may edit form data and documents.
      */
+    /**
+     * The applicant may change the form: a draft, an application sent back
+     * for correction, and a submitted one until staff start reviewing it.
+     */
     public function isEditableByApplicant(): bool
     {
-        return $this === self::Draft || $this === self::RequiresCorrection;
+        return $this === self::Draft || $this === self::RequiresCorrection || $this->isAwaitingReview();
+    }
+
+    /**
+     * Submitted (or resubmitted) and not yet picked up by a reviewer.
+     */
+    public function isAwaitingReview(): bool
+    {
+        return $this === self::Submitted || $this === self::Resubmitted;
     }
 
     public function isDecided(): bool

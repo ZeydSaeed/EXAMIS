@@ -84,9 +84,9 @@ test('both lists are required', function () {
         ->assertSessionHasErrors(['branch_code', 'category_code']);
 });
 
-test('the page shows the saved choice and is locked once the application is submitted', function () {
+test('the page shows the saved choice and is locked once the review has started', function () {
     $period = ExamPeriod::factory()->create();
-    $application = Application::factory()->submitted()->create([
+    $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create([
         'exam_period_id' => $period->id,
         'branch_code' => 'AGR',
         'category_code' => 'AGR_GEN',

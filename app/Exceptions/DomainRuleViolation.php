@@ -56,6 +56,14 @@ class DomainRuleViolation extends RuntimeException
         return new self(__('applications.errors.incomplete'), 'application', 422, ['missing' => $missing]);
     }
 
+    /**
+     * @param  list<string>  $fields
+     */
+    public static function requiredAfterSubmission(array $fields): self
+    {
+        return new self(__('applications.errors.required_after_submission'), 'application', 422, ['missing' => ['fields' => $fields, 'documents' => []]]);
+    }
+
     public static function notEligible(string $field): self
     {
         return new self(__('applications.errors.not_eligible'), $field);

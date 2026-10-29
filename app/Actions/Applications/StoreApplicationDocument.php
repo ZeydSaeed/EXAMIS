@@ -42,6 +42,10 @@ class StoreApplicationDocument
                     throw DomainRuleViolation::notEditable();
                 }
 
+                if ($locked->status->isAwaitingReview() && ! $locked->examPeriod->isAcceptingApplications()) {
+                    throw DomainRuleViolation::periodClosed();
+                }
+
                 if (! $locked->examPeriod->documentTypes()->whereKey($type->id)->exists()) {
                     throw DomainRuleViolation::notEligible('document_type');
                 }
