@@ -710,27 +710,16 @@ export default function EditApplication({
                 {currentStep === 'documents' && (
                     <section
                         className="space-y-4"
-                        aria-labelledby="documents-heading"
+                        aria-label={t('applicant.steps.documents')}
                     >
-                        <div className="flex items-center justify-between gap-2">
-                            <h2
-                                id="documents-heading"
-                                className="text-lg font-semibold"
+                        {hasPendingDocuments && (
+                            <p
+                                className="flex items-center gap-2 text-sm text-muted-foreground"
+                                role="status"
                             >
-                                {t('applicant.steps.documents')}
-                            </h2>
-                            {hasPendingDocuments && (
-                                <span
-                                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                                    role="status"
-                                >
-                                    <Spinner /> {t('documents.checking')}
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            {t('documents.intro')}
-                        </p>
+                                <Spinner /> {t('documents.checking')}
+                            </p>
+                        )}
                         {documentTypes.map((requirement) => (
                             <DocumentUploader
                                 key={requirement.code}

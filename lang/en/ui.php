@@ -311,7 +311,6 @@ return [
     ],
 
     'documents' => [
-        'intro' => 'Upload each document in its own slot. Files are checked automatically before they are accepted.',
         'allowed' => 'Allowed types: :types — maximum size :size',
         'upload' => 'Upload file',
         'replace' => 'Replace',
