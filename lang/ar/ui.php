@@ -205,6 +205,7 @@ return [
     ],
 
     'applicant' => [
+        'edit_section' => 'تعديل',
         'dashboard_title' => 'طلباتي',
         'dashboard_description' => 'ابدأ طلباً جديداً أو تابع طلباتك السابقة.',
         'start_application' => 'بدء طلب جديد',

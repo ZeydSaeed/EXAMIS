@@ -9,12 +9,14 @@ import {
 import {
     AlertTriangle,
     CheckCircle2,
+    Pencil,
     RefreshCw,
     Save,
     Send,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { DocumentUploader } from '@/components/examis/document-uploader';
 import {
     describedBy,
@@ -31,7 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import { applicationSummary } from '@/lib/application-summary';
+import { applicationSummarySections } from '@/lib/application-summary';
 import { formatDate } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
@@ -759,26 +761,78 @@ export default function EditApplication({
                             {t('applicant.steps.review')}
                         </h2>
 
-                        <dl className="grid gap-x-6 gap-y-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2 sm:p-6">
-                            {applicationSummary(application, t).map(
-                                ([label, value]) => (
-                                    <div
-                                        key={label}
-                                        className="flex flex-col gap-0.5 border-b pb-2 last:border-0"
-                                    >
-                                        <dt className="text-muted-foreground">
-                                            {label}
-                                        </dt>
-                                        <dd
-                                            className="font-medium whitespace-pre-line"
-                                            dir="auto"
+                        <ApplicationSummaryTable
+                            caption={t('applicant.steps.review')}
+                            sections={[
+                                ...applicationSummarySections(
+                                    application,
+                                    t,
+                                ).map((section) => ({
+                                    key: section.step,
+                                    title: section.title,
+                                    rows: section.rows,
+                                    action: (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2"
+                                            onClick={() =>
+                                                goTo(
+                                                    STEPS.indexOf(section.step),
+                                                )
+                                            }
+                                            data-test={`edit-${section.step}`}
                                         >
-                                            {value ?? '—'}
-                                        </dd>
-                                    </div>
-                                ),
-                            )}
-                        </dl>
+                                            <Pencil
+                                                className="size-3.5"
+                                                aria-hidden
+                                            />
+                                            {t('applicant.edit_section')}
+                                        </Button>
+                                    ),
+                                })),
+                                {
+                                    key: 'documents',
+                                    title: t('applicant.steps.documents'),
+                                    rows: documentTypes.map((requirement) => {
+                                        const document =
+                                            documentsByType[requirement.code];
+
+                                        return [
+                                            requirement.name,
+                                            document ? (
+                                                t(
+                                                    `documents.status.${document.status}`,
+                                                )
+                                            ) : (
+                                                <span className="font-medium text-destructive">
+                                                    {t('documents.missing')}
+                                                </span>
+                                            ),
+                                        ];
+                                    }),
+                                    action: (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2"
+                                            onClick={() =>
+                                                goTo(STEPS.indexOf('documents'))
+                                            }
+                                            data-test="edit-documents"
+                                        >
+                                            <Pencil
+                                                className="size-3.5"
+                                                aria-hidden
+                                            />
+                                            {t('applicant.edit_section')}
+                                        </Button>
+                                    ),
+                                },
+                            ]}
+                        />
 
                         {!isReady && (
                             <Alert

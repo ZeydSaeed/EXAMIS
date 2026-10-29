@@ -205,6 +205,7 @@ return [
     ],
 
     'applicant' => [
+        'edit_section' => 'Edit',
         'dashboard_title' => 'My applications',
         'dashboard_description' => 'Start a new application or follow your existing ones.',
         'start_application' => 'Start a new application',
