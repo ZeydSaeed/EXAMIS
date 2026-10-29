@@ -28,11 +28,11 @@ class ReferenceDataSeeder extends Seeder
             ],
             // Branches open for the vocational external examinations.
             ReferenceType::Branch->value => [
+                ['IND', 'الصناعي', 'Industrial'],
                 ['COM', 'التجاري', 'Commercial'],
                 ['APA', 'الفنون التطبيقية', 'Applied arts'],
                 ['AGR', 'الزراعي', 'Agricultural'],
                 ['CIT', 'الحاسوب وتقنية المعلومات', 'Computing and IT'],
-                ['IND', 'الصناعي', 'Industrial'],
             ],
             // Specializations (الاختصاص العام); the fourth value is the branch.
             ReferenceType::Category->value => [
@@ -40,13 +40,13 @@ class ReferenceDataSeeder extends Seeder
                 ['COM_ACC', 'المحاسبة', 'Accounting', 'COM'],
                 ['APA_HOM', 'فن التربية الأسرية', 'Home economics', 'APA'],
                 ['APA_DEC', 'فن الديكور', 'Interior decoration', 'APA'],
-                ['AGR_GEN', 'زراعي عام', 'General agriculture', 'AGR'],
+                ['AGR_GEN', 'زراعي', 'Agriculture', 'AGR'],
                 ['CIT_HW', 'تجميع وصيانة الحاسوب', 'Computer assembly and maintenance', 'CIT'],
                 ['IND_ELC', 'كهرباء', 'Electrical', 'IND'],
                 ['IND_ECT', 'الإلكترونيك والسيطرة', 'Electronics and control', 'IND'],
                 ['IND_MEC', 'الميكانيك', 'Mechanics', 'IND'],
                 ['IND_CON', 'البناء', 'Construction', 'IND'],
-                ['IND_PET', 'صناعات بتروكيمياوية', 'Petrochemical industries', 'IND'],
+                ['IND_PET', 'الصناعات البتروكيمياوية', 'Petrochemical industries', 'IND'],
                 ['IND_HVAC', 'تكييف الهواء والتثليج', 'Air conditioning and refrigeration', 'IND'],
             ],
         ];

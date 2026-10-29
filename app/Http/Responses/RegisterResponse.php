@@ -10,8 +10,9 @@ use Inertia\Inertia;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 
 /**
- * Sends a new student to their sign-in card, which shows their student
- * number, QR code and the one-time access code (ADR-0009). The registering
+ * Sends a new student to choose their branch and specialization, then on
+ * to their sign-in card with the student number, QR code and one-time
+ * access code (ADR-0009). The registering
  * browser is remembered unless the student said it is a shared device.
  */
 class RegisterResponse implements RegisterResponseContract
@@ -37,6 +38,6 @@ class RegisterResponse implements RegisterResponseContract
             'duration' => 15000,
         ]);
 
-        return to_route('student.card');
+        return to_route('apply.specialization');
     }
 }

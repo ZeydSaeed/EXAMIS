@@ -27,7 +27,7 @@ test('a student registers with a username and a mobile number only', function ()
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('student.card', absolute: false));
+    $response->assertRedirect(route('apply.specialization', absolute: false));
 
     $user = User::query()->where('username', 'test.user')->sole();
 

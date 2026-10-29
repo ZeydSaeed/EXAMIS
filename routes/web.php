@@ -87,6 +87,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', Applicant\DashboardController::class)->name('dashboard');
 
+    Route::get('apply/specialization', [Applicant\SpecializationController::class, 'show'])->name('apply.specialization');
+    Route::post('apply/specialization', [Applicant\SpecializationController::class, 'store'])
+        ->middleware('throttle:application-writes')
+        ->name('apply.specialization.store');
+
     Route::get('student/card', [Applicant\StudentCardController::class, 'show'])->name('student.card');
     Route::post('student/access-code', [Applicant\StudentCardController::class, 'regenerate'])
         ->middleware('throttle:6,1')
