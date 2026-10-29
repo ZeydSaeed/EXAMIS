@@ -70,11 +70,7 @@ export default function ShowApplication({
 
     return (
         <>
-            <Head
-                title={
-                    application.reference_number ?? t("applicant.application")
-                }
-            />
+            <Head title={t("applicant.application")} />
             <PageContainer className="max-w-4xl">
                 {submitted && (
                     <Alert
