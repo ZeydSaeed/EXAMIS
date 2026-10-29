@@ -846,10 +846,12 @@ export default function EditApplication({
                             </div>
                         )}
 
-                        <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-between">
+                        {/* Phones: the main action first, all full width. */}
+                        <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:justify-between">
                             <Button
                                 type="button"
                                 variant="outline"
+                                className="order-2 sm:order-none"
                                 disabled={form.processing || !form.isDirty}
                                 onClick={() => save()}
                                 data-test="save-draft"
@@ -857,11 +859,12 @@ export default function EditApplication({
                                 <Save className="size-4" aria-hidden />
                                 {t('applicant.save_draft')}
                             </Button>
-                            <div className="flex gap-2">
+                            <div className="contents sm:flex sm:gap-2">
                                 {step > 0 && (
                                     <Button
                                         type="button"
                                         variant="ghost"
+                                        className="order-3 sm:order-none"
                                         onClick={() => goTo(step - 1)}
                                     >
                                         {t('common.previous')}
@@ -869,6 +872,7 @@ export default function EditApplication({
                                 )}
                                 <Button
                                     type="submit"
+                                    className="order-1 sm:order-none"
                                     disabled={form.processing}
                                     data-test="next-step"
                                 >
@@ -912,7 +916,7 @@ export default function EditApplication({
                                 current={documentsByType[requirement.code]}
                             />
                         ))}
-                        <div className="flex justify-between border-t pt-4">
+                        <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-between">
                             <Button
                                 type="button"
                                 variant="ghost"
