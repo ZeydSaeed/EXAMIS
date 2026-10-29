@@ -71,6 +71,26 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);
 });
 
+it('names the form after the student and their student number', function () {
+    $application = Application::factory()->submitted()->create([
+        'student_name' => 'علي',
+        'father_name' => 'حسن',
+        'grandfather_name' => 'كاظم',
+        'great_grandfather_name' => 'جاسم',
+        'reference_number' => 'EX2027-0000020',
+    ]);
+    $application->user->forceFill(['student_number' => 12345])->save();
+
+    $response = $this->actingAs($application->user)->get(route('applications.receipt', $application));
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Disposition'))
+        ->toContain('filename=receipt-EX2027-0000020.pdf')
+        ->toContain("filename*=utf-8''".rawurlencode('علي حسن كاظم جاسم_12345.pdf'))
+        ->and((new Parser)->parseContent((string) $response->getContent())->getDetails()['Title'])
+        ->toBe('علي حسن كاظم جاسم_12345');
+});
+
 it('follows the form with the request letter, the information form, the required documents and the student card', function () {
     $application = Application::factory()->submitted()->create(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
 

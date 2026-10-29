@@ -9,12 +9,23 @@
     <div style="margin-bottom: 6mm;">{{ __('receipt.letter.addressee') }}</div>
     <div style="text-align: justify;">
         {!! __('receipt.letter.request', ['year' => '<bdo dir="ltr">'.e($academicYear).'</bdo>']) !!}
-        {{ __('receipt.letter.branch') }} ({!! $filled($branch) !!})
-        {{ __('receipt.letter.specialization') }} ({!! $filled($specialization) !!})
-        {{ __('receipt.letter.last_grade') }} ({!! $filled($application->last_grade) !!})
-        {{ __('receipt.letter.school') }} ({!! $filled($application->school_name) !!})
-        {{ __('receipt.letter.birth_year') }} ({!! $filled($application->birth_date?->format('Y')) !!}).
     </div>
+    {{-- Each never wraps: a table cell, which mPDF shrinks to fit rather than breaking. --}}
+    <table class="letter-line">
+        <tr>
+            <td nowrap="nowrap">
+                {{ __('receipt.letter.branch') }} ({!! $filled($branch) !!})
+                {{ __('receipt.letter.specialization') }} ({!! $filled($specialization) !!})
+            </td>
+        </tr>
+        <tr>
+            <td nowrap="nowrap">
+                {{ __('receipt.letter.last_grade') }} ({!! $filled($application->last_grade) !!})
+                {{ __('receipt.letter.school') }} ({!! $filled($application->school_name) !!})
+                {{ __('receipt.letter.birth_year') }} ({!! $filled($application->birth_date?->format('Y')) !!}).
+            </td>
+        </tr>
+    </table>
 </div>
 
 {{-- Signature block on the left, its lines centred under each other; a table so it is never split. --}}

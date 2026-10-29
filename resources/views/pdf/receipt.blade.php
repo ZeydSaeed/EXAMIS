@@ -33,6 +33,8 @@
         .note { font-size: 11pt; margin-top: 1.5mm; }
         .page-heading { text-align: center; font-size: 18pt; margin-top: 6mm; }
         .letter { font-size: 14pt; line-height: 2.4; margin: 24mm 0 0; }
+        table.letter-line { width: 100%; }
+        table.letter-line td { font-size: 14pt; padding: 0; height: 11.8mm; white-space: nowrap; }
         table.letter-signature td { font-size: 14pt; padding: 1.5mm 0; text-align: center; }
         table.roomy td { font-size: 13pt; height: 13mm; }
         .section-title { font-size: 15pt; text-decoration: underline; margin-top: 2mm; }
@@ -47,6 +49,9 @@
     <table class="head" style="width: 100%;">
         <tr>
             <td class="committee" style="width: 72mm;">
+                @if ($appLogo)
+                    <img src="{{ $appLogo }}" style="height: 11mm;"><br>
+                @endif
                 {{ __('receipt.committee') }}<br>
                 {{ __('receipt.preliminary_exams') }}<br>
                 {{ __('receipt.department') }}
@@ -145,29 +150,33 @@
             </tr>
         @endforeach
     </table>
-    {{-- One table per row so each label is only as wide as its text. --}}
+    {{-- Each label as wide as its text. --}}
     <table class="form line">
         <tr>
             <td class="label small write fit" nowrap="nowrap">{{ $label('last_grade') }}</td>
-            <td style="width: 20%;">{!! $value($application->last_grade) !!}</td>
+            <td style="width: 24%;">{!! $value($application->last_grade) !!}</td>
             <td class="label small fit" nowrap="nowrap">{{ $label('result') }}</td>
-            <td style="width: 20%;">&nbsp;</td>
+            <td style="width: 24%;">&nbsp;</td>
             <td class="label small fit" nowrap="nowrap">{{ $label('school_year') }}</td>
-            <td style="width: 20%;">&nbsp;</td>
+            <td style="width: 24%;">&nbsp;</td>
         </tr>
     </table>
+    {{-- The failed-years and day-school labels share a width. --}}
     <table class="form line">
+        <tr>
+            @foreach ([33, 17, 17, 33] as $width)
+                <td style="width: {{ $width }}%; height: 0; padding: 0; border: none;"></td>
+            @endforeach
+        </tr>
         <tr>
             <td class="label small write fit" nowrap="nowrap">{{ $label('failed_years') }}</td>
-            <td style="width: 32%;">&nbsp;</td>
-            <td class="label small fit" nowrap="nowrap">{{ $label('dropout_years') }}</td>
-            <td style="width: 32%;">&nbsp;</td>
+            <td colspan="3">&nbsp;</td>
         </tr>
-    </table>
-    <table class="form line">
         <tr>
             <td class="label small write fit" nowrap="nowrap">{{ $label('day_school') }}</td>
-            <td style="width: 68%;">&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="label small fit" nowrap="nowrap">{{ $label('dropout_years') }}</td>
+            <td>&nbsp;</td>
         </tr>
     </table>
 
@@ -190,24 +199,27 @@
         @endfor
     </table>
 
+    {{-- One grid, so the principal's name starts where the fingerprint box does. --}}
     <table class="form">
         <tr>
-            <td class="tall" style="width: 50%;">{{ __('receipt.student_signature') }}</td>
-            <td class="tall" style="width: 50%;">{{ __('receipt.student_fingerprint') }}</td>
+            @foreach ([13, 37, 17, 33] as $width)
+                <td style="width: {{ $width }}%; height: 0; padding: 0; border: none;"></td>
+            @endforeach
         </tr>
-    </table>
-    <table class="form line">
+        <tr>
+            <td colspan="2" class="tall">{{ __('receipt.student_signature') }}</td>
+            <td colspan="2" class="tall">{{ __('receipt.student_fingerprint') }}</td>
+        </tr>
         <tr>
             <td class="label small sign fit" nowrap="nowrap">{{ $label('school_name') }}</td>
-            <td style="width: 38%;">&nbsp;</td>
+            <td>&nbsp;</td>
             <td class="label small fit" nowrap="nowrap">{{ $label('principal_name') }}</td>
-            <td style="width: 38%;">&nbsp;</td>
+            <td>&nbsp;</td>
         </tr>
-    </table>
-    <table class="form line">
         <tr>
-            <td class="tall" style="width: 50%;">{{ __('receipt.school_stamp') }}</td>
-            <td class="tall" style="width: 50%;">{{ __('receipt.principal_signature') }}<br><br>{{ __('receipt.date') }}</td>
+            <td colspan="2" class="tall">{{ __('receipt.school_stamp') }}</td>
+            {{-- Day and month left blank; read right to left the year comes last. --}}
+            <td colspan="2" class="tall">{{ __('receipt.principal_signature') }}<br><br>{{ __('receipt.date') }} <bdo dir="ltr">{{ $generatedAt->year }} /&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</bdo></td>
         </tr>
     </table>
 

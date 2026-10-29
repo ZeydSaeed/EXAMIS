@@ -33,6 +33,12 @@ class ReceiptRenderer
     public const LOGO_PATH = 'images/vocational-education-logo.png';
 
     /**
+     * The application's own logo, printed small above the committee's name. A
+     * downscaled copy: mPDF decoding the full-size PNG exhausts the memory limit.
+     */
+    public const APP_LOGO_PATH = 'images/examis-logo-print.png';
+
+    /**
      * Muted shade of each branch's colour for the form's label cells, with a
      * lighter tint for sub-headings. Any other branch, tourism and hospitality
      * included, is printed white.
@@ -86,7 +92,8 @@ class ReceiptRenderer
         ]);
 
         $mpdf->SetDirectionality($locale === 'ar' ? 'rtl' : 'ltr');
-        $mpdf->SetTitle(__('receipt.title').' '.$application->reference_number);
+        // Browsers offer the title as the file name when the form is printed or saved.
+        $mpdf->SetTitle($this->filename($application));
         $mpdf->SetAuthor((string) config('examis.organization.name_en'));
         $mpdf->SetCreator('EXAMIS');
 
@@ -97,6 +104,7 @@ class ReceiptRenderer
         }
 
         $logo = public_path(self::LOGO_PATH);
+        $appLogo = public_path(self::APP_LOGO_PATH);
         $referenceData = app(ReferenceData::class);
 
         $mpdf->WriteHTML(view('pdf.receipt', [
@@ -104,6 +112,7 @@ class ReceiptRenderer
             'direction' => $locale === 'ar' ? 'rtl' : 'ltr',
             'font' => $fonts['default_font'],
             'logo' => is_file($logo) ? $logo : null,
+            'appLogo' => is_file($appLogo) ? $appLogo : null,
             'hasPhoto' => $photo !== null,
             'shades' => self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
             'branchShades' => self::BRANCH_SHADES,
@@ -204,9 +213,63 @@ class ReceiptRenderer
         }
 
         try {
-            return Storage::disk($document->disk)->get($document->path);
+            $photo = Storage::disk($document->disk)->get($document->path);
         } catch (Throwable) {
             return null;
         }
+
+        return $photo === null ? null : ($this->fitToFrame($photo) ?? $photo);
+    }
+
+    /**
+     * The form's file name, without extension: the student's full name, then
+     * "_" and the student number. Falls back to the reference number when
+     * there is no name.
+     */
+    public function filename(Application $application): string
+    {
+        $name = $this->joined($application->only(Application::NAME_PARTS), ' ') ?? $application->full_name_ar;
+        $name = trim((string) preg_replace('/[\/\\\\:*?"<>|\x00-\x1F]+/u', ' ', (string) $name));
+
+        if ($name === '') {
+            return 'receipt-'.$application->reference_number;
+        }
+
+        $number = $application->user?->student_number;
+
+        return $number === null ? $name : $name.'_'.$number;
+    }
+
+    /**
+     * Crops the photo around its centre to the frame's 28×36 mm shape and
+     * scales it down, so it fills the frame without being stretched. Null
+     * when GD cannot read it, in which case the original is printed as is.
+     */
+    private function fitToFrame(string $photo): ?string
+    {
+        $source = @imagecreatefromstring($photo);
+
+        if ($source === false) {
+            return null;
+        }
+
+        [$width, $height] = [imagesx($source), imagesy($source)];
+        $ratio = 28 / 36;
+        $cropWidth = (int) min($width, round($height * $ratio));
+        $cropHeight = (int) min($height, round($width / $ratio));
+
+        // 420×540 px prints at about 380 dpi in the frame.
+        $frame = imagecreatetruecolor(420, 540);
+        imagefill($frame, 0, 0, (int) imagecolorallocate($frame, 255, 255, 255));
+        imagecopyresampled(
+            $frame, $source, 0, 0,
+            intdiv($width - $cropWidth, 2), intdiv($height - $cropHeight, 2),
+            420, 540, $cropWidth, $cropHeight,
+        );
+
+        ob_start();
+        imagejpeg($frame, null, 90);
+
+        return (string) ob_get_clean();
     }
 }

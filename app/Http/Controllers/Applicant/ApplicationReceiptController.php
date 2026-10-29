@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Services\Audit\AuditLogger;
 use App\Services\Receipts\ReceiptRenderer;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationReceiptController extends Controller
@@ -25,7 +26,12 @@ class ApplicationReceiptController extends Controller
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="receipt-'.$application->reference_number.'.pdf"',
+            // The Arabic name in filename*, with an ASCII name for older clients.
+            'Content-Disposition' => HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_INLINE,
+                $renderer->filename($application).'.pdf',
+                'receipt-'.$application->reference_number.'.pdf',
+            ),
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
             'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'self'",
