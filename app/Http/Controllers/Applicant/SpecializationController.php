@@ -21,13 +21,10 @@ use Inertia\Response;
  * The step right after registration: the student picks the branch and
  * specialization they apply for. The choice is saved into their draft for
  * the open exam period and the student continues straight to the
- * application form. The one-time access code flashed at registration is
- * kept until the form shows it.
+ * application form.
  */
 class SpecializationController extends Controller
 {
-    private const ACCESS_CODE = 'student.access_code';
-
     public function __construct(private ReferenceData $referenceData) {}
 
     public function show(Request $request): Response|RedirectResponse
@@ -37,8 +34,6 @@ class SpecializationController extends Controller
         if (! $user->isApplicant()) {
             return to_route('dashboard');
         }
-
-        $request->session()->keep([self::ACCESS_CODE]);
 
         $period = $this->openPeriod();
         $application = $period !== null
@@ -65,8 +60,6 @@ class SpecializationController extends Controller
         SaveApplicationDraft $saveDraft,
         AuditLogger $audit,
     ): RedirectResponse {
-        $request->session()->keep([self::ACCESS_CODE]);
-
         Gate::authorize('create', Application::class);
 
         $period = $this->openPeriod();

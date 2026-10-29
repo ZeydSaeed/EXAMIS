@@ -16,7 +16,7 @@ beforeEach(function () {
     seedReferenceData();
 });
 
-test('registration leads to the branch and specialization page, then to the application form with the access code', function () {
+test('registration leads to the branch and specialization page, then to the application form', function () {
     ExamPeriod::factory()->create();
 
     $this->withSession([ApplicationTermsController::SESSION_KEY => now()->toIso8601String()])
@@ -39,11 +39,14 @@ test('registration leads to the branch and specialization page, then to the appl
         ->component('applicant/applications/edit')
         ->where('application.form.branch_code', 'IND')
         ->where('application.form.category_code', 'IND_ELC')
+        ->missing('accessCode')
+        ->missing('instructions'));
+
+    // The access code waits for the first visit to the student card, once.
+    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page
         ->where('accessCode', fn ($code) => is_string($code) && $code !== '')
         ->etc());
-
-    // Shown once only.
-    $this->get(route('applications.edit', $application))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
+    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
 });
 
 test('the choice is saved into the draft for the open period and audited', function () {

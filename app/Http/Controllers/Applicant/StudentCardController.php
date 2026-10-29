@@ -50,7 +50,8 @@ class StudentCardController extends Controller
                 'url' => $qrUrl,
                 'svg' => (new Svg)->output(new QrCode($qrUrl, QrCode::ERROR_CORRECTION_MEDIUM), 220),
             ],
-            'accessCode' => $request->session()->get('student.access_code'),
+            // Shown once: a new account's code waits here until the first visit.
+            'accessCode' => $request->session()->pull('student.access_code'),
         ]);
     }
 

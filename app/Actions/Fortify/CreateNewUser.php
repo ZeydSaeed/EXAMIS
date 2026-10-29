@@ -28,8 +28,8 @@ class CreateNewUser implements CreatesNewUsers
      * Create a student account from a username and a mobile number only
      * (ADR-0009). The number is not verified: no SMS or WhatsApp message is
      * sent. The application terms must have been accepted first (the
-     * terms step). The access code is flashed for the welcome card and
-     * stored in plain text. Staff accounts are created by administrators
+     * terms step). The access code waits in the session until the student
+     * card shows it once, and is stored in plain text. Staff accounts are created by administrators
      * only.
      *
      * @param  array<string, string>  $input
@@ -73,7 +73,7 @@ class CreateNewUser implements CreatesNewUsers
         });
 
         $this->request->session()->forget(ApplicationTermsController::SESSION_KEY);
-        session()->flash('student.access_code', $code);
+        $this->request->session()->put('student.access_code', $code);
 
         return $user;
     }

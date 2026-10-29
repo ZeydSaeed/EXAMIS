@@ -1,20 +1,11 @@
-import { Link } from '@inertiajs/react';
-import { IdCard, ShieldAlert } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ShieldAlert } from 'lucide-react';
 import { useTrans } from '@/hooks/use-trans';
-import student from '@/routes/student';
 
 /**
  * The student's access code, shown once right after it is issued
- * (ADR-0009), with an optional link to the printable student card.
+ * (ADR-0009).
  */
-export function AccessCodeNotice({
-    code,
-    showCardLink = false,
-}: {
-    code: string;
-    showCardLink?: boolean;
-}) {
+export function AccessCodeNotice({ code }: { code: string }) {
     const { t } = useTrans();
 
     return (
@@ -37,14 +28,6 @@ export function AccessCodeNotice({
             <p className="text-sm leading-relaxed">
                 {t('student.new_code_text')}
             </p>
-            {showCardLink && (
-                <Button variant="outline" size="sm" className="mt-4" asChild>
-                    <Link href={student.card()}>
-                        <IdCard className="size-4" aria-hidden />
-                        {t('student.open_card')}
-                    </Link>
-                </Button>
-            )}
         </section>
     );
 }
