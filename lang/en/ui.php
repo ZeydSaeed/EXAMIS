@@ -7,8 +7,6 @@
 
 return [
     'common' => [
-        'scroll_top' => 'Scroll to the top',
-        'scroll_bottom' => 'Scroll to the bottom',
         'all' => 'All',
         'and' => 'and',
         'cancel' => 'Cancel',

@@ -5,7 +5,6 @@ import { BrandBackdrop } from '@/components/examis/brand-backdrop';
 import { ExamisMark } from '@/components/examis/examis-mark';
 import InputError from '@/components/input-error';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { ScrollButtons } from '@/components/scroll-buttons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -182,7 +181,6 @@ export default function ApplicationTerms({ title, terms, updatedAt }: Props) {
                     )}
                 </Form>
             </div>
-            <ScrollButtons className="bottom-48 sm:bottom-32" />
         </>
     );
 }
