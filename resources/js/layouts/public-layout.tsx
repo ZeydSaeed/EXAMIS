@@ -10,6 +10,7 @@ import { useTrans } from '@/hooks/use-trans';
 import { dashboard, home, login, register } from '@/routes';
 import pages from '@/routes/pages';
 import track from '@/routes/track';
+import { ScrollButtons } from '@/components/scroll-buttons';
 
 /**
  * Shell for the public portal: header with sign-in, footer with the managed
@@ -110,7 +111,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* Header pinned; only long content scrolls, never the window. */}
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+            <div
+                data-scroll-root
+                className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+            >
                 <main id="main-content" className="flex-[1_0_auto]">
                     {children}
                 </main>
@@ -150,6 +154,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </div>
 
             <NetworkStatus />
+            <ScrollButtons />
         </div>
     );
 }

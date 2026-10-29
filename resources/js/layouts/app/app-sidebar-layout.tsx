@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { HeaderSlotsProvider } from '@/components/header-slots';
 import { NetworkStatus } from '@/components/network-status';
+import { ScrollButtons } from '@/components/scroll-buttons';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
 import type { AppLayoutProps } from '@/types';
 
@@ -26,12 +27,14 @@ export default function AppSidebarLayout({
                     <AppSidebarHeader breadcrumbs={breadcrumbs} />
                     <div
                         id="main-content"
+                        data-scroll-root
                         className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
                     >
                         {children}
                     </div>
                 </AppContent>
                 <NetworkStatus />
+                <ScrollButtons />
             </HeaderSlotsProvider>
         </AppShell>
     );

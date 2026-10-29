@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { BrandBackdrop } from '@/components/examis/brand-backdrop';
 import { ExamisMark } from '@/components/examis/examis-mark';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { ScrollButtons } from '@/components/scroll-buttons';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
 import { dashboard, login } from '@/routes';
@@ -129,6 +130,7 @@ export default function Start({ canRegister }: Props) {
                     {t('start.footer')} © {new Date().getFullYear()}
                 </footer>
             </div>
+            <ScrollButtons />
         </>
     );
 }
