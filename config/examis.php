@@ -13,8 +13,8 @@ return [
     */
 
     'organization' => [
-        'name_ar' => env('EXAMIS_ORG_NAME_AR', 'الجهة المنظمة للامتحانات الخارجية'),
-        'name_en' => env('EXAMIS_ORG_NAME_EN', 'External Examinations Authority'),
+        'name_ar' => env('EXAMIS_ORG_NAME_AR', 'الامتحانات التمهيدية للطلبة الخارجيين للدراسة المهنية العامة'),
+        'name_en' => env('EXAMIS_ORG_NAME_EN', 'Preliminary Examinations for External Students of General Vocational Study'),
     ],
 
     'supported_locales' => ['ar', 'en'],
