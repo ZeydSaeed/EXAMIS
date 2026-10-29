@@ -69,14 +69,9 @@
     <table class="form">
         <tr>
             <td class="label" style="width: 18%;">{{ __('receipt.full_name') }}</td>
-            @if ($nameParts)
-                @foreach ($nameParts as $part)
-                    <td class="center" style="width: 16.4%;">{{ $part }}</td>
-                @endforeach
-            @else
-                <td colspan="4" class="center">{!! $value($application->full_name_ar) !!}</td>
-            @endif
-            <td class="center" style="width: 16.4%;">{!! $value($application->surname) !!}</td>
+            @foreach ($nameParts as $part)
+                <td class="center" style="width: 20.5%;">{!! $value($part) !!}</td>
+            @endforeach
         </tr>
     </table>
 
@@ -104,13 +99,9 @@
     <table class="form">
         <tr>
             <td class="label" style="width: 22%;">{{ __('receipt.mother_name') }}</td>
-            @if ($motherNameParts)
-                @foreach ($motherNameParts as $part)
-                    <td class="center" style="width: 26%;">{{ $part }}</td>
-                @endforeach
-            @else
-                <td colspan="3" class="center">{!! $value($application->mother_name_ar) !!}</td>
-            @endif
+            @foreach ($motherNameParts as $part)
+                <td class="center" style="width: 39%;">{!! $value($part) !!}</td>
+            @endforeach
         </tr>
     </table>
 

@@ -2,6 +2,24 @@
 
 return [
     'custom' => [
+        'student_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'father_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'great_grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'mother_first_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'mother_father_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
         'username' => [
             'regex' => 'The username may contain only lowercase English letters, digits and . _ -',
             'not_regex' => 'The username cannot consist of digits only.',
@@ -28,6 +46,12 @@ return [
     ],
 
     'attributes' => [
+        'student_name' => 'Student\'s name',
+        'father_name' => 'Father\'s name',
+        'grandfather_name' => 'Grandfather\'s name',
+        'great_grandfather_name' => 'Great-grandfather\'s name',
+        'mother_first_name' => 'Mother\'s name',
+        'mother_father_name' => 'Mother\'s father\'s name',
         'full_name_ar' => 'full name (Arabic)',
         'mother_name_ar' => "mother's name",
         'birth_date' => 'date of birth',
@@ -38,7 +62,6 @@ return [
         'document_type' => 'document type',
         'declaration' => 'declaration',
         'terms' => 'terms of use and privacy policy',
-        'surname' => 'surname',
         'district' => 'district',
         'mahalla' => 'mahalla number',
         'alley' => 'alley number',

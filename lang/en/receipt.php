@@ -9,7 +9,7 @@ return [
     'photo' => 'Personal photo',
     'last_school' => 'Last school',
     'intermediate_school' => 'Intermediate school graduated from',
-    'full_name' => 'Full name and surname',
+    'full_name' => 'Full name',
     'birth_date' => 'Date of birth',
     'day' => 'Day',
     'month' => 'Month',

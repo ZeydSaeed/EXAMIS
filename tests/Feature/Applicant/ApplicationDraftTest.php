@@ -56,13 +56,19 @@ describe('starting an application', function () {
 describe('saving a draft', function () {
     it('stores valid fields and increments the version', function () {
         $application = Application::factory()->create();
+        $application->user->forceFill(['phone' => '07701234567'])->save();
 
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
-                'full_name_ar' => 'زينب علي حسين كاظم',
+                'student_name' => 'زينب',
+                'father_name' => 'علي',
+                'grandfather_name' => 'حسين',
+                'great_grandfather_name' => 'عبد الكريم',
+                'mother_first_name' => 'مريم',
+                'mother_father_name' => 'جاسم',
                 'surname' => 'الموسوي',
-                'phone' => '٠٧٧٠١٢٣٤٥٦٧',
+                'phone' => '07999999999',
                 'mahalla' => '٦٣٠',
                 'failed_years' => '٠',
                 'branch_code' => 'COM',
@@ -75,8 +81,12 @@ describe('saving a draft', function () {
             ->assertSessionHasNoErrors();
 
         $application->refresh();
-        expect($application->full_name_ar)->toBe('زينب علي حسين كاظم')
-            ->and($application->surname)->toBe('الموسوي')
+        expect($application->student_name)->toBe('زينب')
+            ->and($application->great_grandfather_name)->toBe('عبد الكريم')
+            ->and($application->full_name_ar)->toBe('زينب علي حسين عبد الكريم')
+            ->and($application->mother_name_ar)->toBe('مريم جاسم')
+            ->and($application->getAttributes())->not->toHaveKey('surname')
+            // The mobile number is the account's, whatever the request sends.
             ->and($application->phone)->toBe('07701234567')
             ->and($application->mahalla)->toBe('630')
             ->and($application->failed_years)->toBe(0)
@@ -122,17 +132,17 @@ describe('saving a draft', function () {
     });
 
     it('rejects a save based on a stale version instead of overwriting', function () {
-        $application = Application::factory()->create(['full_name_ar' => 'الاسم الأصلي للطالب']);
+        $application = Application::factory()->create(['student_name' => 'الأصلي']);
         $application->forceFill(['lock_version' => 3])->save();
 
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 2,
-                'full_name_ar' => 'اسم من جلسة قديمة',
+                'student_name' => 'قديم',
             ])
             ->assertSessionHasErrors(['lock_version' => __('applications.errors.stale_version')]);
 
-        expect($application->fresh()->full_name_ar)->toBe('الاسم الأصلي للطالب');
+        expect($application->fresh()->student_name)->toBe('الأصلي');
     });
 
     it('validates fields with Arabic messages', function () {
@@ -141,11 +151,11 @@ describe('saving a draft', function () {
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
-                'full_name_ar' => 'Ahmed Ali',
+                'father_name' => 'Ali',
                 'branch_code' => 'ATLANTIS',
             ])
             ->assertSessionHasErrors([
-                'full_name_ar' => 'يجب كتابة الاسم بالأحرف العربية فقط.',
+                'father_name' => 'يجب كتابة اسم الأب بالأحرف العربية فقط.',
                 'branch_code' => 'القيمة المختارة في الفرع غير صالحة.',
             ]);
     });
@@ -163,7 +173,7 @@ describe('saving a draft', function () {
         $application = Application::factory()->create();
 
         $this->actingAs(applicant())
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'full_name_ar' => 'محاولة تعديل غير مشروعة'])
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'student_name' => 'محاولة'])
             ->assertNotFound();
     });
 
@@ -171,7 +181,7 @@ describe('saving a draft', function () {
         $application = Application::factory()->submitted()->create();
 
         $this->actingAs($application->user)
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'full_name_ar' => 'تعديل بعد الإرسال'])
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'student_name' => 'تعديل'])
             ->assertForbidden();
     });
 

@@ -25,9 +25,14 @@ use Illuminate\Support\Str;
  * @property ApplicationStatus $status
  * @property int $lock_version
  * @property string|null $full_name_ar
- * @property string|null $surname
+ * @property string|null $student_name
+ * @property string|null $father_name
+ * @property string|null $grandfather_name
+ * @property string|null $great_grandfather_name
  * @property string|null $full_name_en
  * @property string|null $mother_name_ar
+ * @property string|null $mother_first_name
+ * @property string|null $mother_father_name
  * @property CarbonImmutable|null $birth_date
  * @property Gender|null $gender
  * @property string|null $national_id_number
@@ -80,11 +85,15 @@ class Application extends Model
      * Form fields an applicant may write: the official student status form
      * (استمارة واقع حال) plus the national ID number. `school_name` is the
      * last school attended and `category_code` the specialization within
-     * the branch. Status, numbering, ownership, assignment and timestamps are
-     * never mass assignable.
+     * the branch. The student's and mother's names are entered part by part;
+     * `full_name_ar` and `mother_name_ar` are composed from them. `phone` is
+     * always the account's mobile number (see SaveApplicationRequest).
+     * Status, numbering, ownership, assignment and timestamps are never mass
+     * assignable.
      */
     public const FORM_FIELDS = [
-        'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
+        'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+        'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
         'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
         'branch_code', 'category_code', 'other_info', 'issued_documents',
@@ -94,7 +103,8 @@ class Application extends Model
      * Fields that must be filled before the application can be submitted.
      */
     public const REQUIRED_FOR_SUBMISSION = [
-        'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
+        'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+        'mother_first_name', 'mother_father_name', 'birth_date', 'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
         'school_name', 'intermediate_school_name', 'last_grade', 'failed_years', 'left_years',
         'branch_code', 'category_code',
@@ -114,12 +124,44 @@ class Application extends Model
         'governorate_code' => self::GOVERNORATE_CODE,
     ];
 
+    /**
+     * The name parts in form order, joined into the stored full names.
+     */
+    public const NAME_PARTS = ['student_name', 'father_name', 'grandfather_name', 'great_grandfather_name'];
+
+    public const MOTHER_NAME_PARTS = ['mother_first_name', 'mother_father_name'];
+
     protected static function booted(): void
     {
         static::creating(function (Application $application): void {
             $application->uuid ??= (string) Str::uuid7();
             $application->verification_token ??= (string) Str::uuid();
         });
+
+        // Staff search, lists and reports read the composed names. The form
+        // only sends parts; a name set directly (imports, tests) is kept.
+        static::saving(function (Application $application): void {
+            if ($application->isDirty(self::NAME_PARTS) && ! $application->isDirty('full_name_ar')) {
+                $application->full_name_ar = self::joinParts($application, self::NAME_PARTS);
+            }
+
+            if ($application->isDirty(self::MOTHER_NAME_PARTS) && ! $application->isDirty('mother_name_ar')) {
+                $application->mother_name_ar = self::joinParts($application, self::MOTHER_NAME_PARTS);
+            }
+        });
+    }
+
+    /**
+     * @param  list<string>  $fields
+     */
+    private static function joinParts(Application $application, array $fields): ?string
+    {
+        $parts = array_filter(array_map(
+            fn (string $field): string => trim((string) $application->getAttribute($field)),
+            $fields,
+        ), fn (string $part): bool => $part !== '');
+
+        return $parts === [] ? null : implode(' ', $parts);
     }
 
     /**

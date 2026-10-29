@@ -35,9 +35,12 @@ class ApplicationFactory extends Factory
     public function complete(): static
     {
         return $this->state(fn (array $attributes) => [
-            'full_name_ar' => 'أحمد محمد علي حسن',
-            'surname' => 'الكربلائي',
-            'mother_name_ar' => 'فاطمة جاسم كاظم',
+            'student_name' => 'أحمد',
+            'father_name' => 'محمد',
+            'grandfather_name' => 'علي',
+            'great_grandfather_name' => 'حسن',
+            'mother_first_name' => 'فاطمة',
+            'mother_father_name' => 'جاسم',
             'birth_date' => '2006-03-15',
             'gender' => Gender::Male,
             'national_id_number' => fake()->unique()->numerify('19##########'),

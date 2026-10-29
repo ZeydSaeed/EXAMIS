@@ -38,7 +38,12 @@ function visualOrder(string $logical): string
 
 it('renders an A4 receipt whose Arabic text can be extracted', function () {
     $application = Application::factory()->submitted()->create([
-        'full_name_ar' => 'عبد الرحمن محمد عبد الكريم الساعدي',
+        'student_name' => 'عبد الرحمن',
+        'father_name' => 'محمد',
+        'grandfather_name' => 'عبد الكريم',
+        'great_grandfather_name' => 'جاسم',
+        'mother_first_name' => 'زهراء',
+        'mother_father_name' => 'كاظم',
         'reference_number' => 'EX2027-0000019',
     ]);
 
@@ -54,6 +59,8 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
         ->and($text)->toContain(visualOrder('عبد الرحمن'))
         ->and($text)->toContain(visualOrder('عبد الكريم'))
+        ->and($text)->toContain(visualOrder('زهراء'))
+        ->and($text)->toContain(visualOrder('كاظم'))
         ->and($text)->toContain(visualOrder('متوسطة الفرات للبنين'))
         ->and($text)->toContain(visualOrder('حي الحسين'))
         ->and($text)->toContain('2026-2027')

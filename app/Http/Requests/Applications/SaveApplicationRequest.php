@@ -50,14 +50,17 @@ class SaveApplicationRequest extends FormRequest
             $categories = array_values(array_intersect($categories, $period->eligible_category_codes));
         }
 
-        $arabicName = ['nullable', 'string', 'min:3', 'max:150', 'regex:/^[\p{Arabic}\s\.\-]+$/u'];
+        $namePart = ['nullable', 'string', 'min:2', 'max:40', 'regex:/^[\p{Arabic}\s\.\-]+$/u'];
         $houseNumber = ['nullable', 'string', 'max:10', 'regex:/^[0-9A-Za-z\/\-]+$/'];
 
         return [
             'lock_version' => ['required', 'integer', 'min:1'],
-            'full_name_ar' => $arabicName,
-            'surname' => ['nullable', 'string', 'min:2', 'max:60', 'regex:/^[\p{Arabic}\s\.\-]+$/u'],
-            'mother_name_ar' => $arabicName,
+            'student_name' => $namePart,
+            'father_name' => $namePart,
+            'grandfather_name' => $namePart,
+            'great_grandfather_name' => $namePart,
+            'mother_first_name' => $namePart,
+            'mother_father_name' => $namePart,
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before:-10 years', 'after:1940-01-01'],
             'gender' => ['nullable', Rule::enum(Gender::class)],
             'national_id_number' => ['nullable', 'string', 'regex:/^[0-9A-Za-z]{6,20}$/'],
@@ -115,11 +118,14 @@ class SaveApplicationRequest extends FormRequest
             }
         }
 
-        foreach (['full_name_ar', 'surname', 'mother_name_ar', 'district', 'school_name', 'intermediate_school_name', 'last_grade', 'other_info'] as $field) {
+        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'district', 'school_name', 'intermediate_school_name', 'last_grade', 'other_info'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = trim((string) preg_replace('/\s+/u', ' ', $this->input($field)));
             }
         }
+
+        // The mobile number is the account's (only the owner edits a draft).
+        $normalized['phone'] = $this->user()?->phone;
 
         if (is_array($this->input('issued_documents'))) {
             $normalized['issued_documents'] = array_values(array_filter(

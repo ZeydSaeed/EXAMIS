@@ -38,6 +38,7 @@ class StartApplication
                 $application->user_id = $applicant->id;
                 $application->exam_period_id = $period->id;
                 $application->contact_email ??= $applicant->email;
+                $application->phone = $applicant->phone;
                 $application->save();
 
                 $application->events()->create([
@@ -81,8 +82,8 @@ class StartApplication
         }
 
         return $latest->only([
-            'full_name_ar', 'surname', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
-            'phone', 'district', 'mahalla', 'alley', 'house_number', 'school_name', 'intermediate_school_name',
+            ...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS,
+            'birth_date', 'gender', 'national_id_number', 'district', 'mahalla', 'alley', 'house_number', 'school_name', 'intermediate_school_name',
         ]);
     }
 }

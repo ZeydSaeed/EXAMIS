@@ -52,20 +52,18 @@ test.describe('applicant journey', () => {
         await expect(page).toHaveURL(/\/applications\/[0-9a-f-]+\/edit/);
 
         // Server-side validation in Arabic.
-        await page.locator('#full_name_ar').fill('Sara Ali');
+        await page.locator('#student_name').fill('Sara');
         await page.getByTestId('next-step').click();
         await expect(
-            page.getByText('يجب كتابة الاسم بالأحرف العربية فقط.'),
+            page.getByText('يجب كتابة اسم الطالب بالأحرف العربية فقط.'),
         ).toBeVisible();
 
         // Draft survives a reload because it lives on the server.
-        await page.locator('#full_name_ar').fill('سارة علي حسين الجبوري');
+        await page.locator('#student_name').fill('سارة');
         await page.getByTestId('save-draft').click();
         await expect(page.getByText('تم حفظ المسودة.')).toBeVisible();
         await page.reload();
-        await expect(page.locator('#full_name_ar')).toHaveValue(
-            'سارة علي حسين الجبوري',
-        );
+        await expect(page.locator('#student_name')).toHaveValue('سارة');
 
         await completeApplicationForm(page);
 

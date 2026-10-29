@@ -75,9 +75,12 @@ const STEPS = [
 
 const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
     personal: [
-        'full_name_ar',
-        'surname',
-        'mother_name_ar',
+        'student_name',
+        'father_name',
+        'grandfather_name',
+        'great_grandfather_name',
+        'mother_first_name',
+        'mother_father_name',
         'birth_date',
         'gender',
         'national_id_number',
@@ -397,38 +400,72 @@ export default function EditApplication({
 
                         {currentStep === 'personal' && (
                             <div className="grid gap-5 sm:grid-cols-2">
+                                <p className="text-sm text-muted-foreground sm:col-span-2">
+                                    {t('fields.full_name_ar_hint')}
+                                </p>
                                 <Field
-                                    id="full_name_ar"
-                                    label={t('fields.full_name_ar')}
-                                    hint={t('fields.full_name_ar_hint')}
-                                    error={form.errors.full_name_ar}
+                                    id="student_name"
+                                    label={t('fields.student_name')}
+                                    error={form.errors.student_name}
                                     required
                                 >
-                                    {input('full_name_ar', {
-                                        autoComplete: 'name',
+                                    {input('student_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                        autoComplete: 'given-name',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="father_name"
+                                    label={t('fields.father_name')}
+                                    error={form.errors.father_name}
+                                    required
+                                >
+                                    {input('father_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
                                 </Field>
                                 <Field
-                                    id="surname"
-                                    label={t('fields.surname')}
-                                    error={form.errors.surname}
+                                    id="grandfather_name"
+                                    label={t('fields.grandfather_name')}
+                                    error={form.errors.grandfather_name}
                                     required
                                 >
-                                    {input('surname', {
+                                    {input('grandfather_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
                                 </Field>
                                 <Field
-                                    id="mother_name_ar"
-                                    label={t('fields.mother_name_ar')}
-                                    error={form.errors.mother_name_ar}
+                                    id="great_grandfather_name"
+                                    label={t('fields.great_grandfather_name')}
+                                    error={form.errors.great_grandfather_name}
                                     required
-                                    className="sm:col-span-2"
                                 >
-                                    {input('mother_name_ar', {
+                                    {input('great_grandfather_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_first_name"
+                                    label={t('fields.mother_first_name')}
+                                    error={form.errors.mother_first_name}
+                                    required
+                                >
+                                    {input('mother_first_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_father_name"
+                                    label={t('fields.mother_father_name')}
+                                    error={form.errors.mother_father_name}
+                                    required
+                                >
+                                    {input('mother_father_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
@@ -535,17 +572,21 @@ export default function EditApplication({
                                 <Field
                                     id="phone"
                                     label={t('fields.phone')}
-                                    hint={t('fields.phone_hint')}
+                                    hint={t('fields.phone_account_hint')}
                                     error={form.errors.phone}
-                                    required
                                     className="sm:col-span-2"
                                 >
-                                    {input('phone', {
-                                        type: 'tel',
-                                        dir: 'ltr',
-                                        inputMode: 'tel',
-                                        autoComplete: 'tel',
-                                    })}
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        dir="ltr"
+                                        value={form.data.phone ?? ''}
+                                        readOnly
+                                        aria-readonly
+                                        aria-describedby="phone-hint"
+                                        className="bg-muted text-start"
+                                        data-test="phone-readonly"
+                                    />
                                 </Field>
                             </div>
                         )}

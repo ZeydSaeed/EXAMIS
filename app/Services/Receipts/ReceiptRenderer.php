@@ -23,7 +23,6 @@ class ReceiptRenderer
     /**
      * Words that start a compound Arabic name ("عبد الرحمن", "أبو بكر").
      */
-    private const NAME_PREFIXES = ['عبد', 'أبو', 'ابو'];
 
     /**
      * Logo printed at the top of the form, when the authority has provided it.
@@ -75,8 +74,8 @@ class ReceiptRenderer
             'font' => $fonts['default_font'],
             'logo' => is_file($logo) ? $logo : null,
             'hasPhoto' => $photo !== null,
-            'nameParts' => $this->nameParts((string) $application->full_name_ar, 4),
-            'motherNameParts' => $this->nameParts((string) $application->mother_name_ar, 3),
+            'nameParts' => array_values($application->only(Application::NAME_PARTS)),
+            'motherNameParts' => array_values($application->only(Application::MOTHER_NAME_PARTS)),
             'issuedDocuments' => array_pad(array_slice($application->issued_documents ?? [], 0, 4), 4, null),
             'verificationUrl' => route('receipts.verify', $application->verification_token),
             'generatedAt' => now(),
@@ -134,31 +133,5 @@ class ReceiptRenderer
         } catch (Throwable) {
             return null;
         }
-    }
-
-    /**
-     * Splits a name into the form's boxes (four for the full name, three for
-     * the mother's name), keeping compound names such as "عبد الرحمن" in one
-     * box. Returns null when the name does not have that many parts, so the
-     * template prints it across all boxes instead.
-     *
-     * @return list<string>|null
-     */
-    private function nameParts(string $name, int $count): ?array
-    {
-        $words = preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        $parts = [];
-
-        for ($index = 0; $index < count($words); $index++) {
-            $word = $words[$index];
-
-            if (in_array($word, self::NAME_PREFIXES, true) && isset($words[$index + 1])) {
-                $word .= ' '.$words[++$index];
-            }
-
-            $parts[] = $word;
-        }
-
-        return count($parts) === $count ? $parts : null;
     }
 }

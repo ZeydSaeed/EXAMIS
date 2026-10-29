@@ -74,7 +74,7 @@ it('requires the declaration', function () {
 
 it('lists what is missing when the application is incomplete', function () {
     [$period] = openPeriodRequiringDocument();
-    $application = Application::factory()->create(['exam_period_id' => $period->id, 'full_name_ar' => 'اسم فقط']);
+    $application = Application::factory()->create(['exam_period_id' => $period->id, 'student_name' => 'اسم']);
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])

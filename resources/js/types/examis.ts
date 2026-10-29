@@ -16,9 +16,12 @@ export type IssuedDocument = {
 
 /** Fields of the official student status form (استمارة واقع حال). */
 export type ApplicationForm = {
-    full_name_ar: string | null;
-    surname: string | null;
-    mother_name_ar: string | null;
+    student_name: string | null;
+    father_name: string | null;
+    grandfather_name: string | null;
+    great_grandfather_name: string | null;
+    mother_first_name: string | null;
+    mother_father_name: string | null;
     birth_date: string | null;
     gender: 'male' | 'female' | null;
     national_id_number: string | null;
@@ -79,6 +82,9 @@ export type Application = {
         closes_at: string;
         is_accepting: boolean;
     };
+    /** Composed from the name parts; read-only. */
+    full_name: string | null;
+    mother_name: string | null;
     form: ApplicationForm;
     labels: {
         governorate: string | null;

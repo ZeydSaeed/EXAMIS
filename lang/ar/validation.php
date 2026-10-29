@@ -68,6 +68,24 @@ return [
     'uuid' => 'يجب أن يكون :attribute معرّفاً صالحاً.',
 
     'custom' => [
+        'student_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
+        'father_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
+        'grandfather_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
+        'great_grandfather_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
+        'mother_first_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
+        'mother_father_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
         'username' => [
             'regex' => 'يجب أن يتكون اسم المستخدم من أحرف إنكليزية صغيرة وأرقام والرموز (. _ -) فقط.',
             'not_regex' => 'لا يمكن أن يتكون اسم المستخدم من أرقام فقط.',
@@ -94,13 +112,19 @@ return [
     ],
 
     'attributes' => [
+        'student_name' => 'اسم الطالب',
+        'father_name' => 'اسم الأب',
+        'grandfather_name' => 'اسم الجد',
+        'great_grandfather_name' => 'اسم أب الجد',
+        'mother_first_name' => 'اسم الأم',
+        'mother_father_name' => 'اسم أب الأم',
         'username' => 'اسم المستخدم',
         'name' => 'الاسم',
         'email' => 'البريد الإلكتروني',
         'password' => 'كلمة المرور',
         'terms' => 'شروط الاستخدام وسياسة الخصوصية',
         'full_name_ar' => 'الاسم الرباعي',
-        'mother_name_ar' => 'اسم الأم الثلاثي',
+        'mother_name_ar' => 'اسم الأم الكامل',
         'birth_date' => 'تاريخ الميلاد',
         'gender' => 'الجنس',
         'national_id_number' => 'رقم البطاقة الوطنية',
@@ -125,7 +149,6 @@ return [
         'title_en' => 'العنوان بالإنكليزية',
         'body_ar' => 'المحتوى بالعربية',
         'body_en' => 'المحتوى بالإنكليزية',
-        'surname' => 'اللقب',
         'district' => 'الحي',
         'mahalla' => 'رقم المحلة',
         'alley' => 'رقم الزقاق',

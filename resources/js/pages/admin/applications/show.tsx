@@ -147,14 +147,7 @@ export default function AdminApplicationShow({
             />
             <PageContainer>
                 <PageHeader
-                    title={
-                        [
-                            application.form.full_name_ar,
-                            application.form.surname,
-                        ]
-                            .filter(Boolean)
-                            .join(' ') || '—'
-                    }
+                    title={application.full_name || '—'}
                     description={
                         <>
                             <bdi

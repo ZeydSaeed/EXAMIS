@@ -27,12 +27,12 @@ for (const path of [
 test('the application form fits a phone screen', async ({ page }) => {
     await login(page, applicant(11));
     await page.getByTestId('start-application').first().click();
-    await expect(page.locator('#full_name_ar')).toBeVisible();
+    await expect(page.locator('#student_name')).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     // Long Arabic names must wrap, not overflow.
     await page
-        .locator('#full_name_ar')
-        .fill('عبد الرحمن محمد عبد الكريم عبد الحسين الساعدي الموسوي');
+        .locator('#student_name')
+        .fill('عبد الرحمن عبد الكريم عبد الحسين الساعدي');
     await expectNoHorizontalOverflow(page);
 });

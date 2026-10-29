@@ -33,9 +33,19 @@ export function applicationSummary(
         .join('\n');
 
     return [
-        [t('fields.full_name_ar'), form.full_name_ar],
-        [t('fields.surname'), form.surname],
-        [t('fields.mother_name_ar'), form.mother_name_ar],
+        [
+            t('fields.full_name_ar'),
+            joinName(
+                form.student_name,
+                form.father_name,
+                form.grandfather_name,
+                form.great_grandfather_name,
+            ),
+        ],
+        [
+            t('fields.mother_name_ar'),
+            joinName(form.mother_first_name, form.mother_father_name),
+        ],
         [t('fields.birth_date'), form.birth_date],
         [t('fields.gender'), application.labels.gender],
         [t('fields.national_id_number'), form.national_id_number],
@@ -51,4 +61,14 @@ export function applicationSummary(
         [t('fields.other_info'), form.other_info],
         [t('fields.issued_documents'), documents || null],
     ];
+}
+
+/** Joins name parts with spaces, or null when none is filled in. */
+function joinName(...parts: (string | null)[]): string | null {
+    const name = parts
+        .map((part) => part?.trim())
+        .filter(Boolean)
+        .join(' ');
+
+    return name === '' ? null : name;
 }

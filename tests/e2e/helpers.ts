@@ -72,9 +72,12 @@ export async function logout(page: Page): Promise<void> {
  * required document, ending on the review step.
  */
 export async function completeApplicationForm(page: Page): Promise<void> {
-    await page.locator('#full_name_ar').fill('سارة علي حسين كاظم');
-    await page.locator('#surname').fill('الجبوري');
-    await page.locator('#mother_name_ar').fill('زينب كاظم جواد');
+    await page.locator('#student_name').fill('سارة');
+    await page.locator('#father_name').fill('علي');
+    await page.locator('#grandfather_name').fill('حسين');
+    await page.locator('#great_grandfather_name').fill('كاظم');
+    await page.locator('#mother_first_name').fill('زينب');
+    await page.locator('#mother_father_name').fill('كاظم');
     await page.locator('#birth_date').fill(BIRTH_DATE);
     await page.locator('#gender').selectOption('female');
     await page.locator('#national_id_number').fill('199812345678');
@@ -85,7 +88,7 @@ export async function completeApplicationForm(page: Page): Promise<void> {
     await page.locator('#mahalla').fill('630');
     await page.locator('#alley').fill('44');
     await page.locator('#house_number').fill('164');
-    await page.locator('#phone').fill('07701234567');
+    // The mobile number is the account's and read-only on the form.
     await page.getByTestId('next-step').click();
 
     await expect(page.locator('#school_name')).toBeVisible();

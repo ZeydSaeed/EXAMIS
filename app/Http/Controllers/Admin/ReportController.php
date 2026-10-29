@@ -65,7 +65,7 @@ class ReportController extends Controller
 
             fwrite($output, "\xEF\xBB\xBF");
             fputcsv($output, [
-                'reference_number', 'status', 'full_name_ar', 'surname', 'mother_name_ar', 'gender', 'birth_date', 'phone',
+                'reference_number', 'status', 'full_name_ar', 'mother_name_ar', 'gender', 'birth_date', 'phone',
                 'district', 'mahalla', 'alley', 'house_number', 'last_school', 'intermediate_school', 'last_grade',
                 'failed_years', 'left_years', 'branch', 'specialization', 'submitted_at',
             ], escape: '');
@@ -80,7 +80,6 @@ class ReportController extends Controller
                         (string) $application->reference_number,
                         $application->status->value,
                         (string) $application->full_name_ar,
-                        (string) $application->surname,
                         (string) $application->mother_name_ar,
                         (string) $application->gender?->value,
                         (string) $application->birth_date?->format('Y-m-d'),
