@@ -141,6 +141,19 @@ return [
         'student_login_link' => 'Student sign-in',
     ],
 
+    'apply' => [
+        'steps' => 'Application steps',
+        'step_terms' => 'Application terms',
+        'step_account' => 'Create account',
+        'terms_title' => 'Application terms',
+        'terms_intro' => 'Please read all the application terms before creating your account.',
+        'updated_on' => 'Last updated: :date.',
+        'no_terms' => 'The application terms have not been published yet.',
+        'accept' => 'I have read and accept the application terms',
+        'back' => 'Back',
+        'next' => 'Next',
+    ],
+
     'start' => [
         'title' => 'External Examinations Applications',
         'department' => 'Vocational Education Department',

@@ -42,6 +42,9 @@ Route::get('verify/{token}', [Public\ReceiptVerificationController::class, 'show
 */
 
 Route::middleware('guest')->group(function () {
+    Route::get('apply/terms', [Public\ApplicationTermsController::class, 'show'])->name('apply.terms');
+    Route::post('apply/terms', [Public\ApplicationTermsController::class, 'accept'])->name('apply.terms.accept');
+
     Route::get('staff/login', StaffLoginController::class)->name('staff.login');
 
     Route::post('student/login', [StudentLoginController::class, 'store'])

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\AccountType;
+use App\Http\Controllers\Public\ApplicationTermsController;
 use App\Models\AuditEvent;
 use App\Models\User;
 use App\Services\Students\TrustedDevices;
@@ -9,9 +10,12 @@ use Laravel\Fortify\Features;
 
 beforeEach(function () {
     $this->skipUnlessFortifyHas(Features::registration());
+
+    // Registration follows the application terms step.
+    $this->withSession([ApplicationTermsController::SESSION_KEY => now()->toIso8601String()]);
 });
 
-test('registration screen can be rendered', function () {
+test('registration screen can be rendered once the terms are accepted', function () {
     $this->get(route('register'))->assertOk();
 });
 
