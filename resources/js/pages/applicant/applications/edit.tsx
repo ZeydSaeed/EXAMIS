@@ -150,6 +150,9 @@ export default function EditApplication({
             ),
         );
     const isCorrection = application.status === 'requires_correction';
+    const awaitingReview =
+        application.status === 'submitted' ||
+        application.status === 'resubmitted';
 
     const save = (afterSave?: () => void) => {
         form.put(applications.update.url(application.uuid), {
@@ -971,75 +974,112 @@ export default function EditApplication({
                             </Alert>
                         )}
 
-                        <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-                            <div className="flex items-start gap-3">
-                                <Checkbox
-                                    id="declaration"
-                                    checked={submission.data.declaration}
-                                    onCheckedChange={(checked) =>
-                                        submission.setData(
-                                            'declaration',
-                                            checked === true,
-                                        )
-                                    }
-                                    disabled={!isReady}
-                                    aria-describedby={
-                                        submission.errors.declaration
-                                            ? 'declaration-error'
-                                            : undefined
-                                    }
-                                />
-                                <Label
-                                    htmlFor="declaration"
-                                    className="leading-relaxed font-normal"
-                                >
-                                    {t('applicant.declaration')}
-                                </Label>
-                            </div>
-                            {submission.errors.declaration && (
+                        {awaitingReview ? (
+                            // Already submitted: edits are saved as made; nothing to send again.
+                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
                                 <p
-                                    id="declaration-error"
-                                    className="text-sm text-destructive"
+                                    className="flex items-start gap-2 text-sm leading-relaxed"
+                                    data-test="submitted-edit-note"
                                 >
-                                    {submission.errors.declaration}
+                                    <CheckCircle2
+                                        className="mt-0.5 size-4 shrink-0 text-success"
+                                        aria-hidden
+                                    />
+                                    {t('applicant.submitted_edit_note')}
                                 </p>
-                            )}
-                            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => goTo(step - 1)}
-                                >
-                                    {t('common.previous')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="lg"
-                                    onClick={submit}
-                                    disabled={
-                                        !isReady ||
-                                        !submission.data.declaration ||
-                                        submission.processing
-                                    }
-                                    data-test="submit-application"
-                                >
-                                    {submission.processing ? (
-                                        <Spinner />
-                                    ) : isReady ? (
-                                        <Send
-                                            className="size-4"
-                                            aria-hidden
-                                        />
-                                    ) : (
-                                        <CheckCircle2
-                                            className="size-4"
-                                            aria-hidden
-                                        />
-                                    )}
-                                    {t('applicant.submit')}
-                                </Button>
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => goTo(step - 1)}
+                                    >
+                                        {t('common.previous')}
+                                    </Button>
+                                    <Button size="lg" asChild>
+                                        <Link
+                                            href={applications.show(
+                                                application.uuid,
+                                            )}
+                                            data-test="back-to-application"
+                                        >
+                                            {t('applicant.back_to_application')}
+                                        </Link>
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="declaration"
+                                        checked={submission.data.declaration}
+                                        onCheckedChange={(checked) =>
+                                            submission.setData(
+                                                'declaration',
+                                                checked === true,
+                                            )
+                                        }
+                                        disabled={!isReady}
+                                        aria-describedby={
+                                            submission.errors.declaration
+                                                ? 'declaration-error'
+                                                : undefined
+                                        }
+                                    />
+                                    <Label
+                                        htmlFor="declaration"
+                                        className="leading-relaxed font-normal"
+                                    >
+                                        {t('applicant.declaration')}
+                                    </Label>
+                                </div>
+                                {submission.errors.declaration && (
+                                    <p
+                                        id="declaration-error"
+                                        className="text-sm text-destructive"
+                                    >
+                                        {submission.errors.declaration}
+                                    </p>
+                                )}
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => goTo(step - 1)}
+                                    >
+                                        {t('common.previous')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="lg"
+                                        onClick={submit}
+                                        disabled={
+                                            !isReady ||
+                                            !submission.data.declaration ||
+                                            submission.processing
+                                        }
+                                        data-test="submit-application"
+                                    >
+                                        {submission.processing ? (
+                                            <Spinner />
+                                        ) : isReady ? (
+                                            <Send
+                                                className="size-4"
+                                                aria-hidden
+                                            />
+                                        ) : (
+                                            <CheckCircle2
+                                                className="size-4"
+                                                aria-hidden
+                                            />
+                                        )}
+                                        {isCorrection
+                                            ? t('applicant.resubmit')
+                                            : t('applicant.submit')}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 )}
             </PageContainer>

@@ -206,6 +206,8 @@ return [
 
     'applicant' => [
         'edit_application' => 'Edit',
+        'submitted_edit_note' => 'Your application has been submitted. Your changes are saved as soon as you save them, and you can edit until the review starts.',
+        'back_to_application' => 'Back to the application',
         'edit_section' => 'Edit',
         'dashboard_title' => 'My applications',
         'dashboard_description' => 'Start a new application or follow your existing ones.',
@@ -234,6 +236,7 @@ return [
         'incomplete_title' => 'Complete the following before submitting:',
         'declaration' => 'I declare that all the data and documents provided are true and complete, and I accept legal responsibility for any false information.',
         'submit' => 'Submit application',
+        'resubmit' => 'Resubmit application',
         'unconfirmed_title' => 'Submission not confirmed',
         'unconfirmed_text' => 'The connection dropped before the server replied. Check the application status before submitting again; retrying is safe and will not create a duplicate.',
         'check_status' => 'Check application status',
@@ -241,6 +244,11 @@ return [
         'correction_requested_text' => 'The review team asked you to correct some data or documents.',
         'view_reviewer_notes' => 'View notes',
         'submitted_title' => 'Your application was submitted',
+        'next_step' => [
+            'submitted' => 'Next step: wait for the review team to finish reviewing your application. You can edit it until the review starts.',
+            'resubmitted' => 'Next step: wait for the review team to finish reviewing your corrections.',
+            'under_review' => 'Next step: your application is under review; wait for the admission decision.',
+        ],
         'not_submitted_yet' => 'Not submitted yet.',
         'receipt' => 'Student form (PDF)',
         'reviewer_notes' => 'Notes from the review team',
