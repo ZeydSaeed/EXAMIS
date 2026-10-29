@@ -108,7 +108,7 @@ export default function Login({ status, canRegister }: Props) {
                                             key="username"
                                             id="identifier"
                                             name="identifier"
-                                            dir="ltr"
+                                            dir="auto"
                                             required
                                             autoFocus
                                             autoComplete="username"

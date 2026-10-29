@@ -49,7 +49,7 @@ trait ProfileValidationRules
      */
     protected function usernameRules(): array
     {
-        return ['required', 'string', 'min:4', 'max:32', 'regex:/^[a-z0-9._-]+$/', 'not_regex:/^[0-9]+$/', Rule::unique(User::class, 'username')];
+        return ['required', 'string', 'min:3', 'max:32', 'regex:/^[a-z0-9._\x{0621}-\x{063A}\x{0641}-\x{064A}-]+$/u', 'not_regex:/^[0-9]+$/', Rule::unique(User::class, 'username')];
     }
 
     /**

@@ -41,7 +41,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                 <Input
                                     id="username"
                                     name="username"
-                                    dir="ltr"
+                                    dir="auto"
                                     autoComplete="username"
                                     autoCapitalize="none"
                                     autoFocus

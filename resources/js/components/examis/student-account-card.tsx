@@ -53,7 +53,7 @@ export function StudentAccountCard({
                 </dd>
                 <dt className="text-muted-foreground">{t('auth.username')}</dt>
                 <dd>
-                    <bdi dir="ltr">{student.username}</bdi>
+                    <bdi>{student.username}</bdi>
                 </dd>
                 <dt className="text-muted-foreground">{t('auth.mobile')}</dt>
                 <dd>

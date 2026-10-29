@@ -44,7 +44,7 @@ export default function ResetPassword({
                             <Input
                                 id="username"
                                 name="username"
-                                dir="ltr"
+                                dir="auto"
                                 autoComplete="username"
                                 defaultValue={username}
                                 required

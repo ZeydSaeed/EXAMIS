@@ -41,14 +41,15 @@ export default function Register() {
                                 <Input
                                     id="username"
                                     name="username"
-                                    dir="ltr"
+                                    dir="auto"
                                     required
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="username"
                                     autoCapitalize="none"
                                     spellCheck={false}
-                                    pattern="[a-zA-Z0-9._\-]{4,32}"
+                                    minLength={3}
+                                    maxLength={32}
                                     aria-describedby="username-hint"
                                 />
                                 <p

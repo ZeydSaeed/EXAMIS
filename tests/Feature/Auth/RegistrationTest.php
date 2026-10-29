@@ -109,6 +109,24 @@ test('registration rejects a mobile number registered to another account', funct
     $this->assertGuest();
 });
 
+test('registration accepts Arabic and English usernames of three or more letters', function (string $username) {
+    $this->post(route('register.store'), [
+        'username' => $username,
+        'phone' => '07701234567',
+        'terms' => '1',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::query()->where('username', $username)->exists())->toBeTrue();
+})->with(['علي', 'سارة.حسين', 'ali']);
+
+test('registration rejects usernames shorter than three letters or with other characters', function (string $username) {
+    $this->post(route('register.store'), [
+        'username' => $username,
+        'phone' => '07701234567',
+        'terms' => '1',
+    ])->assertSessionHasErrors('username');
+})->with(['عل', 'ab', 'علي حسن', 'ali@x']);
+
 test('registration rejects usernames made of digits only', function () {
     $this->post(route('register.store'), [
         'username' => '12345',

@@ -159,7 +159,7 @@ function CreateStaffDialog({
                     >
                         <Input
                             id="new-username"
-                            dir="ltr"
+                            dir="auto"
                             value={create.data.username}
                             onChange={(event) =>
                                 create.setData('username', event.target.value)

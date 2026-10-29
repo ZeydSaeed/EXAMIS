@@ -296,3 +296,13 @@ test('codes issued before plain-text storage are still accepted', function () {
     expect($identity->checkAccessCode($user->fresh(), 'abcde23456'))->toBeTrue()
         ->and($identity->checkAccessCode($user->fresh(), 'ABCDE-23457'))->toBeFalse();
 });
+
+test('a student signs in with an Arabic username', function () {
+    $user = User::factory()->student()->create(['username' => 'علي.حسين']);
+
+    $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
+        ->post(route('student.login'), ['identifier' => ' علي.حسين '])
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs($user);
+});

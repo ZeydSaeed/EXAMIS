@@ -116,7 +116,7 @@ export default function StudentCard({
                                 {t('auth.username')}
                             </dt>
                             <dd>
-                                <bdi dir="ltr">{account.username}</bdi>
+                                <bdi>{account.username}</bdi>
                             </dd>
                             <dt className="text-muted-foreground">
                                 {t('auth.mobile')}
@@ -208,7 +208,7 @@ export default function StudentCard({
                                     </dd>
                                     <dt>{t('auth.username')}</dt>
                                     <dd>
-                                        <bdi dir="ltr">{account.username}</bdi>
+                                        <bdi>{account.username}</bdi>
                                     </dd>
                                     <dt>{t('auth.mobile')}</dt>
                                     <dd>

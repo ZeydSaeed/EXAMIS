@@ -56,7 +56,7 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                                 <Input
                                     id="username"
                                     name="username"
-                                    dir="ltr"
+                                    dir="auto"
                                     required
                                     autoFocus
                                     tabIndex={1}
