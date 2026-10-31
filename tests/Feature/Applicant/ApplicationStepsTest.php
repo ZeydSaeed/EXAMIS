@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ApplicationStatus;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -178,6 +179,8 @@ test('the specialization page is closed once the form has started', function () 
 });
 
 test('a submitted application opens at the first step to edit', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $student = User::factory()->student()->create();
     $application = Application::factory()->for($student)->complete()->submitted()->create();
 

@@ -14,8 +14,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
 /**
- * Confirmation for consequential actions. `children` is the trigger;
- * `body` can hold extra inputs (e.g. a reason) that belong to the action.
+ * Confirmation for consequential actions. `children` is the trigger, left
+ * out when `open` is driven from code; `body` can hold extra inputs (e.g. a
+ * reason) that belong to the action.
  */
 export function ConfirmDialog({
     title,
@@ -40,13 +41,13 @@ export function ConfirmDialog({
     onOpenChange?: (open: boolean) => void;
     onConfirm: () => void;
     body?: ReactNode;
-    children: ReactNode;
+    children?: ReactNode;
 }) {
     const { t } = useTrans();
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+            {children && <DialogTrigger asChild>{children}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader className="text-start">
                     <DialogTitle>{title}</DialogTitle>

@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationEventType;
 use App\Enums\ApplicationStatus;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Notifications\ApplicationStatusChanged;
@@ -116,8 +117,6 @@ it('resubmits a corrected application without changing its reference number', fu
     $application = readyDraft();
     $this->actingAs($application->user)->post(route('applications.submit', $application), ['declaration' => '1']);
     $reference = $application->fresh()->reference_number;
-    // Accounts closed before a correction cannot reach this; older ones can.
-    $application->user->forceFill(['closed_at' => null])->save();
     $application->forceFill(['status' => ApplicationStatus::RequiresCorrection])->save();
     $application->examPeriod->update(['closes_at' => now()->subDay()]);
 
@@ -139,6 +138,8 @@ it('answers 404 when submitting someone else\'s application', function () {
 });
 
 it('lets the applicant withdraw a submitted application', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $application = Application::factory()->submitted()->create();
 
     $this->actingAs($application->user)
@@ -150,6 +151,8 @@ it('lets the applicant withdraw a submitted application', function () {
 });
 
 it('does not allow withdrawing a decided application', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $application = Application::factory()->inStatus(ApplicationStatus::Accepted)->create();
 
     $this->actingAs($application->user)

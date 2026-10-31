@@ -1,23 +1,39 @@
 import type { PDFDocumentLoadingTask } from 'pdfjs-dist';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
-/** Enough detail to stay sharp on high-density screens. */
-const MAX_PIXEL_RATIO = 2;
+/** 216 dpi: sharp on paper as well as on high-density screens. */
+const RENDER_SCALE = 3;
 
 /**
  * Draws every page of a PDF at the full width of the page, one under the
- * other. Browsers' own PDF viewers cannot be restyled and do not exist on
- * most phones, so the file is rendered here instead. The library is only
- * loaded where this component is used.
+ * other, and prints them when the page prints. Browsers' own PDF viewers
+ * cannot be restyled, do not exist on most phones and do not say when a print
+ * ends, so the file is rendered here instead. The library is only loaded
+ * where this component is used.
  */
-export function PdfPages({ url, title }: { url: string; title: string }) {
+export function PdfPages({
+    url,
+    title,
+    onReady,
+}: {
+    url: string;
+    title: string;
+    onReady?: () => void;
+}) {
     const { t } = useTrans();
     const holder = useRef<HTMLDivElement>(null);
+    const notifyReady = useRef(onReady);
     const [state, setState] = useState<'loading' | 'ready' | 'failed'>(
         'loading',
     );
+    const [sheets, setSheets] = useState<string[]>([]);
+
+    useEffect(() => {
+        notifyReady.current = onReady;
+    }, [onReady]);
 
     useEffect(() => {
         const container = holder.current;
@@ -46,18 +62,11 @@ export function PdfPages({ url, title }: { url: string; title: string }) {
             });
 
             const document_ = await task.promise;
-            const pixelRatio = Math.min(
-                window.devicePixelRatio || 1,
-                MAX_PIXEL_RATIO,
-            );
+            const rendered: string[] = [];
 
             for (let number = 1; number <= document_.numPages; number++) {
                 const page = await document_.getPage(number);
-                const scale =
-                    (container.clientWidth /
-                        page.getViewport({ scale: 1 }).width) *
-                    pixelRatio;
-                const viewport = page.getViewport({ scale });
+                const viewport = page.getViewport({ scale: RENDER_SCALE });
                 const canvas = document.createElement('canvas');
                 const canvasContext = canvas.getContext('2d');
 
@@ -76,9 +85,12 @@ export function PdfPages({ url, title }: { url: string; title: string }) {
                 }
 
                 container.appendChild(canvas);
+                rendered.push(canvas.toDataURL('image/png'));
             }
 
+            setSheets(rendered);
             setState('ready');
+            notifyReady.current?.();
         };
 
         render().catch(() => {
@@ -116,6 +128,18 @@ export function PdfPages({ url, title }: { url: string; title: string }) {
                 className="grid gap-4"
                 data-test="printed-form"
             />
+            {createPortal(
+                sheets.map((sheet, index) => (
+                    <div key={index} className="print-sheet hidden bg-white">
+                        <img
+                            src={sheet}
+                            alt=""
+                            className="h-full w-full object-contain"
+                        />
+                    </div>
+                )),
+                document.body,
+            )}
         </>
     );
 }

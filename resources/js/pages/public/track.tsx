@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Download, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Field } from '@/components/examis/field';
 import { StatusBadge } from '@/components/examis/status-badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ type Props = {
         status_label: string;
         exam_period: string;
         submitted_at: string | null;
-        form_url: string;
     } | null;
 };
 
@@ -117,16 +116,6 @@ export default function TrackApplication({ result }: Props) {
                                 </dd>
                             </div>
                         </dl>
-                        <Button className="mt-4 w-full" asChild>
-                            <a
-                                href={result.form_url}
-                                download
-                                data-test="track-form-download"
-                            >
-                                <Download className="size-4" aria-hidden />
-                                {t('applicant.download_form')}
-                            </a>
-                        </Button>
                     </section>
                 )}
             </div>

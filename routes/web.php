@@ -25,10 +25,6 @@ Route::post('track', [Public\TrackApplicationController::class, 'store'])
     ->middleware('throttle:public-lookup')
     ->name('track.store');
 
-Route::get('track/{application}/form', [Public\TrackApplicationController::class, 'form'])
-    ->middleware(['signed', 'throttle:public-lookup'])
-    ->name('track.form');
-
 Route::get('verify/{token}', [Public\ReceiptVerificationController::class, 'show'])
     ->whereUuid('token')
     ->middleware('throttle:public-lookup')
@@ -106,6 +102,7 @@ Route::middleware('auth')->group(function () {
         Route::post('applications', [Applicant\ApplicationController::class, 'store'])->name('applications.store');
         Route::put('applications/{application}', [Applicant\ApplicationController::class, 'update'])->name('applications.update');
         Route::post('applications/{application}/submit', [Applicant\ApplicationSubmissionController::class, 'store'])->name('applications.submit');
+        Route::post('applications/{application}/finish', [Applicant\ApplicationSubmissionController::class, 'finish'])->name('applications.finish');
         Route::post('applications/{application}/withdraw', [Applicant\ApplicationWithdrawalController::class, 'store'])->name('applications.withdraw');
     });
 

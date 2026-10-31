@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Public\ApplicationTermsController;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\ExamPeriod;
@@ -85,6 +86,8 @@ test('both lists are required', function () {
 });
 
 test('the page shows the saved choice and is locked once the review has started', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $period = ExamPeriod::factory()->create();
     $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create([
         'exam_period_id' => $period->id,

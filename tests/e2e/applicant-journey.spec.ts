@@ -1,10 +1,8 @@
 import { expect, test } from '@playwright/test';
 import {
-    BIRTH_DATE,
     applicant,
     completeApplicationForm,
     login,
-    logout,
     pngFile,
     uniqueUsername,
     uploadDocument,
@@ -70,29 +68,12 @@ test.describe('applicant journey', () => {
         await page.locator('#declaration').check();
         // A double click must not submit twice: the server is idempotent and the button disables.
         await page.getByTestId('submit-application').dblclick();
-        await expect(page.getByTestId('submission-confirmed')).toBeVisible();
+        await expect(page.getByTestId('printed-confirmation')).toBeVisible();
 
-        const reference =
-            (
-                await page.getByTestId('reference-number').textContent()
-            )?.trim() ?? '';
-        expect(reference).toMatch(/^EX2027-\d{6}[0-9X]$/);
-
-        const receiptHref = await page
-            .getByTestId('download-receipt')
-            .getAttribute('href');
-        const receipt = await page.request.get(receiptHref ?? '');
-        expect(receipt.status()).toBe(200);
-        expect(receipt.headers()['content-type']).toContain('application/pdf');
-        expect((await receipt.body()).subarray(0, 5).toString()).toBe('%PDF-');
-
-        // Public tracking with reference + birth date.
-        await logout(page);
-        await page.goto('/track');
-        await page.locator('#reference_number').fill(reference);
-        await page.locator('#birth_date').fill(BIRTH_DATE);
-        await page.getByTestId('track-button').click();
-        await expect(page.getByTestId('track-result')).toContainText(reference);
+        // The account closes only after the form has arrived and the student says so.
+        await page.getByTestId('printed-form-download').click();
+        await page.getByTestId('confirm-action').click();
+        await expect(page).toHaveURL(/\/apply\/terms/);
     });
 
     test('blocks a file type that the document does not allow', async ({

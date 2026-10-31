@@ -17,15 +17,17 @@ student side of ADR-0002.
 - Students have no username: `users.username` is null for them. The column
   stays because staff sign in and reset passwords with it, and PostgreSQL
   requires it for staff (`users_staff_username_check`).
-- The last button of the form prints it: after a confirmation, the application
-  goes to the review committee and the account closes (`users.closed_at`).
-  Signing in stops at once: the access code and remembered devices are removed
-  and `isActive()` is false.
-- The session that printed stays usable for
-  `EXAMIS_PRINT_WINDOW_MINUTES` (default 15) so a failed print can be repeated,
-  but reaches only the final page with the PDF: every other request, sign-out
-  included, returns to it. The session then ends. Set it to 0 to end it on the
-  next request.
+- The last button of the form sends it: after a confirmation, the application
+  goes to the review committee and the student lands on the final page. The
+  account stays open there for as long as it takes, across sessions, and every
+  other request, sign-out included, returns to that page.
+- The account closes only when the form has been printed or downloaded
+  (`users.closed_at`). Browsers report neither a finished print nor a saved
+  file: the print dialog closing looks the same whether it printed or was
+  cancelled. So the page asks the student once the dialog closes or the file
+  has arrived, and only a yes closes the account.
+- Closing is immediate: the access code and remembered devices are removed,
+  `isActive()` is false and the session ends on the next request.
 - A student who comes back registers again and gets a new ID.
 
 ## Consequences
@@ -38,8 +40,11 @@ student side of ADR-0002.
   period: `(user_id, exam_period_id)` no longer limits a person to one
   application.
 - Removed usernames cannot be restored by the migration's `down()`.
-- A closed account's form stays reachable from the tracking page by reference
-  number alone, the owner's decision against the advice to require the birth
-  date as well. Numbers are random (eight digits and a check digit) so they
-  cannot be walked through, but one that is guessed or shared still opens a
-  form. Numbers issued before this remain sequential.
+- A closed account's application can no longer be tracked or printed by the
+  student: the tracking page refuses its reference number and offers no form
+  for any application. Only staff can print the form again.
+- A student who answers yes without a usable copy cannot get one online.
+- A student who never answers yes keeps an open account, held on the final page.
+- The tracking page takes a reference number alone, the owner's decision
+  against the advice to require the birth date as well, and shows only the
+  status of an account not yet closed.

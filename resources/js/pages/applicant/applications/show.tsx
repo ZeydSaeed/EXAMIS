@@ -171,20 +171,6 @@ export default function ShowApplication({
                     }
                 />
 
-                {can.receipt &&
-                    application.status !== 'requires_correction' &&
-                    application.status !== 'withdrawn' && (
-                        <Alert
-                            className="no-print border-warning/50 bg-warning/10"
-                            data-test="receipt-closes-account"
-                        >
-                            <FileText className="size-4" />
-                            <AlertDescription className="text-foreground">
-                                {t('applicant.receipt_closes_account')}
-                            </AlertDescription>
-                        </Alert>
-                    )}
-
                 {application.status === 'requires_correction' &&
                     latestReason && (
                         <Alert className="border-warning/50 bg-warning/10">

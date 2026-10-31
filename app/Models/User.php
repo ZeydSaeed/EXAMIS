@@ -157,14 +157,18 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
-     * The session that printed the form stays open briefly so a failed print
-     * can be repeated. Signing in has already stopped.
+     * The sent application whose form this student has yet to print or
+     * download. The account stays open, and goes nowhere else, until they do.
      */
-    public function isInPrintWindow(): bool
+    public function applicationAwaitingPrint(): ?Application
     {
-        return $this->isClosed()
-            && $this->deactivated_at === null
-            && $this->closed_at->addMinutes((int) config('examis.students.print_window_minutes'))->isFuture();
+        if (! $this->isApplicant()) {
+            return null;
+        }
+
+        $application = $this->applications()->whereNotNull('reference_number')->latest('id')->first();
+
+        return $application?->waitsOnStudent() === false ? $application : null;
     }
 
     /**

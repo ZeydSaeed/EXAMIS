@@ -409,6 +409,15 @@ class Application extends Model
         return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->school_governorate_code);
     }
 
+    /**
+     * The student still has something to do here, so printing the form does
+     * not end their account (ADR-0010).
+     */
+    public function waitsOnStudent(): bool
+    {
+        return in_array($this->status, [ApplicationStatus::RequiresCorrection, ApplicationStatus::Withdrawn], true);
+    }
+
     public function isReadyForSubmission(): bool
     {
         $missing = $this->missingRequirements();

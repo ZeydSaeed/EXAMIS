@@ -2,17 +2,16 @@
 
 namespace App\Actions\Students;
 
-use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Students\TrustedDevices;
 
 /**
- * Ends a one-time student account when the student sends their application
- * and prints the form (ADR-0010). Signing in stops at once: the access code and every
- * remembered device are removed. An application still waiting on the student
- * keeps the account open.
+ * Ends a one-time student account once the student confirms the form was
+ * printed or downloaded (ADR-0010). Signing in stops at once: the access code
+ * and every remembered device are removed. An application still waiting on
+ * the student keeps the account open.
  */
 class CloseStudentAccount
 {
@@ -23,7 +22,7 @@ class CloseStudentAccount
 
     public function handle(User $student, Application $application): void
     {
-        if ($student->isClosed() || in_array($application->status, [ApplicationStatus::RequiresCorrection, ApplicationStatus::Withdrawn], true)) {
+        if ($student->isClosed() || $application->waitsOnStudent()) {
             return;
         }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\User;
@@ -241,6 +242,8 @@ test('administrators can reset a student access code; reviewers cannot', functio
 });
 
 test('students cannot change application decisions', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $student = User::factory()->student()->create();
     $application = Application::factory()->for($student)->submitted()->create();
 

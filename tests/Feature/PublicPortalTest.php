@@ -48,18 +48,22 @@ describe('tracking without signing in', function () {
             ->assertSessionMissing('track_result');
     });
 
-    it('hands out a signed link that saves the form as a file', function () {
-        seedReferenceData();
-        $application = Application::factory()->complete()->submitted()->create();
+    it('never hands out the form', function () {
+        $application = Application::factory()->submitted()->create();
 
         $this->post(route('track.store'), ['reference_number' => $application->reference_number]);
 
-        $url = session('track_result.form_url');
+        expect(session('track_result'))->not->toHaveKey('form_url');
+        $this->get('/track/'.$application->uuid.'/form')->assertNotFound();
+    });
 
-        expect($this->get($url)->assertOk()->headers->get('Content-Disposition'))->toStartWith('attachment');
-        $this->get(route('track.form', $application))->assertForbidden();
-        $this->travel(16)->minutes();
-        $this->get($url)->assertForbidden();
+    it('stops once the account has closed', function () {
+        $application = Application::factory()->submitted()->create();
+        $application->user->forceFill(['closed_at' => now()])->save();
+
+        $this->post(route('track.store'), ['reference_number' => $application->reference_number])
+            ->assertSessionHasErrors(['reference_number' => __('applications.track.closed')])
+            ->assertSessionMissing('track_result');
     });
 
     it('is rate limited', function () {

@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\DocumentType;
@@ -14,6 +15,8 @@ beforeEach(function () {
 });
 
 it('renders the applicant dashboard with only the applicant\'s own applications', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $mine = Application::factory()->submitted()->create();
     Application::factory()->submitted()->create();
 
@@ -44,6 +47,8 @@ it('renders the application form with the governorates and what is missing', fun
 });
 
 it('redirects from the form to the summary once the review has started', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))

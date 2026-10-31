@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\ExamPeriod;
 use App\Models\User;
@@ -207,6 +208,8 @@ describe('saving a draft', function () {
     });
 
     it('refuses edits once the review has started', function () {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
         $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
         $this->actingAs($application->user)
@@ -215,6 +218,8 @@ describe('saving a draft', function () {
     });
 
     it('lets the applicant edit a submitted application before review and records the change', function () {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
         $student = User::factory()->student()->create();
         $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
 
@@ -235,6 +240,8 @@ describe('saving a draft', function () {
     });
 
     it('keeps a submitted application complete while it is edited', function () {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
         $student = User::factory()->student()->create();
         $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
 
@@ -249,6 +256,8 @@ describe('saving a draft', function () {
     });
 
     it('stops edits to a submitted application once the period closes', function () {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
         $student = User::factory()->student()->create();
         $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
         $application->examPeriod->update(['closes_at' => now()->subMinute()]);

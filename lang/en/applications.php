@@ -22,6 +22,7 @@ return [
 
     'track' => [
         'not_found' => 'No application has this number. Check the reference number printed on your form.',
+        'closed' => 'The form for this application has been printed and the account has closed, so it cannot be tracked or printed again.',
     ],
 
     'gender' => [

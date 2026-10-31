@@ -92,6 +92,19 @@ class ApplicationPolicy
         return $application->reference_number !== null ? Response::allow() : Response::deny();
     }
 
+    /**
+     * The student's own sent application: its final page, and closing the
+     * account from it (ADR-0010).
+     */
+    public function finishPrinting(User $user, Application $application): Response
+    {
+        if (! $this->isOwner($user, $application)) {
+            return Response::denyAsNotFound();
+        }
+
+        return $application->reference_number !== null ? Response::allow() : Response::deny();
+    }
+
     private function isOwner(User $user, Application $application): bool
     {
         return $user->isApplicant() && $application->user_id === $user->id;
