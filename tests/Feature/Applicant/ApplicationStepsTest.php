@@ -109,6 +109,45 @@ test('the mahalla, alley and house number can stay empty', function () {
         ->toBe(['mahalla' => null, 'alley' => null, 'house_number' => null]);
 });
 
+test('the last school is optional', function () {
+    $application = Application::factory()->complete()->create(['school_name' => null]);
+
+    expect($application->missingFields())->toBe([]);
+});
+
+test('a governorate outside the list must be written before continuing', function () {
+    $student = User::factory()->student()->create();
+    $application = Application::factory()->for($student)->complete()->create();
+    $save = fn (array $data) => $this->actingAs($student)->put(route('applications.update', $application), [
+        'lock_version' => $application->fresh()->lock_version,
+        'school_governorate_code' => Application::SCHOOL_GOVERNORATE_OTHER,
+        'step' => 3,
+        ...$data,
+    ]);
+
+    $save([])->assertSessionHasErrors('school_governorate_other');
+
+    $save(['school_governorate_other' => '  طهران  '])->assertSessionHasNoErrors();
+
+    expect($application->fresh()->schoolGovernorate())->toBe('طهران');
+});
+
+test('choosing a listed governorate drops the written one', function () {
+    $student = User::factory()->student()->create();
+    $application = Application::factory()->for($student)->complete()->create([
+        'school_governorate_code' => Application::SCHOOL_GOVERNORATE_OTHER,
+        'school_governorate_other' => 'طهران',
+    ]);
+
+    $this->actingAs($student)->put(route('applications.update', $application), [
+        'lock_version' => $application->lock_version,
+        'school_governorate_code' => 'KRB',
+        'school_governorate_other' => 'طهران',
+    ])->assertSessionHasNoErrors();
+
+    expect($application->fresh()->school_governorate_other)->toBeNull();
+});
+
 test('a draft cannot return to a finished step', function () {
     $student = User::factory()->student()->create();
     $application = Application::factory()->for($student)->complete()->create(['district' => null]);
@@ -116,6 +155,17 @@ test('a draft cannot return to a finished step', function () {
     $this->actingAs($student)
         ->get(route('applications.edit', [$application, 'step' => 1]))
         ->assertInertia(fn (Assert $page) => $page->where('step', 2));
+});
+
+test('the review can reopen any step of a complete draft', function () {
+    $student = User::factory()->student()->create();
+    $application = Application::factory()->for($student)->complete()->create();
+
+    expect($application->fresh()->furthestStep())->toBe(Application::STEP_REVIEW);
+
+    $this->actingAs($student)
+        ->get(route('applications.edit', [$application, 'step' => 1]))
+        ->assertInertia(fn (Assert $page) => $page->where('step', 1));
 });
 
 test('the specialization page is closed once the form has started', function () {

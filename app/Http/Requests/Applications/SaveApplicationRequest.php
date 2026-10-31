@@ -57,7 +57,11 @@ class SaveApplicationRequest extends FormRequest
             'alley' => $houseNumber,
             'house_number' => $houseNumber,
             'school_name' => ['nullable', 'string', 'min:3', 'max:150'],
-            'school_governorate_code' => ['nullable', 'string', Rule::in(app(ReferenceData::class)->codes(ReferenceType::Governorate))],
+            'school_governorate_code' => ['nullable', 'string', Rule::in([
+                ...app(ReferenceData::class)->codes(ReferenceType::Governorate),
+                Application::SCHOOL_GOVERNORATE_OTHER,
+            ])],
+            'school_governorate_other' => ['nullable', 'string', 'min:2', 'max:100'],
             'last_grade' => ['nullable', 'string', 'max:60'],
             'other_info' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -86,6 +90,10 @@ class SaveApplicationRequest extends FormRequest
             $rules['birth_place_other'] = ['required', ...array_diff($rules['birth_place_other'], ['nullable'])];
         }
 
+        if ($this->integer('step') === 3 && $this->input('school_governorate_code') === Application::SCHOOL_GOVERNORATE_OTHER) {
+            $rules['school_governorate_other'] = ['required', ...array_diff($rules['school_governorate_other'], ['nullable'])];
+        }
+
         return $rules;
     }
 
@@ -106,7 +114,7 @@ class SaveApplicationRequest extends FormRequest
             }
         }
 
-        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'district', 'school_name', 'last_grade', 'other_info'] as $field) {
+        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'school_governorate_other', 'district', 'school_name', 'last_grade', 'other_info'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = trim((string) preg_replace('/\s+/u', ' ', $this->input($field)));
             }
@@ -115,6 +123,11 @@ class SaveApplicationRequest extends FormRequest
         // A written place of birth only goes with "other".
         if ($this->has('birth_place_code') && $this->input('birth_place_code') !== Application::BIRTH_PLACE_OTHER) {
             $normalized['birth_place_other'] = null;
+        }
+
+        // A written governorate only goes with "other".
+        if ($this->has('school_governorate_code') && $this->input('school_governorate_code') !== Application::SCHOOL_GOVERNORATE_OTHER) {
+            $normalized['school_governorate_other'] = null;
         }
 
         // The mobile number is the account's (only the owner edits a draft).

@@ -57,7 +57,7 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($pdf)->toContain('/MediaBox [0 0 595.280 841.890]');
 
     $text = extractPdfText($pdf);
-    expect($text)->not->toContain('EX2027-0000019')
+    expect($text)->toContain('EX2027-0000019')
         ->and($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
         ->and($text)->toContain(visualOrder('عبد الرحمن'))
         ->and($text)->toContain(visualOrder('عبد الكريم'))

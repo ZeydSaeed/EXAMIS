@@ -9,8 +9,8 @@ use App\Services\Audit\AuditLogger;
 use App\Services\Students\TrustedDevices;
 
 /**
- * Ends a one-time student account when the student opens their form for
- * printing (ADR-0010). Signing in stops at once: the access code and every
+ * Ends a one-time student account when the student sends their application
+ * and prints the form (ADR-0010). Signing in stops at once: the access code and every
  * remembered device are removed. An application still waiting on the student
  * keeps the account open.
  */

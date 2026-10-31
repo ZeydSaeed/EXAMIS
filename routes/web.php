@@ -25,6 +25,10 @@ Route::post('track', [Public\TrackApplicationController::class, 'store'])
     ->middleware('throttle:public-lookup')
     ->name('track.store');
 
+Route::get('track/{application}/form', [Public\TrackApplicationController::class, 'form'])
+    ->middleware(['signed', 'throttle:public-lookup'])
+    ->name('track.form');
+
 Route::get('verify/{token}', [Public\ReceiptVerificationController::class, 'show'])
     ->whereUuid('token')
     ->middleware('throttle:public-lookup')
@@ -112,6 +116,7 @@ Route::middleware('auth')->group(function () {
     Route::get('applications/{application}', [Applicant\ApplicationController::class, 'show'])->name('applications.show');
     Route::get('applications/{application}/edit', [Applicant\ApplicationController::class, 'edit'])->name('applications.edit');
     Route::get('applications/{application}/receipt', [Applicant\ApplicationReceiptController::class, 'show'])->name('applications.receipt');
+    Route::get('applications/{application}/printed', [Applicant\ApplicationSubmissionController::class, 'printed'])->name('applications.printed');
 
     Route::get('documents/{document}', [Applicant\ApplicationDocumentController::class, 'show'])->name('documents.show');
 

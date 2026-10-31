@@ -21,7 +21,7 @@ return [
     ],
 
     'track' => [
-        'not_found' => 'No application matches these details. Check the reference number and date of birth.',
+        'not_found' => 'No application has this number. Check the reference number printed on your form.',
     ],
 
     'gender' => [

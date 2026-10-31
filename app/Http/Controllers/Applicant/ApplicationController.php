@@ -92,9 +92,10 @@ class ApplicationController extends Controller
 
     /**
      * The step to open: never past the first incomplete one. A draft resumes
-     * there and cannot return to a finished step of details; only documents
-     * and the review stay open to each other. Anything already submitted
-     * starts from the top to be edited.
+     * there and cannot return to a finished step until everything is
+     * complete: the review may then reopen any step, and the student moves
+     * forward from it again. Anything already submitted starts from the top
+     * to be edited.
      */
     private function step(Request $request, Application $application): int
     {
@@ -109,7 +110,11 @@ class ApplicationController extends Controller
             return $furthest;
         }
 
-        return max(min($furthest, Application::STEP_DOCUMENTS), min($requested, $furthest));
+        if ($furthest === Application::STEP_REVIEW) {
+            return min($requested, $furthest);
+        }
+
+        return $furthest;
     }
 
     /**

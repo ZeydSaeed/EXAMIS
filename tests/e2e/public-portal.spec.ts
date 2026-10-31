@@ -22,11 +22,10 @@ test('managed content pages render as text', async ({ page }) => {
 test('tracking with unknown details reveals nothing', async ({ page }) => {
     await page.goto('/track');
     await page.locator('#reference_number').fill('EX2027-0000019');
-    await page.locator('#birth_date').fill('2000-01-01');
     await page.getByTestId('track-button').click();
 
     await expect(
-        page.getByText('لم يُعثر على طلب يطابق البيانات المدخلة.', {
+        page.getByText('لم يُعثر على طلب بهذا الرقم.', {
             exact: false,
         }),
     ).toBeVisible();

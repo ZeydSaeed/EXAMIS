@@ -17,12 +17,15 @@ student side of ADR-0002.
 - Students have no username: `users.username` is null for them. The column
   stays because staff sign in and reset passwords with it, and PostgreSQL
   requires it for staff (`users_staff_username_check`).
-- The account closes the first time its owner opens the printable form of a
-  submitted application (`users.closed_at`). Signing in stops at once: the
-  access code and remembered devices are removed and `isActive()` is false.
+- The last button of the form prints it: after a confirmation, the application
+  goes to the review committee and the account closes (`users.closed_at`).
+  Signing in stops at once: the access code and remembered devices are removed
+  and `isActive()` is false.
 - The session that printed stays usable for
   `EXAMIS_PRINT_WINDOW_MINUTES` (default 15) so a failed print can be repeated,
-  then ends. Set it to 0 to end the session on the next request.
+  but reaches only the final page with the PDF: every other request, sign-out
+  included, returns to it. The session then ends. Set it to 0 to end it on the
+  next request.
 - A student who comes back registers again and gets a new ID.
 
 ## Consequences
@@ -35,3 +38,8 @@ student side of ADR-0002.
   period: `(user_id, exam_period_id)` no longer limits a person to one
   application.
 - Removed usernames cannot be restored by the migration's `down()`.
+- A closed account's form stays reachable from the tracking page by reference
+  number alone, the owner's decision against the advice to require the birth
+  date as well. Numbers are random (eight digits and a check digit) so they
+  cannot be walked through, but one that is guessed or shared still opens a
+  form. Numbers issued before this remain sequential.

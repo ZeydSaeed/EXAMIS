@@ -51,6 +51,7 @@ use Illuminate\Support\Str;
  * @property string|null $directorate_code
  * @property string|null $school_name
  * @property string|null $school_governorate_code
+ * @property string|null $school_governorate_other
  * @property string|null $last_grade
  * @property string|null $branch_code
  * @property string|null $category_code
@@ -97,7 +98,7 @@ class Application extends Model
         'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
         'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
-        'school_name', 'school_governorate_code', 'last_grade', 'branch_code', 'category_code', 'other_info',
+        'school_name', 'school_governorate_code', 'school_governorate_other', 'last_grade', 'branch_code', 'category_code', 'other_info',
     ];
 
     /**
@@ -108,7 +109,7 @@ class Application extends Model
         'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code',
         'gender',
         'phone', 'district',
-        'school_name', 'school_governorate_code', 'branch_code', 'category_code',
+        'school_governorate_code', 'branch_code', 'category_code',
     ];
 
     /**
@@ -123,7 +124,7 @@ class Application extends Model
             'gender',
         ],
         2 => ['phone', 'district'],
-        3 => ['school_name', 'school_governorate_code', 'branch_code', 'category_code'],
+        3 => ['school_governorate_code', 'school_governorate_other', 'branch_code', 'category_code'],
     ];
 
     public const STEP_DOCUMENTS = 4;
@@ -156,6 +157,12 @@ class Application extends Model
      * the place is then written in `birth_place_other`.
      */
     public const BIRTH_PLACE_OTHER = 'OTHER';
+
+    /**
+     * `school_governorate_code` value for a governorate outside the list;
+     * it is then written in `school_governorate_other`.
+     */
+    public const SCHOOL_GOVERNORATE_OTHER = 'OTHER';
 
     protected static function booted(): void
     {
@@ -369,6 +376,10 @@ class Application extends Model
             $missing[] = 'birth_place_other';
         }
 
+        if ($this->school_governorate_code === self::SCHOOL_GOVERNORATE_OTHER && blank($this->school_governorate_other)) {
+            $missing[] = 'school_governorate_other';
+        }
+
         return $missing;
     }
 
@@ -383,6 +394,19 @@ class Application extends Model
         }
 
         return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->birth_place_code);
+    }
+
+    /**
+     * The last school's governorate for display: its name, or the one
+     * written in when "other" was chosen.
+     */
+    public function schoolGovernorate(): ?string
+    {
+        if ($this->school_governorate_code === self::SCHOOL_GOVERNORATE_OTHER) {
+            return $this->school_governorate_other;
+        }
+
+        return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->school_governorate_code);
     }
 
     public function isReadyForSubmission(): bool

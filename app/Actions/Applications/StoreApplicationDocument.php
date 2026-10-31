@@ -20,7 +20,8 @@ use Throwable;
  * Stores an uploaded document in private storage under a random key and
  * records its metadata. A previous document of the same type is marked
  * replaced (never deleted) so the history stays auditable. The document is
- * not downloadable until ScanApplicationDocument verifies it.
+ * not downloadable until ScanApplicationDocument verifies it, normally
+ * during this same request.
  */
 class StoreApplicationDocument
 {
@@ -35,7 +36,7 @@ class StoreApplicationDocument
         Storage::disk($disk)->put($path, $contents);
 
         try {
-            return DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents): ApplicationDocument {
+            $document = DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents): ApplicationDocument {
                 $locked = Application::query()->whereKey($application->id)->lockForUpdate()->firstOrFail();
 
                 if (! $locked->status->isEditableByApplicant()) {
@@ -86,14 +87,36 @@ class StoreApplicationDocument
 
                 $this->audit->record('document.uploaded', $document, ['application' => $locked->uuid], $actor);
 
-                ScanApplicationDocument::dispatch($document->id)->afterCommit();
-
                 return $document;
             }, 3);
         } catch (Throwable $exception) {
             Storage::disk($disk)->delete($path);
 
             throw $exception;
+        }
+
+        $this->scan($document);
+
+        return $document->refresh();
+    }
+
+    /**
+     * A scan that fails here is not the student's problem: the document stays
+     * pending and goes to the queue, which retries it.
+     */
+    private function scan(ApplicationDocument $document): void
+    {
+        if (! config('examis.documents.scan_inline')) {
+            ScanApplicationDocument::dispatch($document->id);
+
+            return;
+        }
+
+        try {
+            ScanApplicationDocument::dispatchSync($document->id);
+        } catch (Throwable $exception) {
+            report($exception);
+            ScanApplicationDocument::dispatch($document->id);
         }
     }
 

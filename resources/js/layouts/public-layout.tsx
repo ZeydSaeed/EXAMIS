@@ -103,7 +103,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </>
                         )}
-                        <ExamisMark className="ms-1 h-9 w-auto shrink-0" />
+                        <ExamisMark className="ms-1 h-11 w-auto shrink-0" />
                     </nav>
                 </div>
             </header>

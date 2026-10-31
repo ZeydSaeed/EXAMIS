@@ -6,7 +6,10 @@ use App\Enums\Role;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\AuditEvent;
+use App\Services\Documents\DocumentScanner;
+use App\Services\Documents\ScanResult;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -48,6 +51,49 @@ describe('uploading', function () {
             ->and($document->sha256)->toBe(hash('sha256', pdfBytes('BT (ok) Tj ET')));
 
         Storage::disk('documents')->assertExists($document->path);
+    });
+
+    it('verifies during the upload without waiting for a queue worker', function () {
+        config(['queue.default' => 'database']);
+        [$application, $type] = draftWithRequiredDocument();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Verified)
+            ->and(DB::table('jobs')->count())->toBe(0);
+    });
+
+    it('leaves a slow scanner to the queue when inline scanning is off', function () {
+        config(['queue.default' => 'database', 'examis.documents.scan_inline' => false]);
+        [$application, $type] = draftWithRequiredDocument();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Pending)
+            ->and(DB::table('jobs')->count())->toBe(1);
+    });
+
+    it('falls back to the queue when the scan fails during the upload', function () {
+        config(['queue.default' => 'database']);
+        [$application, $type] = draftWithRequiredDocument();
+        app()->bind(DocumentScanner::class, fn () => new class implements DocumentScanner
+        {
+            public function scan(string $contents, string $declaredMimeType): ScanResult
+            {
+                throw new RuntimeException('Scanner unavailable.');
+            }
+        });
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Pending)
+            ->and(DB::table('jobs')->count())->toBe(1);
     });
 
     it('keeps the replaced document in the history', function () {

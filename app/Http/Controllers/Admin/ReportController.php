@@ -90,7 +90,7 @@ class ReportController extends Controller
                         (string) $application->alley,
                         (string) $application->house_number,
                         (string) $application->school_name,
-                        (string) $referenceData->name(ReferenceType::Governorate, $application->school_governorate_code),
+                        (string) $application->schoolGovernorate(),
                         (string) $referenceData->name(ReferenceType::Branch, $application->branch_code),
                         (string) $referenceData->name(ReferenceType::Category, $application->category_code),
                         (string) $application->submitted_at?->toIso8601String(),

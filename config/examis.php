@@ -76,12 +76,16 @@ return [
     | `disk` must be private (never the `public` disk). `scanner` selects the
     | malware/structure scanner: "structural" performs signature and active
     | content checks only and is NOT a substitute for an antivirus engine.
+    | `scan_inline` runs the scan during the upload, so the student never
+    | waits on a queue worker. Turn it off for a slow scanner such as an
+    | antivirus, which then runs on the `queue` below.
     |
     */
 
     'documents' => [
         'disk' => env('DOCUMENTS_DISK', 'documents'),
         'scanner' => env('DOCUMENT_SCANNER', 'structural'),
+        'scan_inline' => (bool) env('DOCUMENT_SCAN_INLINE', true),
         'queue' => env('DOCUMENTS_QUEUE', 'documents'),
         'max_image_pixels' => 40_000_000,
         'max_per_application' => 20,

@@ -55,6 +55,7 @@ class ApplicationResource extends JsonResource
                 'house_number' => $this->house_number,
                 'school_name' => $this->school_name,
                 'school_governorate_code' => $this->school_governorate_code,
+                'school_governorate_other' => $this->school_governorate_other,
                 'last_grade' => $this->last_grade,
                 'branch_code' => $this->branch_code,
                 'category_code' => $this->category_code,
@@ -62,7 +63,7 @@ class ApplicationResource extends JsonResource
             ],
             'labels' => [
                 'governorate' => $referenceData->name(ReferenceType::Governorate, $this->governorate_code),
-                'school_governorate' => $referenceData->name(ReferenceType::Governorate, $this->school_governorate_code),
+                'school_governorate' => $this->schoolGovernorate(),
                 'birth_place' => $this->birthPlace(),
                 'branch' => $referenceData->name(ReferenceType::Branch, $this->branch_code),
                 'category' => $referenceData->name(ReferenceType::Category, $this->category_code),

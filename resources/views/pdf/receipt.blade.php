@@ -125,10 +125,13 @@
             <td colspan="2" class="label">{{ __('receipt.school_governorate') }}</td>
             <td colspan="2">{!! $value($schoolGovernorate) !!}</td>
         </tr>
-        <tr>
-            <td class="label">{{ __('receipt.other_info') }}</td>
-            <td colspan="5">{!! $value($application->other_info) !!}</td>
-        </tr>
+        {{-- The form no longer asks for this; only older applications have it. --}}
+        @if (filled($application->other_info))
+            <tr>
+                <td class="label">{{ __('receipt.other_info') }}</td>
+                <td colspan="5">{!! $value($application->other_info) !!}</td>
+            </tr>
+        @endif
     </table>
 
     {{-- Left blank for the school to fill in by hand, on a six-column grid. --}}

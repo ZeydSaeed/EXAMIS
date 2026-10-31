@@ -72,7 +72,7 @@ class VerifyDataIntegrity extends Command
             ->pluck('code');
 
         if ($periodsBehind->isNotEmpty()) {
-            $report['problems'][] = 'Numbering counter behind issued references for period(s): '.$periodsBehind->implode(', ').'. New submissions would collide.';
+            $report['problems'][] = 'Numbering counter behind issued references for period(s): '.$periodsBehind->implode(', ').'. Issued numbers may be missing from the counter.';
         }
     }
 

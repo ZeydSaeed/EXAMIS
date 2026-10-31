@@ -15,7 +15,7 @@ it('submits a complete application with a valid reference number', function () {
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])
-        ->assertRedirect(route('applications.show', $application));
+        ->assertRedirect(route('applications.printed', $application));
 
     $application->refresh();
     expect($application->status)->toBe(ApplicationStatus::Submitted)
@@ -58,8 +58,8 @@ it('issues distinct sequential reference numbers within a period', function () {
 
     $references = [$first->fresh()->reference_number, $second->fresh()->reference_number];
     expect($references[0])->not->toBe($references[1])
-        ->and(substr((string) $references[0], -7, 6))->toBe('000001')
-        ->and(substr((string) $references[1], -7, 6))->toBe('000002');
+        ->and(preg_replace('/^.*-/', '', (string) $references[0]))->toMatch('/^[1-9][0-9]{7}[0-9X]$/')
+        ->and(preg_replace('/^.*-/', '', (string) $references[1]))->toMatch('/^[1-9][0-9]{7}[0-9X]$/');
 });
 
 it('requires the declaration', function () {
@@ -116,6 +116,8 @@ it('resubmits a corrected application without changing its reference number', fu
     $application = readyDraft();
     $this->actingAs($application->user)->post(route('applications.submit', $application), ['declaration' => '1']);
     $reference = $application->fresh()->reference_number;
+    // Accounts closed before a correction cannot reach this; older ones can.
+    $application->user->forceFill(['closed_at' => null])->save();
     $application->forceFill(['status' => ApplicationStatus::RequiresCorrection])->save();
     $application->examPeriod->update(['closes_at' => now()->subDay()]);
 

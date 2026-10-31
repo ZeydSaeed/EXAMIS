@@ -32,7 +32,7 @@ export function AppSidebarHeader({
                 <div className="hidden sm:block">
                     <HistoryNav className="border-s border-white/20 ps-2" />
                 </div>
-                <ExamisMark className="h-8 w-auto shrink-0 border-s border-white/20 ps-2 sm:h-9 sm:ps-3" />
+                <ExamisMark className="h-10 w-auto shrink-0 border-s border-white/20 ps-2 sm:h-11 sm:ps-3" />
             </div>
         </header>
     );

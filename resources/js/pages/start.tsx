@@ -40,7 +40,7 @@ export default function Start() {
                     <ExamisMark
                         surface="light"
                         title={name}
-                        className="size-24 drop-shadow-md sm:size-36"
+                        className="size-28 drop-shadow-md sm:size-44"
                     />
                     <img
                         src="/images/vocational-education-logo.png"

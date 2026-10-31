@@ -56,15 +56,10 @@ export function applicationSummarySections(
                 [t('fields.birth_date'), form.birth_date],
                 [t('fields.birth_place'), application.labels.birth_place],
                 [t('fields.gender'), application.labels.gender],
-                // Only applications filled before the field was removed have one.
-                ...(form.national_id_number
-                    ? ([
-                          [
-                              t('fields.national_id_number'),
-                              form.national_id_number,
-                          ],
-                      ] as SummaryRow[])
-                    : []),
+                ...ifFilled(
+                    t('fields.national_id_number'),
+                    form.national_id_number,
+                ),
             ],
         },
         {
@@ -84,13 +79,18 @@ export function applicationSummarySections(
                     t('fields.school_governorate'),
                     application.labels.school_governorate,
                 ],
-                [t('fields.last_grade'), form.last_grade],
+                ...ifFilled(t('fields.last_grade'), form.last_grade),
                 [t('fields.branch'), application.labels.branch],
                 [t('fields.category'), application.labels.category],
-                [t('fields.other_info'), form.other_info],
+                ...ifFilled(t('fields.other_info'), form.other_info),
             ],
         },
     ];
+}
+
+/** For fields the form no longer asks for: only older applications have them. */
+function ifFilled(label: string, value: string | null): SummaryRow[] {
+    return value ? [[label, value]] : [];
 }
 
 /** The same rows, ungrouped. */

@@ -23,7 +23,7 @@ export default function AuthSimpleLayout({
                         >
                             <AppLogoIcon
                                 surface="light"
-                                className="mb-1 h-14 w-auto"
+                                className="mb-1 h-20 w-auto"
                             />
                             <span className="sr-only">{title}</span>
                         </Link>

@@ -21,6 +21,7 @@ export function ConfirmDialog({
     title,
     description,
     confirmLabel,
+    cancelLabel,
     destructive = false,
     processing = false,
     open,
@@ -32,6 +33,7 @@ export function ConfirmDialog({
     title: string;
     description?: string;
     confirmLabel: string;
+    cancelLabel?: string;
     destructive?: boolean;
     processing?: boolean;
     open?: boolean;
@@ -56,7 +58,7 @@ export function ConfirmDialog({
                 <DialogFooter className="gap-2">
                     <DialogClose asChild>
                         <Button variant="outline" disabled={processing}>
-                            {t('common.cancel')}
+                            {cancelLabel ?? t('common.cancel')}
                         </Button>
                     </DialogClose>
                     <Button

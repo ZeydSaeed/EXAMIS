@@ -6,6 +6,7 @@ use App\Http\Controllers\Public\ApplicationTermsController;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 /**
  * One-time student accounts (ADR-0010): opening the printable form ends the
@@ -35,6 +36,56 @@ test('opening the form closes the account and removes every way back in', functi
         ->and($student->access_code)->toBeNull()
         ->and($student->trustedDevices()->usable()->count())->toBe(0)
         ->and(AuditEvent::query()->where('action', 'student.account_closed')->where('subject_id', $student->id)->exists())->toBeTrue();
+});
+
+test('printing the form sends the application and closes the account', function () {
+    $application = readyDraft();
+    $student = $application->user;
+
+    $this->actingAs($student)
+        ->post(route('applications.submit', $application), ['declaration' => '1'])
+        ->assertRedirect(route('applications.printed', $application));
+
+    expect($application->fresh()->status)->toBe(ApplicationStatus::Submitted)
+        ->and($application->fresh()->reference_number)->not->toBeNull()
+        ->and($student->fresh()->isClosed())->toBeTrue()
+        ->and($student->fresh()->access_code)->toBeNull();
+
+    $this->get(route('applications.printed', $application))->assertInertia(fn (Assert $page) => $page
+        ->component('applicant/applications/printed')
+        ->where('studentNumber', $student->student_number)
+        ->missing('referenceNumber'));
+    $this->get(route('applications.receipt', $application))->assertOk();
+});
+
+test('the form opens in the browser or saves as a file', function () {
+    [$student, $application] = printedStudent();
+
+    $this->actingAs($student);
+
+    expect($this->get(route('applications.receipt', $application))->headers->get('Content-Disposition'))->toStartWith('inline')
+        ->and($this->get(route('applications.receipt', [$application, 'download' => 1]))->headers->get('Content-Disposition'))->toStartWith('attachment');
+});
+
+test('the final page is only for a closed account', function () {
+    [$student, $application] = printedStudent();
+
+    $this->actingAs($student)
+        ->get(route('applications.printed', $application))
+        ->assertRedirect(route('applications.show', $application));
+});
+
+test('after printing nothing but the final page can be reached, not even sign-out', function () {
+    [$student, $application] = printedStudent();
+    $this->actingAs($student)->get(route('applications.receipt', $application));
+    $finalPage = route('applications.printed', $application);
+
+    $this->get(route('dashboard'))->assertRedirect($finalPage);
+    $this->get(route('applications.edit', $application))->assertRedirect($finalPage);
+    $this->get(route('student.card'))->assertRedirect($finalPage);
+    $this->post(route('logout'))->assertRedirect($finalPage);
+
+    $this->assertAuthenticatedAs($student);
 });
 
 test('a closed account cannot sign in with its number, QR link or a remembered device', function () {

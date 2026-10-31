@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Search } from 'lucide-react';
+import { Download, Search } from 'lucide-react';
 import { Field } from '@/components/examis/field';
 import { StatusBadge } from '@/components/examis/status-badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ type Props = {
         status_label: string;
         exam_period: string;
         submitted_at: string | null;
+        form_url: string;
     } | null;
 };
 
@@ -37,7 +38,6 @@ export default function TrackApplication({ result }: Props) {
                 <Form
                     {...store.form()}
                     className="space-y-5 rounded-xl border bg-card p-5"
-                    resetOnSuccess={['birth_date']}
                 >
                     {({ processing, errors }) => (
                         <>
@@ -54,19 +54,6 @@ export default function TrackApplication({ result }: Props) {
                                     required
                                     autoCapitalize="characters"
                                     placeholder="EX2027-0000019"
-                                />
-                            </Field>
-                            <Field
-                                id="birth_date"
-                                label={t('track.birth_date')}
-                                error={errors.birth_date}
-                                required
-                            >
-                                <Input
-                                    id="birth_date"
-                                    name="birth_date"
-                                    type="date"
-                                    required
                                 />
                             </Field>
                             <Button
@@ -130,6 +117,16 @@ export default function TrackApplication({ result }: Props) {
                                 </dd>
                             </div>
                         </dl>
+                        <Button className="mt-4 w-full" asChild>
+                            <a
+                                href={result.form_url}
+                                download
+                                data-test="track-form-download"
+                            >
+                                <Download className="size-4" aria-hidden />
+                                {t('applicant.download_form')}
+                            </a>
+                        </Button>
                     </section>
                 )}
             </div>

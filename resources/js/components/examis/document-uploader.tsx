@@ -107,6 +107,14 @@ export function DocumentUploader({
                             {requirement.description}
                         </p>
                     )}
+                    {requirement.is_photo && (
+                        <p
+                            className="text-sm font-medium text-destructive"
+                            data-test="photo-note"
+                        >
+                            {t('documents.photo_note')}
+                        </p>
+                    )}
                     <p className="text-xs text-muted-foreground">
                         {t('documents.allowed', {
                             types: mimeTypes
@@ -159,7 +167,9 @@ export function DocumentUploader({
                             )}
                             {current
                                 ? t('documents.replace')
-                                : t('documents.upload')}
+                                : requirement.is_photo
+                                  ? t('documents.upload_photo')
+                                  : t('documents.upload')}
                         </label>
                     </Button>
                 </div>
@@ -217,6 +227,15 @@ export function DocumentUploader({
                         </a>
                     )}
                 </div>
+            )}
+
+            {requirement.is_photo && current?.url && (
+                <img
+                    src={`${current.url}?inline=1`}
+                    alt={requirement.name}
+                    className="mt-3 h-36 w-28 rounded-md border object-cover"
+                    data-test="photo-preview"
+                />
             )}
 
             <InputError

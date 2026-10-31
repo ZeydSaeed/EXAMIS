@@ -40,7 +40,7 @@ export function ApplicationSummaryTable({
                                 <th
                                     scope="colgroup"
                                     colSpan={2}
-                                    className="bg-[var(--examis-navy)]/8 text-start dark:bg-white/8"
+                                    className="bg-primary !py-1 text-start text-primary-foreground"
                                 >
                                     <div className="flex items-center justify-between gap-3">
                                         <span className="font-bold">

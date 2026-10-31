@@ -13,6 +13,8 @@ use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -125,7 +127,7 @@ class ReceiptRenderer
             'motherName' => $this->joined($application->only(Application::MOTHER_NAME_PARTS), ' ') ?? $application->mother_name_ar,
             'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),
             'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
-            'schoolGovernorate' => $referenceData->name(ReferenceType::Governorate, $application->school_governorate_code),
+            'schoolGovernorate' => $application->schoolGovernorate(),
             'verificationUrl' => route('receipts.verify', $application->verification_token),
             'generatedAt' => now(),
         ])->render());
@@ -219,6 +221,26 @@ class ReceiptRenderer
         }
 
         return $photo === null ? null : ($this->fitToFrame($photo) ?? $photo);
+    }
+
+    /**
+     * The PDF as a response: shown in the browser, or saved as a file.
+     */
+    public function response(Application $application, string $pdf, bool $download): Response
+    {
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            // The Arabic name in filename*, with an ASCII name for older clients.
+            'Content-Disposition' => HeaderUtils::makeDisposition(
+                $download ? HeaderUtils::DISPOSITION_ATTACHMENT : HeaderUtils::DISPOSITION_INLINE,
+                $this->filename($application).'.pdf',
+                'receipt-'.$application->reference_number.'.pdf',
+            ),
+            'Cache-Control' => 'no-store, private',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'self'",
+            'X-Frame-Options' => 'SAMEORIGIN',
+        ]);
     }
 
     /**

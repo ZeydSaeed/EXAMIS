@@ -1,14 +1,20 @@
 import { Head, Link, router, useForm, usePoll } from '@inertiajs/react';
-import { AlertTriangle, CheckCircle2, RefreshCw, Send } from 'lucide-react';
+import {
+    AlertTriangle,
+    CheckCircle2,
+    Pencil,
+    Printer,
+    RefreshCw,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
+import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DocumentUploader } from '@/components/examis/document-uploader';
 import {
     describedBy,
     Field,
     selectClassName,
-    textareaClassName,
 } from '@/components/examis/field';
 import { PageContainer } from '@/components/examis/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -52,8 +58,8 @@ type FormData = ApplicationForm & { lock_version: number; step?: number };
 
 type TextField = keyof ApplicationForm;
 
-/** `birth_place_code` for a place outside the governorate list. */
-const BIRTH_PLACE_OTHER = 'OTHER';
+/** A place or governorate outside the governorate list. */
+const OTHER_CODE = 'OTHER';
 
 const STEPS = [
     'personal',
@@ -80,9 +86,15 @@ const FIELD_ORDER: Record<(typeof STEPS)[number], TextField[]> = {
         'gender',
     ],
     contact: ['district'],
-    education: ['school_name', 'school_governorate_code'],
+    education: ['school_governorate_code'],
     documents: [],
     review: [],
+};
+
+/** Written in by hand when the choice before them is "other". */
+const OTHER_FIELDS: Partial<Record<TextField, TextField>> = {
+    birth_place_code: 'birth_place_other',
+    school_governorate_code: 'school_governorate_other',
 };
 
 /** These must not start with a space. */
@@ -103,6 +115,7 @@ export default function EditApplication({
     const { t, locale } = useTrans();
     const step = Math.min(Math.max(initialStep, 1), STEPS.length) - 1;
     const [submissionUnconfirmed, setSubmissionUnconfirmed] = useState(false);
+    const [confirmingPrint, setConfirmingPrint] = useState(false);
     const [notice, setNotice] = useState<{
         title: string;
         items: string[];
@@ -126,14 +139,13 @@ export default function EditApplication({
     const optionName = (option: ReferenceOption) =>
         locale === 'en' ? option.name_en : option.name_ar;
     const currentStep = STEPS[step];
-    const sequence =
-        form.data.birth_place_code === BIRTH_PLACE_OTHER
-            ? FIELD_ORDER[currentStep].flatMap((field) =>
-                  field === 'birth_place_code'
-                      ? [field, 'birth_place_other' as const]
-                      : [field],
-              )
-            : FIELD_ORDER[currentStep];
+    const sequence = FIELD_ORDER[currentStep].flatMap((field) => {
+        const other = OTHER_FIELDS[field];
+
+        return other && form.data[field] === OTHER_CODE
+            ? [field, other]
+            : [field];
+    });
     const isEmpty = (field: TextField) => !form.data[field];
     const isLocked = (field: TextField) => {
         const index = sequence.indexOf(field);
@@ -145,7 +157,11 @@ export default function EditApplication({
 
     // Start on the next field to fill.
     useEffect(() => {
-        const next = sequence.find(isEmpty);
+        // The school comes first on its page, though it is optional.
+        const next =
+            currentStep === 'education' && !form.data.school_name
+                ? 'school_name'
+                : sequence.find(isEmpty);
 
         if (next) {
             document.getElementById(next)?.focus();
@@ -223,19 +239,42 @@ export default function EditApplication({
             return;
         }
 
+        goToStep('review');
+    };
+
+    // From the review a step can be reopened; the student then moves forward
+    // through the steps after it, back to the review.
+    const goToStep = (name: (typeof STEPS)[number]) => {
         router.get(
             applications.edit.url(application.uuid, {
-                query: { step: STEPS.indexOf('review') + 1 },
+                query: { step: STEPS.indexOf(name) + 1 },
             }),
             {},
             { replace: true },
         );
     };
 
+    const editButton = (name: (typeof STEPS)[number]) => (
+        <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-current hover:bg-white/15 hover:text-current"
+            onClick={() => goToStep(name)}
+            data-test={`edit-${name}`}
+        >
+            <Pencil className="size-3.5" aria-hidden />
+            {t('applicant.edit_section')}
+        </Button>
+    );
+
     const submit = () => {
         setSubmissionUnconfirmed(false);
         submission.post(applications.submit.url(application.uuid), {
+            replace: true,
+            onError: () => setConfirmingPrint(false),
             onNetworkError: () => {
+                setConfirmingPrint(false);
                 setSubmissionUnconfirmed(true);
 
                 return false;
@@ -485,7 +524,7 @@ export default function EditApplication({
                                                 // The written place only goes with "other".
                                                 birth_place_other:
                                                     event.target.value ===
-                                                    BIRTH_PLACE_OTHER
+                                                    OTHER_CODE
                                                         ? data.birth_place_other
                                                         : null,
                                             }))
@@ -513,7 +552,7 @@ export default function EditApplication({
                                                 {optionName(item)}
                                             </option>
                                         ))}
-                                        <option value={BIRTH_PLACE_OTHER}>
+                                        <option value={OTHER_CODE}>
                                             {t(
                                                 'fields.birth_place_other_option',
                                             )}
@@ -521,7 +560,7 @@ export default function EditApplication({
                                     </select>
                                 </Field>
                                 {form.data.birth_place_code ===
-                                    BIRTH_PLACE_OTHER && (
+                                    OTHER_CODE && (
                                     <Field
                                         id="birth_place_other"
                                         label={t('fields.birth_place_other')}
@@ -636,9 +675,8 @@ export default function EditApplication({
                                     id="school_name"
                                     label={t('fields.school_name')}
                                     error={form.errors.school_name}
-                                    required
                                 >
-                                    {input('school_name')}
+                                    {input('school_name', { disabled: false })}
                                 </Field>
                                 <Field
                                     id="school_governorate_code"
@@ -646,22 +684,37 @@ export default function EditApplication({
                                     error={form.errors.school_governorate_code}
                                     required
                                 >
-                                    {select(
-                                        'school_governorate_code',
-                                        options.governorates.map((item) => ({
+                                    {select('school_governorate_code', [
+                                        ...options.governorates.map((item) => ({
                                             value: item.code,
                                             label: optionName(item),
                                         })),
-                                    )}
+                                        {
+                                            value: OTHER_CODE,
+                                            label: t(
+                                                'fields.birth_place_other_option',
+                                            ),
+                                        },
+                                    ])}
                                 </Field>
-                                <Field
-                                    id="last_grade"
-                                    label={t('fields.last_grade')}
-                                    error={form.errors.last_grade}
-                                    className="sm:col-span-2"
-                                >
-                                    {input('last_grade', { maxLength: 60 })}
-                                </Field>
+                                {form.data.school_governorate_code ===
+                                    OTHER_CODE && (
+                                    <Field
+                                        id="school_governorate_other"
+                                        label={t(
+                                            'fields.school_governorate_other',
+                                        )}
+                                        error={
+                                            form.errors.school_governorate_other
+                                        }
+                                        required
+                                        className="sm:col-span-2"
+                                    >
+                                        {input('school_governorate_other', {
+                                            autoFocus: true,
+                                        })}
+                                    </Field>
+                                )}
                                 {/* Chosen on the branch page after registration; read-only here. */}
                                 <Field
                                     id="branch_readonly"
@@ -708,40 +761,6 @@ export default function EditApplication({
                                         </Link>
                                     </p>
                                 )}
-                                <Field
-                                    id="other_info"
-                                    label={t('fields.other_info')}
-                                    error={form.errors.other_info}
-                                    className="sm:col-span-2"
-                                >
-                                    <textarea
-                                        id="other_info"
-                                        name="other_info"
-                                        rows={3}
-                                        maxLength={1000}
-                                        className={textareaClassName}
-                                        value={form.data.other_info ?? ''}
-                                        disabled={isLocked('other_info')}
-                                        onChange={(event) =>
-                                            form.setData(
-                                                'other_info',
-                                                event.target.value === ''
-                                                    ? null
-                                                    : event.target.value,
-                                            )
-                                        }
-                                        aria-invalid={
-                                            form.errors.other_info
-                                                ? true
-                                                : undefined
-                                        }
-                                        aria-describedby={describedBy(
-                                            'other_info',
-                                            undefined,
-                                            form.errors.other_info,
-                                        )}
-                                    />
-                                </Field>
                             </div>
                         )}
 
@@ -806,17 +825,27 @@ export default function EditApplication({
                                     key: section.step,
                                     title: section.title,
                                     rows: section.rows,
+                                    action: editButton(section.step),
                                 })),
                                 {
                                     key: 'documents',
                                     title: t('applicant.steps.documents'),
+                                    action: editButton('documents'),
                                     rows: documentTypes.map((requirement) => {
                                         const document =
                                             documentsByType[requirement.code];
 
                                         return [
                                             requirement.name,
-                                            document ? (
+                                            requirement.is_photo &&
+                                            document?.url ? (
+                                                <img
+                                                    src={`${document.url}?inline=1`}
+                                                    alt={requirement.name}
+                                                    className="h-36 w-28 rounded-md border object-cover"
+                                                    data-test="photo-preview"
+                                                />
+                                            ) : document ? (
                                                 t(
                                                     `documents.status.${document.status}`,
                                                 )
@@ -956,34 +985,42 @@ export default function EditApplication({
                                     </p>
                                 )}
                                 <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                                    <Button
-                                        type="button"
-                                        size="lg"
-                                        onClick={submit}
-                                        disabled={
-                                            !isReady ||
-                                            !submission.data.declaration ||
-                                            submission.processing
+                                    <ConfirmDialog
+                                        title={t('applicant.print_title')}
+                                        description={t('applicant.print_text')}
+                                        body={
+                                            <p className="text-sm text-muted-foreground">
+                                                {t('applicant.print_back_text')}
+                                            </p>
                                         }
-                                        data-test="submit-application"
+                                        confirmLabel={t('applicant.print_accept')}
+                                        cancelLabel={t('applicant.print_back')}
+                                        open={confirmingPrint}
+                                        onOpenChange={setConfirmingPrint}
+                                        processing={submission.processing}
+                                        onConfirm={submit}
                                     >
-                                        {submission.processing ? (
-                                            <Spinner />
-                                        ) : isReady ? (
-                                            <Send
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                        ) : (
-                                            <CheckCircle2
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                        )}
-                                        {isCorrection
-                                            ? t('applicant.resubmit')
-                                            : t('applicant.submit')}
-                                    </Button>
+                                        <Button
+                                            type="button"
+                                            size="lg"
+                                            disabled={
+                                                !isReady ||
+                                                !submission.data.declaration ||
+                                                submission.processing
+                                            }
+                                            data-test="submit-application"
+                                        >
+                                            {submission.processing ? (
+                                                <Spinner />
+                                            ) : (
+                                                <Printer
+                                                    className="size-4"
+                                                    aria-hidden
+                                                />
+                                            )}
+                                            {t('applicant.print_form')}
+                                        </Button>
+                                    </ConfirmDialog>
                                 </div>
                             </div>
                         )}

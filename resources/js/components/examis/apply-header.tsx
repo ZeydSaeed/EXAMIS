@@ -16,7 +16,7 @@ export function ApplyHeader() {
                 href={start()}
                 className="flex items-center gap-2 font-semibold"
             >
-                <ExamisMark surface="light" className="size-10 shrink-0" />
+                <ExamisMark surface="light" className="size-12 shrink-0" />
                 <span className="grid leading-snug">
                     <span>{t('apply.terms_header')}</span>
                     <span className="text-sm font-medium text-[var(--examis-navy)]/70 dark:text-white/65">

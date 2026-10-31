@@ -33,29 +33,41 @@ it('shows published content pages and hides unpublished ones', function () {
 });
 
 describe('tracking without signing in', function () {
-    it('shows the status for a matching reference and birth date', function () {
-        $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create(['birth_date' => '2006-03-15']);
+    it('shows the status for a reference number alone', function () {
+        $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
         $this->from(route('track.create'))
-            ->post(route('track.store'), ['reference_number' => strtolower((string) $application->reference_number), 'birth_date' => '2006-03-15'])
+            ->post(route('track.store'), ['reference_number' => strtolower((string) $application->reference_number)])
             ->assertRedirect(route('track.create'))
             ->assertSessionHas('track_result.status', 'under_review');
     });
 
-    it('reveals nothing when the birth date does not match', function () {
-        $application = Application::factory()->submitted()->create(['birth_date' => '2006-03-15']);
-
-        $this->post(route('track.store'), ['reference_number' => $application->reference_number, 'birth_date' => '2006-03-16'])
+    it('reveals nothing for an unknown number', function () {
+        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019'])
             ->assertSessionHasErrors(['reference_number' => __('applications.track.not_found')])
             ->assertSessionMissing('track_result');
     });
 
+    it('hands out a signed link that saves the form as a file', function () {
+        seedReferenceData();
+        $application = Application::factory()->complete()->submitted()->create();
+
+        $this->post(route('track.store'), ['reference_number' => $application->reference_number]);
+
+        $url = session('track_result.form_url');
+
+        expect($this->get($url)->assertOk()->headers->get('Content-Disposition'))->toStartWith('attachment');
+        $this->get(route('track.form', $application))->assertForbidden();
+        $this->travel(16)->minutes();
+        $this->get($url)->assertForbidden();
+    });
+
     it('is rate limited', function () {
         foreach (range(1, 10) as $attempt) {
-            $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019', 'birth_date' => '2000-01-01']);
+            $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019']);
         }
 
-        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019', 'birth_date' => '2000-01-01'])->assertTooManyRequests();
+        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019'])->assertTooManyRequests();
     });
 });
 

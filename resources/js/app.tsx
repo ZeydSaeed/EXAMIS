@@ -19,6 +19,7 @@ void createInertiaApp({
             case name.startsWith('apply/'):
                 return null;
             case name === 'applicant/applications/edit':
+            case name === 'applicant/applications/printed':
                 return ApplyFormLayout;
             case name === 'welcome':
             case name.startsWith('public/'):
