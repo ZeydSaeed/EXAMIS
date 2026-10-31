@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import { login } from '@/routes';
+import apply from '@/routes/apply';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -18,7 +18,7 @@ type Props = {
 };
 
 /**
- * Password sign-in for staff. Students use the identifier form at /login.
+ * Password sign-in for staff. Students sign in with their QR code.
  */
 export default function StaffLogin({ status, canResetPassword }: Props) {
     const { t } = useTrans();
@@ -127,7 +127,7 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink href={apply.terms()} tabIndex={6}>
                                 {t('auth.student_login_link')}
                             </TextLink>
                         </div>

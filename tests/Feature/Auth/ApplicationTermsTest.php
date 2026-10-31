@@ -47,20 +47,20 @@ test('accepting the terms leads to registration', function () {
 
 test('an account cannot be created without accepting the terms', function () {
     $this->post(route('register.store'), [
-        'username' => 'skipped.terms',
+        'phone' => '07701234560',
         'phone' => '07701234567',
         'terms' => '1',
     ])->assertSessionHasErrors(['terms' => __('auth.application_terms_required')]);
 
     $this->assertGuest();
-    expect(User::query()->where('username', 'skipped.terms')->exists())->toBeFalse();
+    expect(User::query()->where('phone', '07701234560')->exists())->toBeFalse();
 });
 
 test('the acceptance time is recorded with the registration and then cleared', function () {
     $this->post(route('apply.terms.accept'), ['accept' => '1']);
 
     $this->post(route('register.store'), [
-        'username' => 'accepted.terms',
+        'phone' => '07701234561',
         'phone' => '07701234567',
         'terms' => '1',
     ])->assertSessionHasNoErrors();

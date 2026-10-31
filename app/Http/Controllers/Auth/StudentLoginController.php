@@ -17,8 +17,8 @@ use Inertia\Response;
 use Laravel\Fortify\Fortify;
 
 /**
- * Student sign-in (ADR-0009). One identifier (username, mobile number,
- * student number or the QR link) selects the account. Knowing an
+ * Student sign-in (ADR-0009, ADR-0010). The student number or the QR link
+ * selects the account. Knowing an
  * identifier is never enough on its own: the browser must be a remembered
  * device of that account, or the student must enter their private access
  * code. Unknown identifiers go through the same code step so the form does
@@ -73,7 +73,7 @@ class StudentLoginController extends Controller
     public function code(Request $request): Response|RedirectResponse
     {
         if (! $request->session()->has(self::PENDING)) {
-            return to_route('login');
+            return to_route('apply.terms');
         }
 
         return Inertia::render('auth/student-code');
@@ -87,7 +87,7 @@ class StudentLoginController extends Controller
         ]);
 
         if (! $request->session()->has(self::PENDING)) {
-            return to_route('login');
+            return to_route('apply.terms');
         }
 
         $pendingId = (int) $request->session()->get(self::PENDING);

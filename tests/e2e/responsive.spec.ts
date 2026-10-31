@@ -11,7 +11,7 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
 
 for (const path of [
     '/',
-    '/login',
+    '/apply/terms',
     '/register',
     '/track',
     '/pages/instructions',

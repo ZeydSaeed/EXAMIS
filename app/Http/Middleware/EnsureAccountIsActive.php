@@ -16,12 +16,14 @@ class EnsureAccountIsActive
     {
         $user = $request->user();
 
-        if ($user !== null && ! $user->isActive()) {
+        if ($user !== null && ! $user->isActive() && ! $user->isInPrintWindow()) {
+            $message = $user->isClosed() ? __('auth.account_closed') : __('auth.deactivated');
+
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('status', __('auth.deactivated'));
+            return redirect()->route('apply.terms')->with('status', $message);
         }
 
         return $next($request);

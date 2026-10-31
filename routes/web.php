@@ -36,8 +36,10 @@ Route::get('verify/{token}', [Public\ReceiptVerificationController::class, 'show
 | Student sign-in (one identifier + trusted device or access code, ADR-0009)
 |--------------------------------------------------------------------------
 |
-| GET /login (Fortify) renders the student form. Staff sign in with a
-| password at /staff/login, which posts to Fortify's own login endpoint.
+| Students come in through the QR link; no page posts to student/login
+| since the form was removed. GET /login (Fortify) redirects to the terms
+| page. Staff sign in with a password at /staff/login, which posts to
+| Fortify's own login endpoint.
 |
 */
 

@@ -7,7 +7,8 @@ import { NetworkStatus } from '@/components/network-status';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { dashboard, home, login, register } from '@/routes';
+import { dashboard, home, register } from '@/routes';
+import apply from '@/routes/apply';
 import pages from '@/routes/pages';
 import track from '@/routes/track';
 
@@ -88,7 +89,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                     asChild
                                     className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
                                 >
-                                    <Link href={login()}>
+                                    <Link href={apply.terms()}>
                                         {t('auth.login')}
                                     </Link>
                                 </Button>

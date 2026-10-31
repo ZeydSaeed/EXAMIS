@@ -4,10 +4,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
-test('login screen can be rendered', function () {
+test('the old login page redirects to the terms page', function () {
     $response = $this->get(route('login'));
 
-    $response->assertOk();
+    $response->assertRedirect(route('apply.terms'));
 });
 
 test('users can authenticate using the login screen', function () {

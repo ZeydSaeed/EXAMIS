@@ -14,9 +14,9 @@ const noSubscription = () => () => {};
 
 type Props = {
     student: {
-        username: string;
         student_number: number | null;
         phone: string | null;
+        created_at: string | null;
         has_access_code: boolean;
         access_code_issued_at: string | null;
         trusted_devices: number;
@@ -113,10 +113,12 @@ export default function StudentCard({
                                 </bdi>
                             </dd>
                             <dt className="text-muted-foreground">
-                                {t('auth.username')}
+                                {t('student.created_at')}
                             </dt>
                             <dd>
-                                <bdi>{account.username}</bdi>
+                                {account.created_at
+                                    ? formatDateTime(account.created_at, locale)
+                                    : '—'}
                             </dd>
                             <dt className="text-muted-foreground">
                                 {t('auth.mobile')}
@@ -206,9 +208,14 @@ export default function StudentCard({
                                             {account.student_number ?? '—'}
                                         </bdi>
                                     </dd>
-                                    <dt>{t('auth.username')}</dt>
+                                    <dt>{t('student.created_at')}</dt>
                                     <dd>
-                                        <bdi>{account.username}</bdi>
+                                        {account.created_at
+                                            ? formatDateTime(
+                                                  account.created_at,
+                                                  locale,
+                                              )
+                                            : '—'}
                                     </dd>
                                     <dt>{t('auth.mobile')}</dt>
                                     <dd>

@@ -12,7 +12,6 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -73,10 +72,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            'canRegister' => Route::has('register'),
-            'status' => $request->session()->get('status'),
-        ]));
+        // The login page is gone; the framework still sends guests to this route.
+        Fortify::loginView(fn () => to_route('apply.terms'));
 
         // Registration starts with reading and accepting the application terms.
         Fortify::registerView(fn (Request $request) => ApplicationTermsController::accepted($request)

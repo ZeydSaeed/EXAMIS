@@ -63,6 +63,7 @@ return [
     'students' => [
         'trusted_device_days' => (int) env('EXAMIS_TRUSTED_DEVICE_DAYS', 180),
         'access_code_attempts_per_hour' => (int) env('EXAMIS_ACCESS_CODE_ATTEMPTS_PER_HOUR', 10),
+        'print_window_minutes' => (int) env('EXAMIS_PRINT_WINDOW_MINUTES', 15),
         'student_number_min' => 10000,
         'student_number_max' => 99999,
     ],

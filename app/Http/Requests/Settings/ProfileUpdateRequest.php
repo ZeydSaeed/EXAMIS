@@ -27,7 +27,7 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => $this->nameRules(),
             'email' => ['nullable', 'string', 'email:rfc', 'max:255'],
-            'phone' => $this->phoneRules($this->user()->id, required: $this->user()->phone !== null),
+            'phone' => $this->phoneRules(required: $this->user()->phone !== null),
         ];
     }
 

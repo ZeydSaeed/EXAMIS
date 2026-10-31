@@ -19,7 +19,7 @@ it('seeds 100 applicants covering every status and assignee option through the r
 
     $applications = Application::query()->with('assignee')->get();
 
-    expect(User::query()->where('username', 'like', 'demo.student%')->count())->toBe(DemoApplicationsSeeder::TOTAL)
+    expect(User::query()->where('phone', 'like', '0770000%')->count())->toBe(DemoApplicationsSeeder::TOTAL)
         ->and($applications)->toHaveCount(DemoApplicationsSeeder::TOTAL)
         ->and($applications->pluck('status')->unique()->sortBy->value->values()->all())
         ->toEqualCanonicalizing(ApplicationStatus::cases())

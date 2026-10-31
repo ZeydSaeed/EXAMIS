@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,8 +15,6 @@ class StartController extends Controller
 {
     public function __invoke(): Response
     {
-        return Inertia::render('start', [
-            'canRegister' => Route::has('register'),
-        ]);
+        return Inertia::render('start');
     }
 }

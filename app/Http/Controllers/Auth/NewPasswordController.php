@@ -61,6 +61,6 @@ class NewPasswordController extends Controller
             throw ValidationException::withMessages(['username' => __('auth.reset_link_invalid')]);
         }
 
-        return to_route('login')->with('status', __('passwords.reset'));
+        return to_route('staff.login')->with('status', __('passwords.reset'));
     }
 }

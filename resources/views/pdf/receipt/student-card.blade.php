@@ -7,7 +7,6 @@
     <tr>
         <td style="width: 62%; vertical-align: top; line-height: 2;">
             {{ __('receipt.card.student_number') }}: <bdo dir="ltr" style="font-size: 16pt;">{!! $value($student->student_number) !!}</bdo><br>
-            {{ __('receipt.card.username') }}: {!! $value($student->username) !!}<br>
             {{ __('receipt.card.mobile') }}: <bdo dir="ltr">{!! $value($student->phone) !!}</bdo>
         </td>
         <td style="width: 38%; text-align: center;">

@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import { login } from '@/routes';
 import { email } from '@/routes/password';
+import staff from '@/routes/staff';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     const { t } = useTrans();
@@ -65,7 +65,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </Form>
 
                 <div className="text-center text-sm text-muted-foreground">
-                    <TextLink href={login()}>
+                    <TextLink href={staff.login()}>
                         {t('auth.back_to_login')}
                     </TextLink>
                 </div>

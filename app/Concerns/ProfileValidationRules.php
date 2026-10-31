@@ -43,7 +43,7 @@ trait ProfileValidationRules
     }
 
     /**
-     * The unique login identifier.
+     * The unique login identifier of a staff account.
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
@@ -53,13 +53,13 @@ trait ProfileValidationRules
     }
 
     /**
-     * A student's mobile number is a sign-in identifier, so one number may
-     * belong to one account only (ADR-0009). Normalize before validating.
+     * Several students may share a mobile number and one student may register
+     * again with it (ADR-0010). Normalize before validating.
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
-    protected function phoneRules(?int $userId = null, bool $required = true): array
+    protected function phoneRules(bool $required = true): array
     {
-        return [$required ? 'required' : 'nullable', 'string', 'regex:/^\+?[0-9]{10,15}$/', Rule::unique(User::class, 'phone')->ignore($userId)];
+        return [$required ? 'required' : 'nullable', 'string', 'regex:/^\+?[0-9]{10,15}$/'];
     }
 }

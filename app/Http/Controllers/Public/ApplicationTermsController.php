@@ -22,7 +22,7 @@ class ApplicationTermsController extends Controller
 
     public const SLUG = 'eligibility';
 
-    public function show(): Response
+    public function show(Request $request): Response
     {
         $page = ContentPage::query()
             ->where('slug', self::SLUG)
@@ -32,7 +32,7 @@ class ApplicationTermsController extends Controller
         return Inertia::render('apply/terms', [
             'title' => $page?->localizedTitle(),
             'terms' => $page !== null ? self::items($page->localizedBody()) : [],
-            'updatedAt' => $page?->updated_at?->toIso8601String(),
+            'status' => $request->session()->get('status'),
         ]);
     }
 

@@ -18,7 +18,7 @@ import type { CursorPaginated } from '@/types';
 type AuditRow = {
     id: number;
     action: string;
-    actor: { id: number; username: string } | null;
+    actor: { id: number; username: string | null } | null;
     subject_type: string | null;
     subject_id: number | null;
     ip_address: string | null;
@@ -140,7 +140,8 @@ export default function AuditLog({ events, filters, subjects }: Props) {
                                                         <Highlight
                                                             text={
                                                                 event.actor
-                                                                    .username
+                                                                    .username ??
+                                                                ''
                                                             }
                                                             query={filters.q}
                                                         />{' '}

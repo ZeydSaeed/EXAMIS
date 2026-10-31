@@ -10,7 +10,6 @@ use App\Services\Students\StudentIdentity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -25,9 +24,10 @@ class CreateNewUser implements CreatesNewUsers
     ) {}
 
     /**
-     * Create a student account from a username and a mobile number only
-     * (ADR-0009). The number is not verified: no SMS or WhatsApp message is
-     * sent. The application terms must have been accepted first (the
+     * Create a one-time student account from a mobile number only (ADR-0010):
+     * every registration is a new account with its own student number, even
+     * for a number used before. The number is not verified: no SMS or
+     * WhatsApp message is sent. The application terms must have been accepted first (the
      * terms step). The access code waits in the session until the student
      * card shows it once, and is stored in plain text. Staff accounts are created by administrators
      * only.
@@ -44,24 +44,22 @@ class CreateNewUser implements CreatesNewUsers
             ]);
         }
 
-        $input['username'] = Str::lower(trim((string) ($input['username'] ?? '')));
         $input['phone'] = StudentIdentity::normalizePhone($input['phone'] ?? null);
 
         Validator::make($input, [
-            'username' => $this->usernameRules(),
             'phone' => $this->phoneRules(),
             'terms' => ['accepted'],
         ])->validate();
 
         [$user, $code] = DB::transaction(function () use ($input, $termsAcceptedAt): array {
             $user = User::create([
-                'username' => $input['username'],
-                'name' => $input['username'],
+                'name' => $input['phone'],
                 'phone' => $input['phone'],
                 'locale' => app()->getLocale(),
             ]);
 
             $this->identity->ensureIdentity($user);
+            $user->forceFill(['name' => (string) ($user->student_number ?? $input['phone'])])->save();
             $code = $this->identity->issueAccessCode($user);
 
             $this->audit->record('student.registered', $user, [

@@ -133,9 +133,9 @@ class DemoApplicationsSeeder extends Seeder
 
         try {
             foreach ($this->scenarios() as $index => $scenario) {
-                $username = sprintf('demo.student%02d', $index + 1);
+                $phone = sprintf('0770000%04d', $index + 1);
 
-                if (User::query()->where('username', $username)->exists()) {
+                if (User::query()->where('phone', $phone)->exists()) {
                     continue;
                 }
 
@@ -146,7 +146,7 @@ class DemoApplicationsSeeder extends Seeder
                 // reviewers only see what is assigned to them.
                 $assignee = [$reviewer, $supervisor, null][$index % 3];
 
-                $this->seedApplicant($index, $username, $scenario, $period, $assignee ?? $supervisor, $supervisor, $assignee);
+                $this->seedApplicant($index, $phone, $scenario, $period, $assignee ?? $supervisor, $supervisor, $assignee);
             }
         } finally {
             Carbon::setTestNow();
@@ -174,7 +174,7 @@ class DemoApplicationsSeeder extends Seeder
 
     private function seedApplicant(
         int $index,
-        string $username,
+        string $phone,
         string $scenario,
         ExamPeriod $period,
         User $reviewer,
@@ -189,7 +189,8 @@ class DemoApplicationsSeeder extends Seeder
         $nameAr = "{$first[0]} {$father[0]} {$grandfather[0]} {$family[0]}";
 
         $applicant = User::factory()->create([
-            'username' => $username,
+            'username' => null,
+            'phone' => $phone,
             'name' => $nameAr,
             'email' => 'demo-family@examis.test',
         ]);

@@ -67,12 +67,14 @@ class UserFactory extends Factory
     }
 
     /**
-     * A password-less student account (ADR-0009) with a phone number, QR id,
+     * A password-less student account (ADR-0010) with no username, a phone
+     * number, QR id,
      * student number and the access code "ABCDE-23456".
      */
     public function student(): static
     {
         return $this->state(fn (array $attributes) => [
+            'username' => null,
             'email' => null,
             'password' => null,
             'phone' => '0770'.fake()->unique()->numerify('#######'),

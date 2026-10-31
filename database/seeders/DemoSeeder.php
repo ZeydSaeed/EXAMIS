@@ -69,9 +69,9 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        if (! User::query()->where('username', 'student')->exists()) {
+        if (! User::query()->where('email', 'family@examis.test')->exists()) {
             User::factory()->create([
-                'username' => 'student',
+                'username' => null,
                 'name' => 'طالب تجريبي',
                 'email' => 'family@examis.test',
             ]);

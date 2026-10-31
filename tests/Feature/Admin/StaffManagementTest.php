@@ -69,7 +69,7 @@ it('ends the current session of a deactivated user on their next request', funct
     $user = applicant();
     $user->forceFill(['deactivated_at' => now()])->save();
 
-    $this->actingAs($user)->get(route('dashboard'))->assertRedirect(route('login'));
+    $this->actingAs($user)->get(route('dashboard'))->assertRedirect(route('apply.terms'));
     $this->assertGuest();
 });
 

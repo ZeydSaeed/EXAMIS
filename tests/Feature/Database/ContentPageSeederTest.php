@@ -11,7 +11,7 @@ it('refreshes pages no administrator has edited and keeps edited ones', function
 
     $this->seed(ContentPageSeeder::class);
 
-    expect($untouched->fresh()->title_ar)->toBe('شروط التقديم')
+    expect($untouched->fresh()->title_ar)->toBe(ContentPageSeeder::ELIGIBILITY[0])
         ->and($edited->fresh()->title_ar)->toBe('نص المدير')
         ->and(ContentPage::query()->where('slug', 'instructions')->exists())->toBeTrue();
 });

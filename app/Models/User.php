@@ -19,7 +19,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
- * @property string $username
+ * @property string|null $username
  * @property string $name
  * @property string|null $email
  * @property string|null $password
@@ -31,6 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property AccountType $account_type
  * @property string $locale
  * @property CarbonImmutable|null $deactivated_at
+ * @property CarbonImmutable|null $closed_at
  * @property CarbonImmutable|null $last_login_at
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -73,6 +74,7 @@ class User extends Authenticatable implements HasLocalePreference
             'two_factor_confirmed_at' => 'datetime',
             'account_type' => AccountType::class,
             'deactivated_at' => 'datetime',
+            'closed_at' => 'datetime',
             'last_login_at' => 'datetime',
             'access_code_issued_at' => 'datetime',
             'student_number' => 'integer',
@@ -143,7 +145,26 @@ class User extends Authenticatable implements HasLocalePreference
 
     public function isActive(): bool
     {
-        return $this->deactivated_at === null;
+        return $this->deactivated_at === null && $this->closed_at === null;
+    }
+
+    /**
+     * A one-time student account that has ended (ADR-0010).
+     */
+    public function isClosed(): bool
+    {
+        return $this->closed_at !== null;
+    }
+
+    /**
+     * The session that printed the form stays open briefly so a failed print
+     * can be repeated. Signing in has already stopped.
+     */
+    public function isInPrintWindow(): bool
+    {
+        return $this->isClosed()
+            && $this->deactivated_at === null
+            && $this->closed_at->addMinutes((int) config('examis.students.print_window_minutes'))->isFuture();
     }
 
     /**

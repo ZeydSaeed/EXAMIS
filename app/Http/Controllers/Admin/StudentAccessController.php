@@ -21,6 +21,7 @@ class StudentAccessController extends Controller
     public function store(User $user, StudentIdentity $identity, TrustedDevices $devices, AuditLogger $audit): RedirectResponse
     {
         abort_unless($user->isApplicant(), 404);
+        abort_if($user->isClosed(), 403);
 
         $identity->ensureIdentity($user);
         $code = $identity->issueAccessCode($user);

@@ -12,8 +12,8 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
- * Student sign-in (ADR-0009): one identifier, then a remembered device or
- * the private access code.
+ * Student sign-in (ADR-0009, ADR-0010): the student number or QR link, then
+ * a remembered device or the private access code.
  */
 function trustedCookieFor(User $user): string
 {
@@ -26,29 +26,31 @@ function trustedCookieFor(User $user): string
     return $device->id.'|'.$token;
 }
 
-test('the login page offers identifier sign-in without password or passkey', function () {
-    $this->get(route('login'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('auth/login')
-        ->missing('canResetPassword'));
-});
+test('the student number on a remembered device signs into the account', function () {
+    $user = User::factory()->student()->create(['student_number' => 54321]);
 
-test('each identifier on a remembered device signs into the same account', function (string $field) {
-    $user = User::factory()->student()->create(['username' => 'ali.student', 'phone' => '07701234567', 'student_number' => 54321]);
-    $cookie = trustedCookieFor($user);
-    $identifier = ['username' => 'Ali.Student', 'phone' => '0770 123 4567', 'student_number' => '54321'][$field];
-
-    $this->withCookie(TrustedDevices::COOKIE, $cookie)
-        ->post(route('student.login'), ['identifier' => $identifier])
+    $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
+        ->post(route('student.login'), ['identifier' => '54321'])
         ->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticatedAs($user);
-    expect(User::query()->count())->toBe(1);
-})->with(['username', 'phone', 'student_number']);
+});
+
+test('a mobile number never selects an account, because it may be shared', function () {
+    $user = User::factory()->student()->create(['phone' => '07701234567']);
+
+    $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
+        ->post(route('student.login'), ['identifier' => '0770 123 4567'])
+        ->assertRedirect(route('student.code', absolute: false));
+
+    $this->assertGuest();
+    expect(app(StudentIdentity::class)->findByIdentifier('07701234567'))->toBeNull();
+});
 
 test('an identifier alone on a new device asks for the access code', function () {
     $user = User::factory()->student()->create();
 
-    $this->post(route('student.login'), ['identifier' => $user->username])
+    $this->post(route('student.login'), ['identifier' => (string) $user->student_number])
         ->assertRedirect(route('student.code', absolute: false));
 
     $this->assertGuest();
@@ -70,7 +72,7 @@ test('the correct access code signs in and can remember the device', function ()
 test('remember me keeps the student signed in after the browser closes', function () {
     $user = User::factory()->student()->create();
 
-    $this->post(route('student.login'), ['identifier' => $user->username, 'remember' => '1']);
+    $this->post(route('student.login'), ['identifier' => (string) $user->student_number, 'remember' => '1']);
 
     $response = $this->post(route('student.verify'), ['access_code' => 'abcde23456'])
         ->assertRedirect(route('dashboard', absolute: false));
@@ -83,7 +85,7 @@ test('without remember me the sign-in lasts only for the session', function () {
     $user = User::factory()->student()->create();
 
     $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
-        ->post(route('student.login'), ['identifier' => $user->username])
+        ->post(route('student.login'), ['identifier' => (string) $user->student_number])
         ->assertRedirect(route('dashboard', absolute: false))
         ->assertCookieMissing(auth()->guard('web')->getRecallerName());
 });
@@ -99,7 +101,7 @@ test('revoking devices also ends remember me sessions', function () {
 test('a wrong access code fails with a generic message and is audited', function () {
     $user = User::factory()->student()->create();
 
-    $this->post(route('student.login'), ['identifier' => $user->phone]);
+    $this->post(route('student.login'), ['identifier' => (string) $user->student_number]);
 
     $this->post(route('student.verify'), ['access_code' => 'WRONG-CODE9'])
         ->assertSessionHasErrors(['access_code' => __('auth.access_code_failed')]);
@@ -122,7 +124,7 @@ test('access code guessing is locked per account', function () {
     $user = User::factory()->student()->create();
     RateLimiter::increment('student-code|'.$user->id, amount: (int) config('examis.students.access_code_attempts_per_hour'));
 
-    $this->post(route('student.login'), ['identifier' => $user->username]);
+    $this->post(route('student.login'), ['identifier' => (string) $user->student_number]);
 
     $this->post(route('student.verify'), ['access_code' => 'ABCDE-23456'])
         ->assertSessionHasErrors(['access_code' => __('auth.access_code_locked')]);
@@ -135,7 +137,7 @@ test('a remembered device of another account does not open this one', function (
     $other = User::factory()->student()->create();
 
     $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($owner))
-        ->post(route('student.login'), ['identifier' => $other->username])
+        ->post(route('student.login'), ['identifier' => (string) $other->student_number])
         ->assertRedirect(route('student.code', absolute: false));
 
     $this->assertGuest();
@@ -147,17 +149,18 @@ test('revoked or expired devices are not remembered', function () {
     $user->trustedDevices()->update(['revoked_at' => now()]);
 
     $this->withCookie(TrustedDevices::COOKIE, $cookie)
-        ->post(route('student.login'), ['identifier' => $user->username])
+        ->post(route('student.login'), ['identifier' => (string) $user->student_number])
         ->assertRedirect(route('student.code', absolute: false));
 });
 
 test('deactivated students and staff cannot use the student sign-in', function () {
     $deactivated = User::factory()->student()->deactivated()->create();
-    $staff = User::factory()->staff(Role::Administrator)->create(['username' => 'staff.member']);
+    $staff = User::factory()->staff(Role::Administrator)->create();
+    $staff->forceFill(['student_number' => 54321])->save();
 
-    foreach ([[$deactivated, $deactivated->username], [$staff, 'staff.member']] as [$user, $identifier]) {
+    foreach ([$deactivated, $staff] as $user) {
         $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
-            ->post(route('student.login'), ['identifier' => $identifier])
+            ->post(route('student.login'), ['identifier' => (string) $user->student_number])
             ->assertRedirect(route('student.code', absolute: false));
 
         $this->post(route('student.verify'), ['access_code' => 'ABCDE-23456'])->assertSessionHasErrors('access_code');
@@ -169,7 +172,6 @@ test('the QR link carries no personal data and leads to the same checks', functi
     $user = User::factory()->student()->create();
 
     expect(route('student.qr', $user->public_id))
-        ->not->toContain($user->username)
         ->not->toContain((string) $user->phone)
         ->not->toContain((string) $user->student_number);
 
@@ -295,14 +297,4 @@ test('codes issued before plain-text storage are still accepted', function () {
 
     expect($identity->checkAccessCode($user->fresh(), 'abcde23456'))->toBeTrue()
         ->and($identity->checkAccessCode($user->fresh(), 'ABCDE-23457'))->toBeFalse();
-});
-
-test('a student signs in with an Arabic username', function () {
-    $user = User::factory()->student()->create(['username' => 'علي.حسين']);
-
-    $this->withCookie(TrustedDevices::COOKIE, trustedCookieFor($user))
-        ->post(route('student.login'), ['identifier' => ' علي.حسين '])
-        ->assertRedirect(route('dashboard', absolute: false));
-
-    $this->assertAuthenticatedAs($user);
 });

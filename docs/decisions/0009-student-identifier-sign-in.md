@@ -19,13 +19,15 @@ knows it impersonate the student.
   `users` table or a database backup can read every code and sign in as
   any student. Codes issued earlier remain bcrypt hashes and are still
   accepted.
-- `/login` takes one identifier. If the browser holds a valid **trusted
-  device** cookie for that account, the student is signed in. Otherwise
+- The sign-in form took one identifier. It was removed on 2026-10-31,
+  so students now arrive by QR link and `GET /login` redirects to
+  `/apply/terms`. If the browser holds a valid **trusted device** cookie
+  for that account, the student is signed in. Otherwise
   the access code is required. Unknown identifiers go through the same
   code step, so the form does not reveal which accounts exist.
 - Trusted devices: encrypted HttpOnly cookie `id|token`; only the SHA-256
   of the token is stored; 180-day expiry; revocable.
-- "Remember me" (2026-10-29), opt-in on `/login`: the session survives
+- "Remember me" (2026-10-29), opt-in on the sign-in form: the session survives
   closing the browser through Laravel's remember cookie. Revoking devices
   (code regeneration or an administrator reset) rotates `remember_token`,
   so those sessions end as well.

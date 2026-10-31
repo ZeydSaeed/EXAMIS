@@ -34,7 +34,7 @@ class RegisterResponse implements RegisterResponseContract
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('auth.registered', ['username' => $request->user()?->username]),
+            'message' => __('auth.registered', ['number' => $request->user()?->student_number]),
             'duration' => 15000,
         ]);
 

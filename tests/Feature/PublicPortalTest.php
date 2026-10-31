@@ -139,8 +139,7 @@ it('opens on the standalone start page with both logos, and keeps the portal hom
     $this->get('/')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('start')
-            ->where('canRegister', true));
+            ->component('start'));
 
     expect(route('home', absolute: false))->toBe('/portal')
         ->and(public_path('images/moe-iraq-logo.png'))->toBeFile()

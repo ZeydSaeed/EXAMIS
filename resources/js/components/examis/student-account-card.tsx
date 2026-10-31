@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
+import { formatDateTime } from '@/lib/format';
 import admin from '@/routes/admin';
 
 export type StudentAccount = {
     id: number;
-    username: string;
     student_number: number | null;
     phone: string | null;
+    created_at: string | null;
+    closed_at: string | null;
 };
 
 /**
@@ -24,7 +26,7 @@ export function StudentAccountCard({
     student: StudentAccount;
     canResetAccess: boolean;
 }) {
-    const { t } = useTrans();
+    const { t, locale } = useTrans();
     const { flash } = usePage();
     const [open, setOpen] = useState(false);
     const form = useForm({});
@@ -51,14 +53,26 @@ export function StudentAccountCard({
                         {student.student_number ?? '—'}
                     </bdi>
                 </dd>
-                <dt className="text-muted-foreground">{t('auth.username')}</dt>
-                <dd>
-                    <bdi>{student.username}</bdi>
-                </dd>
                 <dt className="text-muted-foreground">{t('auth.mobile')}</dt>
                 <dd>
                     <bdi dir="ltr">{student.phone ?? '—'}</bdi>
                 </dd>
+                <dt className="text-muted-foreground">
+                    {t('student.created_at')}
+                </dt>
+                <dd>
+                    {student.created_at
+                        ? formatDateTime(student.created_at, locale)
+                        : '—'}
+                </dd>
+                {student.closed_at && (
+                    <>
+                        <dt className="text-muted-foreground">
+                            {t('student.closed_at')}
+                        </dt>
+                        <dd>{formatDateTime(student.closed_at, locale)}</dd>
+                    </>
+                )}
             </dl>
 
             {issued && issued.user_id === student.id && (
@@ -77,7 +91,7 @@ export function StudentAccountCard({
                 </div>
             )}
 
-            {canResetAccess && (
+            {canResetAccess && !student.closed_at && (
                 <ConfirmDialog
                     title={t('student.reset_access')}
                     description={t('student.reset_access_confirm')}

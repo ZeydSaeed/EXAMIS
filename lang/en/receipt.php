@@ -133,8 +133,7 @@ return [
     'card' => [
         'title' => 'Student card',
         'student_number' => 'Student number',
-        'username' => 'Username',
         'mobile' => 'Mobile',
-        'hint' => 'Keep this card: scan the code to reach the sign-in page. The code holds no personal data.',
+        'hint' => 'Keep this card: the student number identifies this application.',
     ],
 ];

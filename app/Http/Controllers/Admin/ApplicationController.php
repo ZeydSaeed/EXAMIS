@@ -89,7 +89,7 @@ class ApplicationController extends Controller
         $application->load([
             'examPeriod.documentTypes',
             'assignee:id,name',
-            'user:id,username,student_number,phone',
+            'user:id,student_number,phone,created_at,closed_at',
             'currentDocuments.documentType',
             'events' => fn ($query) => $query->with('actor:id,name')->orderBy('id'),
         ]);
@@ -120,9 +120,10 @@ class ApplicationController extends Controller
             'reviewers' => Gate::allows('assign', $application) ? $this->reviewers() : [],
             'student' => [
                 'id' => $application->user->id,
-                'username' => $application->user->username,
                 'student_number' => $application->user->student_number,
                 'phone' => $application->user->phone,
+                'created_at' => $application->user->created_at?->toIso8601String(),
+                'closed_at' => $application->user->closed_at?->toIso8601String(),
             ],
             'canResetStudentAccess' => $user->hasPermission(Permission::UsersManage),
         ]);

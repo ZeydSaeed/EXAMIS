@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('the home page is Arabic and right-to-left by default', async ({
     page,
 }) => {
-    await page.goto('/');
+    await page.goto('/portal');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
@@ -15,7 +15,7 @@ test('the home page is Arabic and right-to-left by default', async ({
 test('switching to English flips the layout to left-to-right', async ({
     page,
 }) => {
-    await page.goto('/');
+    await page.goto('/portal');
     await page.getByTestId('language-switcher').click();
 
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');

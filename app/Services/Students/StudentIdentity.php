@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * Permanent identity of a student account (ADR-0009): the QR public id, the
+ * Identity of a student account (ADR-0009): the QR public id, the
  * five-digit student number, the private access code and the lookup of an
  * account by any one of its sign-in identifiers.
  */
@@ -51,30 +51,22 @@ class StudentIdentity
     }
 
     /**
-     * Find an active-or-not applicant by username, registered mobile number
-     * or student number. A five-digit value is a student number; anything
-     * else made of digits is a mobile number. Staff never match here.
+     * Find an active-or-not applicant by student number, the only value that
+     * names one account: a mobile number may be shared (ADR-0010). Staff
+     * never match here.
      */
     public function findByIdentifier(string $identifier): ?User
     {
-        $identifier = trim($identifier);
+        $number = self::normalizePhone($identifier);
 
-        if ($identifier === '') {
+        if ($number === null || preg_match('/^[0-9]{5}$/', $number) !== 1) {
             return null;
         }
 
-        $query = User::query()->where('account_type', AccountType::Applicant);
-        $phone = self::normalizePhone($identifier);
-
-        if ($phone !== null && preg_match('/^[0-9]{5}$/', $phone) === 1) {
-            return $query->where('student_number', (int) $phone)->first();
-        }
-
-        if ($phone !== null && preg_match('/^\+?[0-9]{10,15}$/', $phone) === 1) {
-            return $query->where('phone', $phone)->first();
-        }
-
-        return $query->where('username', Str::lower($identifier))->first();
+        return User::query()
+            ->where('account_type', AccountType::Applicant)
+            ->where('student_number', (int) $number)
+            ->first();
     }
 
     public function findByPublicId(string $publicId): ?User

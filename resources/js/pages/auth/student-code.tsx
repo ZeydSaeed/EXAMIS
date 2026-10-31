@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import { login } from '@/routes';
+import apply from '@/routes/apply';
 import student from '@/routes/student';
 
 /**
@@ -78,7 +78,7 @@ export default function StudentCode() {
 
                         <p className="text-center text-sm text-muted-foreground">
                             {t('student.lost_code')}{' '}
-                            <TextLink href={login()}>
+                            <TextLink href={apply.terms()}>
                                 {t('auth.back_to_login')}
                             </TextLink>
                         </p>
