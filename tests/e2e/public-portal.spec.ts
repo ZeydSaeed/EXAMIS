@@ -12,21 +12,6 @@ test('the home page is Arabic and right-to-left by default', async ({
     );
 });
 
-test('switching to English flips the layout to left-to-right', async ({
-    page,
-}) => {
-    await page.goto('/portal');
-    await page.getByTestId('language-switcher').click();
-
-    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'Apply for external examinations online',
-    );
-
-    await page.getByTestId('language-switcher').click();
-    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-});
-
 test('managed content pages render as text', async ({ page }) => {
     await page.goto('/pages/faq');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(

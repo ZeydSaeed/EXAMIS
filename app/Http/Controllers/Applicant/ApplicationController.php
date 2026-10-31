@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Applicant;
 
 use App\Actions\Applications\SaveApplicationDraft;
 use App\Actions\Applications\StartApplication;
+use App\Enums\ApplicationStatus;
 use App\Enums\ReferenceType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Applications\SaveApplicationRequest;
@@ -72,19 +73,43 @@ class ApplicationController extends Controller
             'options' => [
                 'governorates' => $referenceData->items(ReferenceType::Governorate),
             ],
-            'step' => $request->integer('step', 1),
+            'step' => $this->step($request, $application),
         ]);
     }
 
     public function update(SaveApplicationRequest $request, Application $application, SaveApplicationDraft $saveDraft): RedirectResponse
     {
         $validated = $request->validated();
+        $step = $validated['step'] ?? null;
+        unset($validated['step']);
 
         $saveDraft->handle($application, $validated, (int) $validated['lock_version'], $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.saved')]);
 
-        return back();
+        return $step === null ? back() : to_route('applications.edit', [$application, 'step' => (int) $step + 1]);
+    }
+
+    /**
+     * The step to open: never past the first incomplete one. A draft resumes
+     * there and cannot return to a finished step of details; only documents
+     * and the review stay open to each other. Anything already submitted
+     * starts from the top to be edited.
+     */
+    private function step(Request $request, Application $application): int
+    {
+        $furthest = $application->furthestStep();
+        $requested = $request->integer('step');
+
+        if ($application->status !== ApplicationStatus::Draft) {
+            return $requested > 0 ? min($requested, $furthest) : 1;
+        }
+
+        if ($requested <= 0) {
+            return $furthest;
+        }
+
+        return max(min($furthest, Application::STEP_DOCUMENTS), min($requested, $furthest));
     }
 
     /**

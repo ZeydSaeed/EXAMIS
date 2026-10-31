@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'saved' => 'Draft saved.',
+    'saved' => 'Your details were saved.',
     'withdrawn' => 'The application was withdrawn.',
     'transitioned' => 'Application status updated.',
     'assigned' => 'Responsible reviewer updated.',

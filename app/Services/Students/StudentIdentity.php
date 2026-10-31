@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 /**
  * Identity of a student account (ADR-0009): the QR public id, the
- * five-digit student number, the private access code and the lookup of an
+ * six-digit student number, the private access code and the lookup of an
  * account by any one of its sign-in identifiers.
  */
 class StudentIdentity
@@ -52,14 +52,14 @@ class StudentIdentity
 
     /**
      * Find an active-or-not applicant by student number, the only value that
-     * names one account: a mobile number may be shared (ADR-0010). Staff
-     * never match here.
+     * names one account: a mobile number may be shared (ADR-0010). Numbers
+     * issued before six digits keep their five. Staff never match here.
      */
     public function findByIdentifier(string $identifier): ?User
     {
         $number = self::normalizePhone($identifier);
 
-        if ($number === null || preg_match('/^[0-9]{5}$/', $number) !== 1) {
+        if ($number === null || preg_match('/^[0-9]{5,6}$/', $number) !== 1) {
             return null;
         }
 
@@ -97,7 +97,7 @@ class StudentIdentity
     }
 
     /**
-     * Pick a free five-digit number. Uniqueness is enforced by the database:
+     * Pick a free six-digit number. Uniqueness is enforced by the database:
      * a concurrent registration that takes the same number makes the UPDATE
      * fail and we try another. Each attempt runs in its own savepoint so a
      * PostgreSQL unique violation does not abort the outer transaction. When

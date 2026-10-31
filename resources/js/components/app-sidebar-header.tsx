@@ -2,7 +2,6 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ExamisMark } from '@/components/examis/examis-mark';
 import { HeaderSlotTarget } from '@/components/header-slots';
 import { HistoryNav } from '@/components/history-nav';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -30,7 +29,6 @@ export function AppSidebarHeader({
                     name="end"
                     className="flex shrink-0 items-center gap-2 empty:hidden"
                 />
-                <LanguageSwitcher className="text-white hover:bg-white/10 hover:text-white" />
                 <div className="hidden sm:block">
                     <HistoryNav className="border-s border-white/20 ps-2" />
                 </div>

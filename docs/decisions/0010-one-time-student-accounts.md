@@ -5,9 +5,13 @@ student side of ADR-0002.
 
 ## Decision
 
-- Registration asks for a mobile number only. Each registration creates a new
-  account with its own student number (the student's ID), `public_id` and
-  `created_at`, even for a number used before.
+- Registration asks for a mobile number only, after the terms step. Each
+  registration creates a new account with its own student number (the
+  student's ID), `public_id` and `created_at`, even for a number used before.
+- The student's account shows only the ID and the creation date. The mobile
+  number stays on the record for staff and for the form.
+- New student numbers have six digits; numbers already issued keep five. The
+  operations page shows how many are used, because none is ever reused.
 - One mobile number may belong to any number of accounts, so `users.phone` is
   no longer unique and no longer identifies an account.
 - Students have no username: `users.username` is null for them. The column

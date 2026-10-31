@@ -79,7 +79,7 @@ class UserFactory extends Factory
             'password' => null,
             'phone' => '0770'.fake()->unique()->numerify('#######'),
             'public_id' => (string) Str::uuid(),
-            'student_number' => fake()->unique()->numberBetween(10000, 99999),
+            'student_number' => fake()->unique()->numberBetween(100000, 999999),
             'access_code' => 'ABCDE-23456',
             'access_code_issued_at' => now(),
         ]);

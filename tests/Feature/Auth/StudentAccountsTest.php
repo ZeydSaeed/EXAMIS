@@ -36,6 +36,12 @@ test('the student number on a remembered device signs into the account', functio
     $this->assertAuthenticatedAs($user);
 });
 
+test('a five-digit number issued earlier still selects its account', function () {
+    $user = User::factory()->student()->create(['student_number' => 54321]);
+
+    expect(app(StudentIdentity::class)->findByIdentifier('54321')?->id)->toBe($user->id);
+});
+
 test('a mobile number never selects an account, because it may be shared', function () {
     $user = User::factory()->student()->create(['phone' => '07701234567']);
 
@@ -243,14 +249,14 @@ test('students cannot change application decisions', function () {
         ->assertForbidden();
 });
 
-test('student numbers are five digits, unique and permanent', function () {
+test('new student numbers are six digits, unique and permanent', function () {
     $identity = app(StudentIdentity::class);
     $users = User::factory()->count(30)->create();
     $users->each(fn (User $user) => $identity->ensureIdentity($user));
 
     $numbers = $users->map->fresh()->pluck('student_number');
     expect($numbers->unique()->count())->toBe(30)
-        ->and($numbers->every(fn (int $number) => $number >= 10000 && $number <= 99999))->toBeTrue();
+        ->and($numbers->every(fn (int $number) => $number >= 100000 && $number <= 999999))->toBeTrue();
 
     $user = $users->first()->fresh();
     $user->update(['username' => 'renamed.user', 'phone' => '07709999999']);

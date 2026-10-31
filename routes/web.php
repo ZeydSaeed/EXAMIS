@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', Public\StartController::class)->name('start');
 Route::get('portal', Public\HomeController::class)->name('home');
 Route::get('pages/{contentPage}', [Public\ContentPageController::class, 'show'])->name('pages.show');
-Route::post('locale', [Public\LocaleController::class, 'update'])->name('locale.update');
 Route::get('health/ready', Public\ReadinessController::class)->name('health.ready');
 
 Route::get('track', [Public\TrackApplicationController::class, 'create'])->name('track.create');

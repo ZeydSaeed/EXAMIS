@@ -106,10 +106,29 @@ class Application extends Model
     public const REQUIRED_FOR_SUBMISSION = [
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
         'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code',
-        'gender', 'national_id_number',
-        'phone', 'district', 'mahalla', 'alley', 'house_number',
+        'gender',
+        'phone', 'district',
         'school_name', 'school_governorate_code', 'branch_code', 'category_code',
     ];
+
+    /**
+     * The form's steps with fields of their own; documents and the review
+     * follow. The form has no way back, so each step must be complete before
+     * the next one opens.
+     */
+    public const STEP_FIELDS = [
+        1 => [
+            'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+            'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+            'gender',
+        ],
+        2 => ['phone', 'district'],
+        3 => ['school_name', 'school_governorate_code', 'branch_code', 'category_code'],
+    ];
+
+    public const STEP_DOCUMENTS = 4;
+
+    public const STEP_REVIEW = 5;
 
     /**
      * @var list<string>
@@ -314,6 +333,23 @@ class Application extends Model
             ->all();
 
         return ['fields' => $missingFields, 'documents' => array_values($missingDocuments)];
+    }
+
+    /**
+     * The last step this application may open: the first one still missing
+     * something, or the review when nothing is missing.
+     */
+    public function furthestStep(): int
+    {
+        ['fields' => $fields, 'documents' => $documents] = $this->missingRequirements();
+
+        foreach (self::STEP_FIELDS as $step => $stepFields) {
+            if (array_intersect($fields, $stepFields) !== []) {
+                return $step;
+            }
+        }
+
+        return $documents === [] ? self::STEP_REVIEW : self::STEP_DOCUMENTS;
     }
 
     /**

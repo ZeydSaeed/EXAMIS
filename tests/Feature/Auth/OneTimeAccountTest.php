@@ -110,7 +110,7 @@ test('a student who comes back registers again on the same number with a new id'
     $this->flushSession();
 
     $this->withSession([ApplicationTermsController::SESSION_KEY => now()->toIso8601String()])
-        ->post(route('register.store'), ['phone' => $student->phone, 'terms' => '1'])
+        ->post(route('register.store'), ['phone' => $student->phone])
         ->assertSessionHasNoErrors();
 
     $second = User::query()->where('phone', $student->phone)->whereKeyNot($student->id)->sole();

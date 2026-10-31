@@ -48,7 +48,6 @@ class CreateNewUser implements CreatesNewUsers
 
         Validator::make($input, [
             'phone' => $this->phoneRules(),
-            'terms' => ['accepted'],
         ])->validate();
 
         [$user, $code] = DB::transaction(function () use ($input, $termsAcceptedAt): array {

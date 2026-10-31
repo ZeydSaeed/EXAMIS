@@ -1,8 +1,8 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useState } from 'react';
+import { ApplyHeader } from '@/components/examis/apply-header';
 import { BrandBackdrop } from '@/components/examis/brand-backdrop';
-import { ExamisMark } from '@/components/examis/examis-mark';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
-import { start } from '@/routes';
 import apply from '@/routes/apply';
 
 type Props = {
@@ -35,23 +34,7 @@ export default function ApplicationTerms({ title, terms, status }: Props) {
             <div className="relative isolate flex min-h-svh flex-col overflow-hidden bg-[var(--examis-pearl)] text-[var(--examis-navy)] dark:bg-[#0a1230] dark:text-white">
                 <BrandBackdrop />
 
-                <header className="mx-auto w-full max-w-3xl px-4 pt-4 sm:px-6">
-                    <Link
-                        href={start()}
-                        className="flex items-center gap-2 font-semibold"
-                    >
-                        <ExamisMark
-                            surface="light"
-                            className="size-10 shrink-0"
-                        />
-                        <span className="grid leading-snug">
-                            <span>{t('apply.terms_header')}</span>
-                            <span className="text-sm font-medium text-[var(--examis-navy)]/70 dark:text-white/65">
-                                {t('apply.terms_header_note')}
-                            </span>
-                        </span>
-                    </Link>
-                </header>
+                <ApplyHeader />
 
                 <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-40 sm:px-6 sm:pt-12">
                     {status && (

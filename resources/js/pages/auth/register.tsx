@@ -1,13 +1,10 @@
-import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { MobileInput } from '@/components/examis/mobile-input';
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import pages from '@/routes/pages';
 import { store } from '@/routes/register';
 
 /**
@@ -41,9 +38,10 @@ export default function Register() {
                                     name="phone"
                                     required
                                     autoFocus
-                                    tabIndex={2}
+                                    tabIndex={1}
                                     autoComplete="tel"
                                     placeholder={t('auth.mobile_placeholder')}
+                                    className="placeholder:text-muted-foreground/50"
                                     aria-describedby="phone-hint"
                                 />
                                 <p
@@ -55,58 +53,10 @@ export default function Register() {
                                 <InputError message={errors.phone} />
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Checkbox
-                                    id="trust_device"
-                                    name="trust_device"
-                                    value="1"
-                                    defaultChecked
-                                    tabIndex={3}
-                                />
-                                <Label
-                                    htmlFor="trust_device"
-                                    className="leading-relaxed font-normal"
-                                >
-                                    {t('student.trust_device')}
-                                </Label>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <div className="flex items-start gap-3">
-                                    <Checkbox
-                                        id="terms"
-                                        name="terms"
-                                        value="1"
-                                        tabIndex={4}
-                                        required
-                                    />
-                                    <Label
-                                        htmlFor="terms"
-                                        className="leading-relaxed font-normal"
-                                    >
-                                        {t('auth.accept_terms_prefix')}{' '}
-                                        <Link
-                                            href={pages.show('terms')}
-                                            className="underline underline-offset-4"
-                                        >
-                                            {t('public.links.terms')}
-                                        </Link>{' '}
-                                        {t('common.and')}{' '}
-                                        <Link
-                                            href={pages.show('privacy')}
-                                            className="underline underline-offset-4"
-                                        >
-                                            {t('public.links.privacy')}
-                                        </Link>
-                                    </Label>
-                                </div>
-                                <InputError message={errors.terms} />
-                            </div>
-
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={5}
+                                tabIndex={2}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}

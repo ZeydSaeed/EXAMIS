@@ -40,11 +40,8 @@ class StudentCardController extends Controller
         return Inertia::render('applicant/student-card', [
             'student' => [
                 'student_number' => $user->student_number,
-                'phone' => $user->phone,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'has_access_code' => $user->access_code !== null,
-                'access_code_issued_at' => $user->access_code_issued_at?->toIso8601String(),
-                'trusted_devices' => $user->trustedDevices()->usable()->count(),
             ],
             'qr' => [
                 'url' => $qrUrl,

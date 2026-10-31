@@ -2,7 +2,6 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { ExamisMark } from '@/components/examis/examis-mark';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { NetworkStatus } from '@/components/network-status';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                 {t('public.track_application')}
                             </Link>
                         </Button>
-                        <LanguageSwitcher className="text-primary-foreground hover:bg-white/10 hover:text-primary-foreground" />
                         {auth.user ? (
                             <Button size="sm" variant="secondary" asChild>
                                 <Link href={dashboard()}>

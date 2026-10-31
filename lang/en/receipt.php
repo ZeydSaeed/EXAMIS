@@ -133,7 +133,7 @@ return [
     'card' => [
         'title' => 'Student card',
         'student_number' => 'Student number',
-        'mobile' => 'Mobile',
+        'created_at' => 'Account created',
         'hint' => 'Keep this card: the student number identifies this application.',
     ],
 ];

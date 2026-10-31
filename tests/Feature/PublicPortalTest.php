@@ -21,14 +21,6 @@ it('lists only periods that are open right now on the home page', function () {
             ->where('direction', 'rtl'));
 });
 
-it('switches the interface to English and back', function () {
-    $this->post(route('locale.update'), ['locale' => 'en'])->assertRedirect();
-
-    $this->get(route('home'))->assertInertia(fn (Assert $page) => $page->where('locale', 'en')->where('direction', 'ltr'));
-
-    $this->post(route('locale.update'), ['locale' => 'fr'])->assertSessionHasErrors('locale');
-});
-
 it('shows published content pages and hides unpublished ones', function () {
     ContentPage::factory()->create(['slug' => 'faq', 'body_ar' => '<script>alert(1)</script> نص']);
     ContentPage::factory()->create(['slug' => 'draft-page', 'is_published' => false]);

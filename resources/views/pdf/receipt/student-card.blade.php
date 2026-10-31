@@ -7,7 +7,7 @@
     <tr>
         <td style="width: 62%; vertical-align: top; line-height: 2;">
             {{ __('receipt.card.student_number') }}: <bdo dir="ltr" style="font-size: 16pt;">{!! $value($student->student_number) !!}</bdo><br>
-            {{ __('receipt.card.mobile') }}: <bdo dir="ltr">{!! $value($student->phone) !!}</bdo>
+            {{ __('receipt.card.created_at') }}: <bdo dir="ltr">{!! $value($student->created_at?->format('Y/m/d')) !!}</bdo>
         </td>
         <td style="width: 38%; text-align: center;">
             <barcode code="{{ $studentQrUrl }}" type="QR" size="0.7" error="M" disableborder="1" />

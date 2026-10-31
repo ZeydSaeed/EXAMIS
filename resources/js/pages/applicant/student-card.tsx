@@ -15,11 +15,8 @@ const noSubscription = () => () => {};
 type Props = {
     student: {
         student_number: number | null;
-        phone: string | null;
         created_at: string | null;
         has_access_code: boolean;
-        access_code_issued_at: string | null;
-        trusted_devices: number;
     };
     qr: { url: string; svg: string };
     accessCode: string | null;
@@ -120,29 +117,6 @@ export default function StudentCard({
                                     ? formatDateTime(account.created_at, locale)
                                     : '—'}
                             </dd>
-                            <dt className="text-muted-foreground">
-                                {t('auth.mobile')}
-                            </dt>
-                            <dd>
-                                <bdi dir="ltr">{account.phone ?? '—'}</bdi>
-                            </dd>
-                            <dt className="text-muted-foreground">
-                                {t('student.trusted_devices')}
-                            </dt>
-                            <dd>{account.trusted_devices}</dd>
-                            {account.access_code_issued_at && (
-                                <>
-                                    <dt className="text-muted-foreground">
-                                        {t('student.code_issued_at')}
-                                    </dt>
-                                    <dd>
-                                        {formatDateTime(
-                                            account.access_code_issued_at,
-                                            locale,
-                                        )}
-                                    </dd>
-                                </>
-                            )}
                         </dl>
 
                         <div className="no-print mt-6 space-y-3 border-t pt-4 text-sm leading-relaxed text-muted-foreground">
@@ -216,12 +190,6 @@ export default function StudentCard({
                                                   locale,
                                               )
                                             : '—'}
-                                    </dd>
-                                    <dt>{t('auth.mobile')}</dt>
-                                    <dd>
-                                        <bdi dir="ltr">
-                                            {account.phone ?? '—'}
-                                        </bdi>
                                     </dd>
                                 </dl>
                             </div>

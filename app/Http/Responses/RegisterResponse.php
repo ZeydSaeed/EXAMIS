@@ -2,7 +2,6 @@
 
 namespace App\Http\Responses;
 
-use App\Services\Students\TrustedDevices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,13 +11,10 @@ use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 /**
  * Sends a new student to choose their branch and specialization, then on
  * to their sign-in card with the student number, QR code and one-time
- * access code (ADR-0009). The registering
- * browser is remembered unless the student said it is a shared device.
+ * access code (ADR-0009).
  */
 class RegisterResponse implements RegisterResponseContract
 {
-    public function __construct(private TrustedDevices $devices) {}
-
     /**
      * @param  Request  $request
      */
@@ -26,10 +22,6 @@ class RegisterResponse implements RegisterResponseContract
     {
         if ($request->wantsJson()) {
             return new JsonResponse('', 201);
-        }
-
-        if ($request->boolean('trust_device') && $request->user() !== null) {
-            $this->devices->trust($request, $request->user());
         }
 
         Inertia::flash('toast', [

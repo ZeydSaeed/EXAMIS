@@ -8,6 +8,7 @@ type Props = {
     checks: Record<'database' | 'cache' | 'storage', boolean>;
     queue: Record<string, number | null>;
     security: Record<string, number>;
+    student_numbers: { used: number; remaining: number; warn_above: number };
     environment: Record<string, string>;
 };
 
@@ -15,6 +16,7 @@ export default function Operations({
     checks,
     queue,
     security,
+    student_numbers: studentNumbers,
     environment,
 }: Props) {
     const { t } = useTrans();
@@ -131,6 +133,23 @@ export default function Operations({
                             t('operations.lockouts_last_hour'),
                             security.lockouts_last_hour,
                             10,
+                        )}
+                    </div>
+                </section>
+
+                <section aria-labelledby="student-numbers" className="space-y-3">
+                    <h2 id="student-numbers" className="font-semibold">
+                        {t('operations.student_numbers')}
+                    </h2>
+                    <div className="grid gap-3 sm:grid-cols-4">
+                        {metric(
+                            t('operations.student_numbers_used'),
+                            studentNumbers.used,
+                            studentNumbers.warn_above,
+                        )}
+                        {metric(
+                            t('operations.student_numbers_remaining'),
+                            studentNumbers.remaining,
                         )}
                     </div>
                 </section>

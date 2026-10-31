@@ -56,7 +56,15 @@ export function applicationSummarySections(
                 [t('fields.birth_date'), form.birth_date],
                 [t('fields.birth_place'), application.labels.birth_place],
                 [t('fields.gender'), application.labels.gender],
-                [t('fields.national_id_number'), form.national_id_number],
+                // Only applications filled before the field was removed have one.
+                ...(form.national_id_number
+                    ? ([
+                          [
+                              t('fields.national_id_number'),
+                              form.national_id_number,
+                          ],
+                      ] as SummaryRow[])
+                    : []),
             ],
         },
         {

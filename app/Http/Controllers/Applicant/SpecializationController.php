@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Applicant;
 
 use App\Actions\Applications\SaveApplicationDraft;
 use App\Actions\Applications\StartApplication;
+use App\Enums\ApplicationStatus;
 use App\Enums\ReferenceType;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
@@ -39,6 +40,11 @@ class SpecializationController extends Controller
         $application = $period !== null
             ? Application::query()->where('user_id', $user->id)->where('exam_period_id', $period->id)->first()
             : null;
+
+        // The form has started: this step is behind the student now.
+        if ($application !== null && $application->status === ApplicationStatus::Draft && $application->furthestStep() > 1) {
+            return to_route('applications.edit', $application);
+        }
 
         return Inertia::render('apply/specialization', [
             'period' => $period !== null ? [

@@ -34,8 +34,9 @@ class SaveApplicationRequest extends FormRequest
         $namePart = ['nullable', 'string', 'min:2', 'max:40', 'regex:/^[\p{Arabic}\s\.\-]+$/u'];
         $houseNumber = ['nullable', 'string', 'max:10', 'regex:/^[0-9A-Za-z\/\-]+$/'];
 
-        return [
+        return $this->requireStep([
             'lock_version' => ['required', 'integer', 'min:1'],
+            'step' => ['nullable', 'integer', Rule::in(array_keys(Application::STEP_FIELDS))],
             'student_name' => $namePart,
             'father_name' => $namePart,
             'grandfather_name' => $namePart,
@@ -59,7 +60,33 @@ class SaveApplicationRequest extends FormRequest
             'school_governorate_code' => ['nullable', 'string', Rule::in(app(ReferenceData::class)->codes(ReferenceType::Governorate))],
             'last_grade' => ['nullable', 'string', 'max:60'],
             'other_info' => ['nullable', 'string', 'max:1000'],
-        ];
+        ]);
+    }
+
+    /**
+     * "Save and continue" sends its step: the required fields of that step
+     * must then be filled, because the form has no way back to them.
+     *
+     * @param  array<string, array<mixed>|string>  $rules
+     * @return array<string, array<mixed>|string>
+     */
+    private function requireStep(array $rules): array
+    {
+        $required = array_intersect(
+            Application::STEP_FIELDS[$this->integer('step')] ?? [],
+            Application::REQUIRED_FOR_SUBMISSION,
+            array_keys($rules),
+        );
+
+        foreach ($required as $field) {
+            $rules[$field] = ['required', ...array_diff($rules[$field], ['nullable'])];
+        }
+
+        if ($this->integer('step') === 1 && $this->input('birth_place_code') === Application::BIRTH_PLACE_OTHER) {
+            $rules['birth_place_other'] = ['required', ...array_diff($rules['birth_place_other'], ['nullable'])];
+        }
+
+        return $rules;
     }
 
     /**

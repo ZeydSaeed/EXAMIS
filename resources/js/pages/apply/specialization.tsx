@@ -1,16 +1,14 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ApplyHeader } from '@/components/examis/apply-header';
 import { BrandBackdrop } from '@/components/examis/brand-backdrop';
-import { ExamisMark } from '@/components/examis/examis-mark';
 import { selectClassName } from '@/components/examis/field';
 import InputError from '@/components/input-error';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
-import { start } from '@/routes';
 import apply from '@/routes/apply';
 import student from '@/routes/student';
 
@@ -61,24 +59,10 @@ export default function Specialization({
             <div className="relative isolate flex min-h-svh flex-col overflow-hidden bg-[var(--examis-pearl)] text-[var(--examis-navy)] dark:bg-[#0a1230] dark:text-white">
                 <BrandBackdrop />
 
-                <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 pt-4 sm:px-6">
-                    <Link
-                        href={start()}
-                        className="flex items-center gap-2 font-semibold"
-                    >
-                        <ExamisMark surface="light" className="size-10" />
-                        <span className="hidden sm:inline">
-                            {t('start.title')}
-                        </span>
-                    </Link>
-                    <LanguageSwitcher className="text-current hover:bg-black/5 dark:hover:bg-white/10" />
-                </header>
+                <ApplyHeader />
 
                 <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-40 sm:px-6 sm:pt-12">
                     <div className="mb-6 space-y-1 motion-safe:animate-[start-rise_0.6s_ease-out_both]">
-                        <p className="text-sm font-medium text-[var(--examis-green)] dark:text-emerald-300">
-                            {t('start.department')}
-                        </p>
                         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                             {t('apply.specialization_title')}
                         </h1>
