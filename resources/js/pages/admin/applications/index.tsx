@@ -79,6 +79,7 @@ export default function AdminApplications({
 
             <ListHeader
                 search={search}
+                searchAutoFocus
                 onSearchChange={setSearch}
                 onSearchSubmit={() => visit({ q: search.trim(), page: 1 })}
                 placeholder={t('admin.search_placeholder')}

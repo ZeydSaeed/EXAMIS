@@ -20,7 +20,7 @@ class ApplicationSubmissionController extends Controller
      * with the PDF remains (ADR-0010). The account stays open until the form
      * has been printed or downloaded.
      */
-    public function store(Request $request, Application $application, SubmitApplication $submitApplication): RedirectResponse
+    public function store(Request $request, Application $application, SubmitApplication $submitApplication, ReceiptRenderer $renderer): RedirectResponse
     {
         Gate::authorize('submit', $application);
 
@@ -29,6 +29,8 @@ class ApplicationSubmissionController extends Controller
         ]);
 
         $application = $submitApplication->handle($application, $request->user());
+
+        $renderer->warm($application);
 
         // The pages behind this one must not come back from the browser's history.
         Inertia::clearHistory();

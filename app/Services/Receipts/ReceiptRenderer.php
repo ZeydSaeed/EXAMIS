@@ -13,6 +13,7 @@ use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use SplFileInfo;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -38,7 +39,6 @@ class ReceiptRenderer
      * The application's own logo, printed small above the committee's name. A
      * downscaled copy: mPDF decoding the full-size PNG exhausts the memory limit.
      */
-    public const APP_LOGO_PATH = 'images/examis-logo-print.png';
 
     /**
      * Muted shade of each branch's colour for the form's label cells, with a
@@ -64,6 +64,72 @@ class ReceiptRenderer
     public const TEST_FORM_FOR = ['CIT', 'CIT_HW'];
 
     public function __construct(private StudentIdentity $identity) {}
+
+    /**
+     * The form, built only when its data or template changed: building takes
+     * about a second, reading the kept copy a few milliseconds. Copies hold
+     * personal data, so they stay on the private disk.
+     */
+    public function cached(Application $application): string
+    {
+        if (! config('examis.documents.form_cache')) {
+            return $this->render($application);
+        }
+
+        $application->loadMissing(['user', 'examPeriod', 'currentDocuments.documentType']);
+
+        $disk = Storage::disk('local');
+        $directory = 'form-cache/'.$application->uuid;
+        $path = $directory.'/'.$this->fingerprint($application).'.pdf';
+        $kept = $disk->get($path);
+
+        if ($kept !== null) {
+            return $kept;
+        }
+
+        $pdf = $this->render($application);
+
+        $disk->deleteDirectory($directory);
+        $disk->put($path, $pdf);
+
+        return $pdf;
+    }
+
+    /**
+     * Builds the form ahead of its first view, so that view is fast too. A
+     * failure here must not stop the application: the view builds it again.
+     */
+    public function warm(Application $application): void
+    {
+        if (! config('examis.documents.form_cache')) {
+            return;
+        }
+
+        try {
+            $this->cached($application);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /**
+     * Everything the printed form depends on.
+     */
+    private function fingerprint(Application $application): string
+    {
+        $templates = collect(File::allFiles(resource_path('views/pdf')))
+            ->map(fn (SplFileInfo $file): int => $file->getMTime())
+            ->max();
+
+        return sha1((string) json_encode([
+            app()->getLocale(),
+            now()->year,
+            $templates,
+            filemtime(lang_path(app()->getLocale().'/receipt.php')),
+            $application->updated_at?->toIso8601String(),
+            $application->currentDocuments->map(fn (ApplicationDocument $document): array => [$document->id, $document->status->value])->all(),
+        ]));
+    }
 
     public function render(Application $application): string
     {
@@ -106,7 +172,6 @@ class ReceiptRenderer
         }
 
         $logo = public_path(self::LOGO_PATH);
-        $appLogo = public_path(self::APP_LOGO_PATH);
         $referenceData = app(ReferenceData::class);
 
         $mpdf->WriteHTML(view('pdf.receipt', [
@@ -114,7 +179,6 @@ class ReceiptRenderer
             'direction' => $locale === 'ar' ? 'rtl' : 'ltr',
             'font' => $fonts['default_font'],
             'logo' => is_file($logo) ? $logo : null,
-            'appLogo' => is_file($appLogo) ? $appLogo : null,
             'hasPhoto' => $photo !== null,
             'shades' => self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
             'branchShades' => self::BRANCH_SHADES,
@@ -127,8 +191,6 @@ class ReceiptRenderer
             'motherName' => $this->joined($application->only(Application::MOTHER_NAME_PARTS), ' ') ?? $application->mother_name_ar,
             'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),
             'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
-            'schoolGovernorate' => $application->schoolGovernorate(),
-            'verificationUrl' => route('receipts.verify', $application->verification_token),
             'generatedAt' => now(),
         ])->render());
 

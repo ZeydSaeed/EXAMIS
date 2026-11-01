@@ -18,6 +18,7 @@ export const headerButtonClassName =
  */
 export function ListHeader({
     search,
+    searchAutoFocus = false,
     onSearchChange,
     onSearchSubmit,
     placeholder,
@@ -29,6 +30,8 @@ export function ListHeader({
     onSearchChange?: (value: string) => void;
     onSearchSubmit?: () => void;
     placeholder?: string;
+    /** Ready to type or scan into as soon as the page opens. */
+    searchAutoFocus?: boolean;
     /** Narrower search box, for pages with several header filters. */
     compactSearch?: boolean;
     /** Page actions (e.g. "New cycle") for the end slot. */
@@ -73,6 +76,7 @@ export function ListHeader({
                         />
                         <input
                             type="search"
+                            autoFocus={searchAutoFocus}
                             value={search ?? ''}
                             onChange={(event) =>
                                 onSearchChange(event.target.value)

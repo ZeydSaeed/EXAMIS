@@ -63,8 +63,6 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($text)->toContain(visualOrder('عبد الكريم'))
         ->and($text)->toContain(visualOrder('زهراء'))
         ->and($text)->toContain(visualOrder('كاظم'))
-        // The last school's governorate ("كربلاء" would not do: its lam-alef is one glyph).
-        ->and($text)->toContain(visualOrder('بغداد'))
         ->and($text)->toContain(visualOrder('حي الحسين'))
         ->and($text)->toContain(visualOrder('الرابع'))
         ->and($text)->toContain('2027-2026')

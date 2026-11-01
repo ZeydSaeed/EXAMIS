@@ -9,8 +9,13 @@
         .head td { vertical-align: top; }
         .committee { text-align: center; font-size: 13pt; line-height: 1.9; }
         .head td.photo { width: 28mm; height: 36mm; padding: 0; border: 1px solid #70ad47; text-align: center; vertical-align: middle; font-size: 10pt; }
-        .title { text-align: center; font-size: 15pt; margin-top: 1mm; }
-        .year { text-align: center; font-size: 14pt; margin: 1mm 0 1mm; }
+        table.ids { margin-top: 1.5mm; border: 3px double #000000; }
+        table.ids td { width: 62mm; height: 13mm; border: 0.8px solid #000000; text-align: center; vertical-align: middle; }
+        table.ids td.number { font-size: 20pt; }
+        table.form-date { margin-top: 1mm; }
+        table.form-date td { width: 124mm; height: 7mm; border: 0.8px solid #000000; text-align: center; vertical-align: middle; font-size: 11pt; }
+        .form-note { font-size: 10.5pt; line-height: 1.6; margin-top: 1.5mm; padding: 1.5mm 2mm; border: 0.8px solid #000000; }
+        .title { text-align: center; font-size: 13.5pt; margin-top: 1.5mm; }
         table.form { width: 100%; margin-top: 2mm; }
         table.form td { border: 0.8px solid #000000; padding: 1mm 1.6mm; height: 7.6mm; vertical-align: middle; }
         td.label { background-color: {{ $shades[0] }}; }
@@ -20,12 +25,15 @@
         table.address { width: 100%; }
         table.form table.address td { border: 0.5px solid #808080; padding: 0.6mm 1mm; height: 5mm; text-align: center; }
         table.form table.address td.sub-head { background-color: {{ $shades[1] }}; font-size: 9pt; height: 4mm; }
-        table.form td.section { background-color: {{ $shades[0] }}; text-align: center; font-size: 12pt; height: 6.5mm; }
+        {{-- These two look the same on every form, whatever the branch colour. --}}
+        table.form td.school-section { background-color: #e6e6e6; color: #8b0000; text-align: center; font-size: 12pt; height: 6.5mm; }
+        table.form td.documents-section { background-color: #e6e6e6; color: #000000; text-align: center; font-size: 12pt; height: 6.5mm; }
         table.form td.head { background-color: {{ $shades[0] }}; text-align: center; height: 6mm; }
-        table.form td.write { height: 8.2mm; }
+        table.form td.write { height: 8mm; }
         table.form td.doc { height: 8.4mm; }
         table.form td.sign { height: 9.8mm; }
-        table.form td.tall { height: 18mm; vertical-align: top; }
+        table.form td.tall { height: 16.5mm; vertical-align: top; }
+        table.form td.tall-centred { height: 16.5mm; vertical-align: top; text-align: center; }
         table.form.line { margin-top: 0; }
         table.form.line td { border-top: none; }
         table.form td.fit { white-space: nowrap; }
@@ -40,18 +48,13 @@
         .section-title { font-size: 15pt; text-decoration: underline; margin-top: 2mm; }
         .documents { font-size: 12.5pt; line-height: 1.9; margin-top: 3mm; }
         table.card { width: 80%; }
-        table.receipt { width: 100%; margin-top: 2mm; border-top: 0.6px solid #9ca3af; }
-        table.receipt td { font-size: 8.5pt; color: #374151; vertical-align: middle; padding-top: 1.5mm; }
     </style>
 </head>
 <body>
-    {{-- Committee on the right, logo centred on the page, photo on the left. --}}
+    {{-- Committee on the right, vocational logo in the middle, photo on the left. --}}
     <table class="head" style="width: 100%;">
         <tr>
             <td class="committee" style="width: 72mm;">
-                @if ($appLogo)
-                    <img src="{{ $appLogo }}" style="height: 11mm;"><br>
-                @endif
                 {{ __('receipt.committee') }}<br>
                 {{ __('receipt.preliminary_exams') }}<br>
                 {{ __('receipt.department') }}
@@ -73,30 +76,48 @@
         </tr>
     </table>
 
-    <div class="title">{{ __('receipt.title') }}</div>
-    <div class="year">{{ __('receipt.academic_year') }} <bdo dir="ltr">{{ $academicYear }}</bdo></div>
+    {{-- The barcode holds the student number: staff scan it to open the application. --}}
+    <table class="ids" align="center">
+        <tr>
+            <td>
+                @if ($student->student_number !== null)
+                    <barcode code="{{ $student->student_number }}" type="C128A" size="0.8" height="0.85" />
+                @endif
+            </td>
+            <td class="number"><bdo dir="ltr">{!! $value($student->student_number) !!}</bdo></td>
+        </tr>
+    </table>
+    <table class="form-date" align="center">
+        <tr>
+            <td>{{ __('receipt.created_at') }} <bdo dir="ltr">{{ ($application->submitted_at ?? now())->timezone(config('app.display_timezone', 'Asia/Baghdad'))->format('d/m/Y h:i:s A') }}</bdo></td>
+        </tr>
+    </table>
+
+    <div class="title">
+        {{ __('receipt.title') }} {{ __('receipt.academic_year') }} <bdo dir="ltr">{{ $academicYear }}</bdo><br>
+        ({{ __('receipt.branch') }}: {!! $value($branch) !!}، {{ __('receipt.specialization') }}: {!! $value($specialization) !!})
+    </div>
 
     {{-- The student's information, as submitted, on a six-column grid. --}}
     <table class="form">
         <tr>
-            <td class="label" style="width: 24%;">{{ __('receipt.branch') }}</td>
-            <td style="width: 30%;">{!! $value($branch) !!}</td>
-            <td colspan="2" class="label" style="width: 20%;">{{ __('receipt.specialization') }}</td>
-            <td colspan="2" style="width: 26%;">{!! $value($specialization) !!}</td>
+            @foreach ([24, 30, 10, 12, 11, 13] as $width)
+                <td style="width: {{ $width }}%; height: 0; padding: 0; border: none;"></td>
+            @endforeach
         </tr>
         <tr>
             <td class="label">{{ __('receipt.full_name') }}</td>
             <td>{!! $value($fullName) !!}</td>
-            <td colspan="2" class="label">{{ __('receipt.gender') }}</td>
-            <td colspan="2">{!! $value($application->gender !== null ? __('applications.gender.'.$application->gender->value) : null) !!}</td>
+            <td class="label">{{ __('receipt.gender') }}</td>
+            <td colspan="3">{!! $value($application->gender !== null ? __('applications.gender.'.$application->gender->value) : null) !!}</td>
         </tr>
         <tr>
             <td class="label">{{ __('receipt.mother_name') }}</td>
             <td>{!! $value($motherName) !!}</td>
-            <td class="label" style="width: 8%;">{{ __('receipt.birth_date') }}</td>
-            <td style="width: 12%; text-align: center;"><bdo dir="ltr">{!! $value($application->birth_date?->format('d/m/Y')) !!}</bdo></td>
-            <td class="label" style="width: 11%;">{{ __('receipt.birth_place') }}</td>
-            <td style="width: 15%;">{!! $value($application->birthPlace()) !!}</td>
+            <td class="label">{{ __('receipt.birth_date') }}</td>
+            <td style="text-align: center;"><bdo dir="ltr">{!! $value($application->birth_date?->format('d/m/Y')) !!}</bdo></td>
+            <td class="label">{{ __('receipt.birth_place') }}</td>
+            <td>{!! $value($application->birthPlace()) !!}</td>
         </tr>
         <tr>
             <td class="label">{{ __('receipt.address') }}</td>
@@ -119,12 +140,6 @@
             <td class="label">{{ __('receipt.phone') }}</td>
             <td class="ltr" style="text-align: center;">{!! $value($application->phone) !!}</td>
         </tr>
-        <tr>
-            <td class="label" style="font-size: 9.5pt;">{{ __('receipt.last_school') }}</td>
-            <td>{!! $value($application->school_name) !!}</td>
-            <td colspan="2" class="label">{{ __('receipt.school_governorate') }}</td>
-            <td colspan="2">{!! $value($schoolGovernorate) !!}</td>
-        </tr>
         {{-- The form no longer asks for this; only older applications have it. --}}
         @if (filled($application->other_info))
             <tr>
@@ -134,59 +149,46 @@
         @endif
     </table>
 
-    {{-- Left blank for the school to fill in by hand, on a six-column grid. --}}
+    {{-- Left blank for the school to fill in by hand. Every label starts on the
+         same column at the same width, on one six-column grid. --}}
     @php
         $label = fn (string $key) => rtrim(__('receipt.'.$key), ': ');
     @endphp
     <table class="form">
         <tr>
-            @for ($column = 0; $column < 6; $column++)
-                <td style="width: 16.66%; height: 0; padding: 0; border: none;"></td>
-            @endfor
-        </tr>
-        <tr>
-            <td colspan="6" class="section">{{ __('receipt.school_section') }}</td>
-        </tr>
-        @foreach (['last_school_name', 'graduated_school'] as $field)
-            <tr>
-                <td colspan="6" class="write">{{ __('receipt.'.$field) }}</td>
-            </tr>
-        @endforeach
-    </table>
-    {{-- Each label as wide as its text. --}}
-    <table class="form line">
-        <tr>
-            <td class="label small write fit" nowrap="nowrap">{{ $label('last_grade') }}</td>
-            <td style="width: 24%;">{!! $value($application->last_grade) !!}</td>
-            <td class="label small fit" nowrap="nowrap">{{ $label('result') }}</td>
-            <td style="width: 24%;">&nbsp;</td>
-            <td class="label small fit" nowrap="nowrap">{{ $label('school_year') }}</td>
-            <td style="width: 24%;">&nbsp;</td>
-        </tr>
-    </table>
-    {{-- The failed-years and day-school labels share a width. --}}
-    <table class="form line">
-        <tr>
-            @foreach ([33, 17, 17, 33] as $width)
+            @foreach ([34, 20, 8, 8, 12, 18] as $width)
                 <td style="width: {{ $width }}%; height: 0; padding: 0; border: none;"></td>
             @endforeach
         </tr>
         <tr>
-            <td class="label small write fit" nowrap="nowrap">{{ $label('failed_years') }}</td>
-            <td colspan="3">&nbsp;</td>
+            <td colspan="6" class="school-section">{{ __('receipt.school_section') }}</td>
         </tr>
+        @foreach (['last_school_name', 'graduated_school'] as $field)
+            <tr>
+                <td class="label small write fit" nowrap="nowrap">{{ $label($field) }}</td>
+                <td colspan="5">&nbsp;</td>
+            </tr>
+        @endforeach
         <tr>
-            <td class="label small write fit" nowrap="nowrap">{{ $label('day_school') }}</td>
+            <td class="label small write fit" nowrap="nowrap">{{ $label('last_grade') }}</td>
+            <td>{!! $value($application->last_grade) !!}</td>
+            <td class="label small fit" nowrap="nowrap">{{ $label('result') }}</td>
             <td>&nbsp;</td>
-            <td class="label small fit" nowrap="nowrap">{{ $label('dropout_years') }}</td>
+            <td class="label small fit" nowrap="nowrap">{{ $label('school_year') }}</td>
             <td>&nbsp;</td>
         </tr>
+        @foreach (['failed_years', 'dropout_years'] as $field)
+            <tr>
+                <td class="label small write fit" nowrap="nowrap">{{ $label($field) }}</td>
+                <td colspan="5">&nbsp;</td>
+            </tr>
+        @endforeach
     </table>
 
     {{-- Documents issued to the student, in a table of their own. --}}
     <table class="form">
         <tr>
-            <td colspan="3" class="section">{{ $label('documents') }}</td>
+            <td colspan="3" class="documents-section">{{ $label('documents') }}</td>
         </tr>
         <tr>
             <td class="head" style="width: 33.33%;">{{ __('receipt.document_number') }}</td>
@@ -210,8 +212,8 @@
             @endforeach
         </tr>
         <tr>
-            <td colspan="2" class="tall">{{ __('receipt.student_signature') }}</td>
-            <td colspan="2" class="tall">{{ __('receipt.student_fingerprint') }}</td>
+            <td colspan="2" class="tall-centred">{{ $label('student_signature') }}</td>
+            <td colspan="2" class="tall-centred">{{ $label('student_fingerprint') }}</td>
         </tr>
         <tr>
             <td class="label small sign fit" nowrap="nowrap">{{ $label('school_name') }}</td>
@@ -228,20 +230,7 @@
 
     <div class="note">{{ __('receipt.stamp_note') }}</div>
 
-    <table class="receipt">
-        <tr>
-            <td style="width: 78%;">
-                {{ __('receipt.status') }}: {{ $application->status->label() }}
-                — {{ __('receipt.submitted_at') }}: <bdo dir="ltr">{{ $application->submitted_at?->timezone(config('app.display_timezone', config('app.timezone')))->format('Y-m-d H:i') }}</bdo><br>
-                {{ __('receipt.verify_hint') }}
-                {!! __('receipt.generated_at', ['time' => '<bdo dir="ltr">'.e($generatedAt->timezone(config('app.display_timezone', config('app.timezone')))->format('Y-m-d H:i')).'</bdo>']) !!}
-                — {{ __('receipt.point_in_time') }}
-            </td>
-            <td style="width: 22%; text-align: left;">
-                <barcode code="{{ $verificationUrl }}" type="QR" size="0.55" error="M" disableborder="1" />
-            </td>
-        </tr>
-    </table>
+    <div class="form-note">{{ __('receipt.form_note') }}</div>
 
     <pagebreak />
     @include('pdf.receipt.request-letter')

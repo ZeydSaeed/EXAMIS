@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
-/** 216 dpi: sharp on paper as well as on high-density screens. */
+/** About 216 dpi: one drawing, for the screen and for paper. */
 const RENDER_SCALE = 3;
 
 /**
@@ -39,27 +39,34 @@ export function PdfPages({
         const container = holder.current;
         let cancelled = false;
         let task: PDFDocumentLoadingTask | null = null;
+        const sheetUrls: string[] = [];
 
         const render = async () => {
-            const [{ getDocument, GlobalWorkerOptions }, { default: PdfWorker }] =
-                await Promise.all([
-                    import('pdfjs-dist'),
-                    // Built as a plain .js file: many servers do not send .mjs
-                    // with a type browsers accept for a worker.
-                    import('pdfjs-dist/build/pdf.worker.min.mjs?worker'),
-                ]);
+            // All three start together, so the file is not held up by the code.
+            const [
+                { getDocument, GlobalWorkerOptions },
+                { default: PdfWorker },
+                data,
+            ] = await Promise.all([
+                import('pdfjs-dist'),
+                // Built as a plain .js file: many servers do not send .mjs
+                // with a type browsers accept for a worker.
+                import('pdfjs-dist/build/pdf.worker.min.mjs?worker'),
+                fetch(url).then((response) => {
+                    if (!response.ok) {
+                        throw new Error('The form could not be loaded.');
+                    }
+
+                    return response.arrayBuffer();
+                }),
+            ]);
 
             if (cancelled || !container) {
                 return;
             }
 
             GlobalWorkerOptions.workerPort ??= new PdfWorker();
-            task = getDocument({
-                url,
-                isEvalSupported: false,
-                disableRange: true,
-                disableStream: true,
-            });
+            task = getDocument({ data, isEvalSupported: false });
 
             const document_ = await task.promise;
             const rendered: string[] = [];
@@ -77,19 +84,30 @@ export function PdfPages({
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
                 canvas.className = 'w-full rounded-sm bg-white shadow-sm';
+                // A canvas in the page takes on its direction, and pdf.js places
+                // every glyph assuming left to right: in RTL the letters fall apart.
+                canvas.dir = 'ltr';
+                // In place at once, filling in as it is drawn.
+                container.appendChild(canvas);
+                setState('ready');
 
                 await page.render({ canvasContext, viewport }).promise;
 
-                if (cancelled) {
+                const sheet = await new Promise<Blob | null>((resolve) =>
+                    canvas.toBlob(resolve, 'image/png'),
+                );
+
+                if (cancelled || !sheet) {
                     return;
                 }
 
-                container.appendChild(canvas);
-                rendered.push(canvas.toDataURL('image/png'));
+                const sheetUrl = URL.createObjectURL(sheet);
+
+                sheetUrls.push(sheetUrl);
+                rendered.push(sheetUrl);
             }
 
             setSheets(rendered);
-            setState('ready');
             notifyReady.current?.();
         };
 
@@ -103,6 +121,7 @@ export function PdfPages({
             cancelled = true;
             void task?.destroy();
             container?.replaceChildren();
+            sheetUrls.forEach((sheetUrl) => URL.revokeObjectURL(sheetUrl));
         };
     }, [url]);
 

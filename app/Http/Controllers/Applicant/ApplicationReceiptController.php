@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 class ApplicationReceiptController extends Controller
 {
     /**
-     * Generated on demand from the current persisted state; every issue is
-     * audited (ADR-0007). Opens in the browser, or saves as a file with
+     * Follows the current persisted state, rebuilt only when that changes;
+     * every issue is audited (ADR-0007). Opens in the browser, or saves as a file with
      * `download`, which is how phones get it. Opening it closes nothing: the
      * student confirms the print on the final page (ADR-0010).
      */
@@ -22,7 +22,7 @@ class ApplicationReceiptController extends Controller
     {
         Gate::authorize('downloadReceipt', $application);
 
-        $pdf = $renderer->render($application);
+        $pdf = $renderer->cached($application);
 
         $audit->record('receipt.downloaded', $application, ['status' => $application->status->value]);
 

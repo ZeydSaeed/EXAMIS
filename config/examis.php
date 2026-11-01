@@ -85,6 +85,8 @@ return [
         'disk' => env('DOCUMENTS_DISK', 'documents'),
         'scanner' => env('DOCUMENT_SCANNER', 'structural'),
         'scan_inline' => (bool) env('DOCUMENT_SCAN_INLINE', true),
+        // Keep each generated form on the private disk until its data changes.
+        'form_cache' => (bool) env('EXAMIS_FORM_CACHE', true),
         'queue' => env('DOCUMENTS_QUEUE', 'documents'),
         'max_image_pixels' => 40_000_000,
         'max_per_application' => 20,

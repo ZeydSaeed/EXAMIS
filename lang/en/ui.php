@@ -383,7 +383,7 @@ return [
         'dashboard_description' => 'Overview of the applications you are allowed to see.',
         'by_status' => 'By status',
         'search' => 'Search',
-        'search_placeholder' => 'Search by name or reference number...',
+        'search_placeholder' => 'Search by name or reference, or scan a student barcode ...',
         'clear_search' => 'Clear search',
         'remove_filter' => 'Remove filter',
         'assigned_to_me' => 'Assigned to me',

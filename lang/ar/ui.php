@@ -383,7 +383,7 @@ return [
         'dashboard_description' => 'نظرة عامة على الطلبات التي يحق لك الاطلاع عليها.',
         'by_status' => 'حسب الحالة',
         'search' => 'بحث',
-        'search_placeholder' => 'ابحث بالاسم أو رقم الطلب ...',
+        'search_placeholder' => 'ابحث بالاسم أو رقم الطلب أو امسح باركود الطالب ...',
         'clear_search' => 'مسح البحث',
         'remove_filter' => 'إزالة عامل التصفية',
         'assigned_to_me' => 'المسندة إليّ',

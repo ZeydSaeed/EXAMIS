@@ -11,7 +11,9 @@ use App\Models\DocumentType;
 use App\Models\ExamPeriod;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Students\StudentIdentity;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -30,7 +32,7 @@ class ApplicationController extends Controller
      */
     private const ARABIC_FOLDS = ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ى' => 'ي', 'ة' => 'ه'];
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         Gate::authorize('viewAny', Application::class);
 
@@ -43,6 +45,12 @@ class ApplicationController extends Controller
         ]);
 
         $user = $request->user();
+
+        $scanned = $this->scannedApplication($filters['q'] ?? null, $user);
+
+        if ($scanned !== null) {
+            return to_route('admin.applications.show', $scanned);
+        }
 
         $applications = Application::query()
             ->visibleToStaff($user)
@@ -160,6 +168,25 @@ class ApplicationController extends Controller
                     }
                 });
         });
+    }
+
+    /**
+     * A barcode reader types the student number from the form into the search
+     * box and presses Enter: that goes straight to the student's application.
+     */
+    private function scannedApplication(?string $term, User $staff): ?Application
+    {
+        $number = StudentIdentity::normalizePhone($term);
+
+        if ($number === null || preg_match('/^[0-9]{5,6}$/', $number) !== 1) {
+            return null;
+        }
+
+        return Application::query()
+            ->visibleToStaff($staff)
+            ->whereRelation('user', 'student_number', (int) $number)
+            ->latest('id')
+            ->first();
     }
 
     /**
