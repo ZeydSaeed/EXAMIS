@@ -51,15 +51,16 @@ return [
     // Request letter to the Director General of Education (page 2).
     'letter' => [
         'directorate' => 'General Directorate of Education, Karbala Governorate',
-        'addressee' => 'To the Director General of Karbala Education',
-        'request' => 'Kindly approve my participation in the external examinations for the current school year :year,',
-        'branch' => 'branch:',
-        'specialization' => 'specialization:',
+        'through' => 'Through the Director of the Vocational Education Department.',
+        'subject' => 'Re: Request to take part in the external examinations',
+        'greeting' => 'Greetings ...',
+        'request' => 'Please approve my participation in the general vocational (external) examinations for the current academic year',
+        'branch' => 'Branch',
+        'specialization' => 'and specialization',
         'last_grade' => 'I was a student in grade',
         'school' => 'at the school',
         'birth_year' => 'and was born in',
         'signature' => 'Signature',
-        'applicant' => 'Applicant name:',
     ],
 
     // Student information form for the external examinations (page 3).
@@ -69,13 +70,13 @@ return [
         'academic_year' => 'School year:',
         'branch' => 'Branch:',
         'specialization' => 'Specialization:',
-        'first_name' => 'Name',
+        'first_name' => "Student's name",
         'father_name' => "Father's name",
         'grandfather_name' => "Grandfather's name",
         'great_grandfather_name' => "Great-grandfather's name",
         'mother_name' => "Mother's full name",
         'member' => 'Member',
-        'rapporteur' => 'Subcommittee rapporteur',
+        'chair' => 'Committee chair',
     ],
 
     // Required documents and the folder colour of each branch (last page).

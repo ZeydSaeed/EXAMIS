@@ -12,9 +12,9 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'> & {
 };
 
 /**
- * EXAMIS mark: the round Zedra Tech badge over the "EXAMIS" wordmark. Two
+ * EXAMIS mark: the round Ishtar Tech badge over the "EXAMIS" wordmark. Two
  * transparent PNGs:
- * `examis-badge.png` (original colours) and `examis-badge-on-dark.png`. A new
+ * `examis-seal.png` (original colours) and `examis-seal-on-dark.png`. A new
  * mark needs new file names: browsers keep these images for days.
  */
 export function ExamisMark({
@@ -34,7 +34,7 @@ export function ExamisMark({
     if (surface === 'dark') {
         return (
             <img
-                src="/images/examis-badge-on-dark.png"
+                src="/images/examis-seal-on-dark.png"
                 className={`object-contain ${className}`}
                 {...shared}
             />
@@ -44,12 +44,12 @@ export function ExamisMark({
     return (
         <>
             <img
-                src="/images/examis-badge.png"
+                src="/images/examis-seal.png"
                 className={`object-contain dark:hidden ${className}`}
                 {...shared}
             />
             <img
-                src="/images/examis-badge-on-dark.png"
+                src="/images/examis-seal-on-dark.png"
                 className={`hidden object-contain dark:block ${className}`}
                 {...shared}
                 alt=""

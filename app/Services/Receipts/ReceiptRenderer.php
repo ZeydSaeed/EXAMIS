@@ -157,6 +157,9 @@ class ReceiptRenderer
             // silently drops letters from copied or extracted text.
             'autoLangToFont' => false,
             'autoArabic' => true,
+            // Justify with the spaces between words, never between letters.
+            'jSmaxChar' => 0,
+            'jSWord' => 1,
         ]);
 
         $mpdf->SetDirectionality($locale === 'ar' ? 'rtl' : 'ltr');
@@ -256,7 +259,8 @@ class ReceiptRenderer
                     'R' => 'times.ttf',
                     'B' => 'timesbd.ttf',
                     'useOTL' => 0xFF,
-                    'useKashida' => 75,
+                    // No stretched letters when justifying: they pull words apart.
+                    'useKashida' => 0,
                 ],
             ],
             'default_font' => 'timesnewroman',

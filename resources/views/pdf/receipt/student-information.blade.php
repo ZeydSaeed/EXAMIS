@@ -1,17 +1,19 @@
 {{-- Page 3: the student information form for the external examinations. --}}
-<table style="width: 100%;">
+@include('pdf.receipt.student-ids')
+
+<table style="width: 100%; margin-top: 5mm;">
     <tr>
-        <td style="width: 50%;">{{ __('receipt.letter.directorate') }}</td>
-        <td style="width: 50%; text-align: left;">{{ __('receipt.info.department') }}</td>
+        <td class="info" style="width: 50%;">{{ __('receipt.letter.directorate') }}</td>
+        <td class="info" style="width: 50%; text-align: left;">{{ __('receipt.info.department') }}</td>
     </tr>
 </table>
 
-<div class="page-heading" style="font-size: 16pt;">{{ __('receipt.info.title') }}</div>
-<div class="year">{{ __('receipt.info.academic_year') }} <bdo dir="ltr">{{ $academicYear }}</bdo></div>
-<table style="width: 100%; margin-top: 2mm;">
+<div class="info-centred">{{ __('receipt.info.title') }}</div>
+<div class="info-centred">{{ __('receipt.info.academic_year') }} <bdo dir="ltr">{{ $academicYear }}</bdo></div>
+<table style="width: 100%; margin-top: 3mm;">
     <tr>
-        <td class="page-heading" style="width: 50%;">{{ __('receipt.info.branch') }} {!! $value($branch) !!}</td>
-        <td class="page-heading" style="width: 50%;">{{ __('receipt.info.specialization') }} {!! $value($specialization) !!}</td>
+        <td class="info" style="width: 50%; text-align: center;">{{ __('receipt.info.branch') }} {!! $value($branch) !!}</td>
+        <td class="info" style="width: 50%; text-align: center;">{{ __('receipt.info.specialization') }} {!! $value($specialization) !!}</td>
     </tr>
 </table>
 
@@ -50,17 +52,13 @@
     </tr>
 </table>
 
-{{-- The committee's signatures, pushed down to the bottom of the page. --}}
-<div style="padding-top: 68mm;"></div>
-<table class="form roomy">
-    <tr>
-        @foreach (['member', 'member', 'member', 'rapporteur'] as $role)
-            <td class="label" style="width: 25%; text-align: center;">{{ __('receipt.info.'.$role) }}</td>
-        @endforeach
-    </tr>
-    <tr>
-        @for ($column = 0; $column < 4; $column++)
-            <td style="height: 30mm;">&nbsp;</td>
-        @endfor
-    </tr>
-</table>
+{{-- The committee's signatures, low on the page; laid out in columns, drawn as plain text. --}}
+<div style="position: absolute; bottom: 42mm; left: 12mm; right: 12mm;">
+    <table class="info-signatures" style="width: 100%;">
+        <tr>
+            @foreach (['member', 'member', 'member', 'chair'] as $role)
+                <td style="width: 25%;">{{ __('receipt.info.'.$role) }}</td>
+            @endforeach
+        </tr>
+    </table>
+</div>

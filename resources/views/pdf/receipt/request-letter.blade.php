@@ -1,44 +1,42 @@
-{{-- Page 2: the student's request to the Director General of Education, as an official letter. --}}
+{{-- Page 2: the student's request to the directorate, as an official letter. --}}
 @php
     $blank = str_repeat('.', 45);
     $filled = fn ($text) => filled($text) ? e((string) $text) : $blank;
+    // Left empty for the student to write in by hand.
+    $space = fn (int $characters) => str_repeat('&nbsp;', $characters);
 @endphp
-<div class="page-heading" style="padding-top: 56mm;">{{ __('receipt.letter.directorate') }}</div>
+<div class="letter-head">
+    {{ __('receipt.letter.directorate') }}.<br>
+    {{ __('receipt.letter.through') }}
+</div>
+<div class="letter-subject">{{ __('receipt.letter.subject') }}</div>
 
 <div class="letter">
-    <div style="margin-bottom: 6mm;">{{ __('receipt.letter.addressee') }}</div>
+    <div class="letter-greeting">{{ __('receipt.letter.greeting') }}</div>
+    {{-- One paragraph at one size, wrapping only where a line is full. A word stays
+         joined to the brackets after it, so no line starts with an empty pair. --}}
     <div style="text-align: justify;">
-        {!! __('receipt.letter.request', ['year' => '<bdo dir="ltr">'.e($academicYear).'</bdo>']) !!}
+        {{ __('receipt.letter.request') }} <bdo dir="ltr">{{ $academicYear }}</bdo>،
+        {{ __('receipt.letter.branch') }}&nbsp;({!! $filled($branch) !!})
+        {{ __('receipt.letter.specialization') }}&nbsp;({!! $filled($specialization) !!})،
+        {{ __('receipt.letter.last_grade') }}&nbsp;({!! $space(30) !!})
+        {{ __('receipt.letter.school') }}&nbsp;({!! $space(46) !!})
+        {{ __('receipt.letter.birth_year') }}&nbsp;({!! $filled($application->birth_date?->format('Y')) !!}).
     </div>
-    {{-- Each never wraps: a table cell, which mPDF shrinks to fit rather than breaking. --}}
-    <table class="letter-line">
+</div>
+
+{{-- Signature block low on the left, placed from the page's foot so the letter above never moves it. --}}
+<div style="position: absolute; bottom: 52mm; left: 22mm; width: 100mm;">
+    <table class="letter-signature" style="width: 100%;">
         <tr>
-            <td nowrap="nowrap">
-                {{ __('receipt.letter.branch') }} ({!! $filled($branch) !!})
-                {{ __('receipt.letter.specialization') }} ({!! $filled($specialization) !!})
-            </td>
+            <td style="height: 12mm; vertical-align: top;">{{ __('receipt.letter.signature') }}</td>
         </tr>
         <tr>
-            <td nowrap="nowrap">
-                {{ __('receipt.letter.last_grade') }} ({!! $filled($application->last_grade) !!})
-                {{ __('receipt.letter.school') }} ({!! $filled($application->school_name) !!})
-                {{ __('receipt.letter.birth_year') }} ({!! $filled($application->birth_date?->format('Y')) !!}).
-            </td>
+            <td>{!! $filled($fullName) !!}</td>
+        </tr>
+        <tr>
+            {{-- Day and month left blank; read right to left the year comes last. --}}
+            <td><bdo dir="ltr">{{ $generatedAt->year }} /&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</bdo></td>
         </tr>
     </table>
 </div>
-
-{{-- Signature block on the left, its lines centred under each other; a table so it is never split. --}}
-<div style="padding-top: 40mm;"></div>
-<table class="letter-signature" align="left" style="width: 60%;">
-    <tr>
-        <td style="height: 18mm; vertical-align: top;">{{ __('receipt.letter.signature') }}</td>
-    </tr>
-    <tr>
-        <td>{{ __('receipt.letter.applicant') }} {!! $filled($fullName) !!}</td>
-    </tr>
-    <tr>
-        {{-- Day and month left blank; read right to left the year comes last. --}}
-        <td><bdo dir="ltr">{{ $generatedAt->year }} /&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</bdo></td>
-    </tr>
-</table>

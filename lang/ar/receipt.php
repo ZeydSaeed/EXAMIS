@@ -51,15 +51,16 @@ return [
     // Request letter to the Director General of Education (page 2).
     'letter' => [
         'directorate' => 'المديرية العامة للتربية في محافظة كربلاء',
-        'addressee' => 'السيد مدير عام تربية كربلاء المحترم....',
-        'request' => 'يرجى التفضل بالموافقة على قبول اشتراكي في الامتحانات الخارجية للعام الدراسي الحالي :year',
-        'branch' => 'الفرع:',
-        'specialization' => 'والاختصاص:',
+        'through' => 'بواسطة السيد مدير قسم التعليم المهني المحترم.',
+        'subject' => 'م/ طلب اشتراك في الامتحانات الخارجية',
+        'greeting' => 'تحية طيبة ...',
+        'request' => 'يرجى التفضل بالموافقة على قبول اشتراكي بالامتحانات المهنية العامة (الخارجية) للعام الدراسي الحالي',
+        'branch' => 'الفرع',
+        'specialization' => 'والاختصاص',
         'last_grade' => 'علماً أني كنت طالباً في الصف',
         'school' => 'وفي مدرسة',
         'birth_year' => 'ومن مواليد',
         'signature' => 'التوقيع',
-        'applicant' => 'اسم صاحب الطلب:',
     ],
 
     // Student information form for the external examinations (page 3).
@@ -69,13 +70,13 @@ return [
         'academic_year' => 'العام الدراسي:',
         'branch' => 'الفرع:',
         'specialization' => 'الاختصاص:',
-        'first_name' => 'الاسم',
+        'first_name' => 'اسم الطالب',
         'father_name' => 'اسم الأب',
         'grandfather_name' => 'اسم الجد',
         'great_grandfather_name' => 'اسم أب الجد',
         'mother_name' => 'اسم الأم الثلاثي',
         'member' => 'عضو',
-        'rapporteur' => 'مقرر اللجنة الفرعية',
+        'chair' => 'رئيس اللجنة',
     ],
 
     // Required documents and the folder colour of each branch (last page).

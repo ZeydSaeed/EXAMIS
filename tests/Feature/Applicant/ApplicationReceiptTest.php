@@ -97,7 +97,7 @@ it('follows the form with the request letter, the information form, the required
 
     $text = extractPdfText($pdf);
     expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
-        ->and($text)->toContain(visualOrder('السيد مدير عام تربية'))
+        ->and($text)->toContain(visualOrder('بواسطة السيد مدير قسم'))
         ->and($text)->toContain(visualOrder('استمارة معلومات الطالب الخاصة بالتقديم'))
         ->and($text)->toContain(visualOrder('المستمسكات المطلوبة'))
         ->and($text)->not->toContain(visualOrder('استمارة اختبار'))

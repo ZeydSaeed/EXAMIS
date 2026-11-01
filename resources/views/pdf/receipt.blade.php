@@ -40,11 +40,16 @@
         .ltr { direction: ltr; }
         .note { font-size: 11pt; margin-top: 1.5mm; }
         .page-heading { text-align: center; font-size: 18pt; margin-top: 6mm; }
-        .letter { font-size: 14pt; line-height: 2.4; margin: 24mm 0 0; }
-        table.letter-line { width: 100%; }
-        table.letter-line td { font-size: 14pt; padding: 0; height: 11.8mm; white-space: nowrap; }
+        .letter-head { font-size: 15pt; line-height: 2; color: #000000; padding-top: 16mm; margin-right: 8mm; }
+        .letter-subject { font-size: 15pt; color: #000000; text-align: center; margin-top: 12mm; }
+        .letter-greeting { margin-bottom: 4mm; }
+        .letter { font-size: 14pt; line-height: 2.4; margin: 10mm 8mm 0; }
         table.letter-signature td { font-size: 14pt; padding: 1.5mm 0; text-align: center; }
         table.roomy td { font-size: 13pt; height: 13mm; }
+        {{-- One size across the whole student information page. --}}
+        .info { font-size: 13pt; }
+        .info-centred { font-size: 13pt; text-align: center; margin-top: 3mm; }
+        table.info-signatures td { font-size: 13pt; text-align: center; padding: 0; }
         .section-title { font-size: 15pt; text-decoration: underline; margin-top: 2mm; }
         .documents { font-size: 12.5pt; line-height: 1.9; margin-top: 3mm; }
         table.card { width: 80%; }
@@ -76,17 +81,7 @@
         </tr>
     </table>
 
-    {{-- The barcode holds the student number: staff scan it to open the application. --}}
-    <table class="ids" align="center">
-        <tr>
-            <td>
-                @if ($student->student_number !== null)
-                    <barcode code="{{ $student->student_number }}" type="C128A" size="0.8" height="0.85" />
-                @endif
-            </td>
-            <td class="number"><bdo dir="ltr">{!! $value($student->student_number) !!}</bdo></td>
-        </tr>
-    </table>
+    @include('pdf.receipt.student-ids')
     <table class="form-date" align="center">
         <tr>
             <td>{{ __('receipt.created_at') }} <bdo dir="ltr">{{ ($application->submitted_at ?? now())->timezone(config('app.display_timezone', 'Asia/Baghdad'))->format('d/m/Y h:i:s A') }}</bdo></td>
