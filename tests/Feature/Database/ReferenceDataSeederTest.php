@@ -13,9 +13,10 @@ it('offers the published branches with their specializations and hides retired c
     $referenceData = app(ReferenceData::class);
     $specializations = collect($referenceData->items(ReferenceType::Category));
 
-    expect($referenceData->codes(ReferenceType::Branch))->toBe(['IND', 'COM', 'APA', 'AGR', 'CIT'])
+    expect($referenceData->codes(ReferenceType::Branch))->toBe(['IND', 'COM', 'APA', 'AGR', 'CIT', 'TOU'])
         ->and($specializations->where('parent_code', 'IND')->pluck('code')->all())
         ->toBe(['IND_ELC', 'IND_ECT', 'IND_MEC', 'IND_CON', 'IND_PET', 'IND_HVAC'])
+        ->and($specializations->where('parent_code', 'TOU')->pluck('code')->all())->toBe(['TOU_HSK'])
         ->and($specializations->whereNull('parent_code'))->toBeEmpty()
         ->and(ReferenceItem::query()->where('code', 'SCI')->sole()->is_active)->toBeFalse();
 });

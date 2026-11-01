@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\StaffLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Public;
+use App\Http\Middleware\KeepStudentsOnTheirPath;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -93,10 +94,15 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:application-writes')
         ->name('apply.specialization.store');
 
-    Route::get('student/card', [Applicant\StudentCardController::class, 'show'])->name('student.card');
-    Route::post('student/access-code', [Applicant\StudentCardController::class, 'regenerate'])
-        ->middleware('throttle:6,1')
-        ->name('student.access-code');
+    Route::middleware(KeepStudentsOnTheirPath::class)->group(function () {
+        Route::get('student/card', [Applicant\StudentCardController::class, 'show'])->name('student.card');
+        Route::post('student/access-code', [Applicant\StudentCardController::class, 'regenerate'])
+            ->middleware('throttle:6,1')
+            ->name('student.access-code');
+
+        Route::get('notifications', [Applicant\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read', [Applicant\NotificationController::class, 'markAllRead'])->name('notifications.read');
+    });
 
     Route::middleware('throttle:application-writes')->group(function () {
         Route::post('applications', [Applicant\ApplicationController::class, 'store'])->name('applications.store');
@@ -117,8 +123,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('documents/{document}', [Applicant\ApplicationDocumentController::class, 'show'])->name('documents.show');
 
-    Route::get('notifications', [Applicant\NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('notifications/read', [Applicant\NotificationController::class, 'markAllRead'])->name('notifications.read');
 });
 
 /*

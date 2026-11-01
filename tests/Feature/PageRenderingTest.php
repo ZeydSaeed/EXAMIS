@@ -21,10 +21,7 @@ it('renders the applicant dashboard with only the applicant\'s own applications'
     Application::factory()->submitted()->create();
 
     $this->actingAs($mine->user)->get(route('dashboard'))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('applicant/dashboard')
-            ->has('applications', 1)
-            ->where('applications.0.uuid', $mine->uuid));
+        ->assertRedirect(route('applications.printed', $mine));
 });
 
 it('sends staff from the applicant dashboard to the admin area', function () {

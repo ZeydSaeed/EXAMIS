@@ -32,7 +32,8 @@ class EnsureAccountIsActive
                 : to_route('applications.printed', $application);
         }
 
-        $message = $user->isClosed() ? __('auth.account_closed') : __('auth.deactivated');
+        $closed = $user->isClosed();
+        $message = $closed ? __('auth.account_closed') : __('auth.deactivated');
 
         Auth::guard('web')->logout();
         $request->session()->invalidate();
@@ -41,6 +42,7 @@ class EnsureAccountIsActive
         // The pages behind this one must not come back from the browser's history.
         Inertia::clearHistory();
 
-        return redirect()->route('apply.terms')->with('status', $message);
+        // A student who finished printing is done, so back to the start page.
+        return redirect()->route($closed ? 'start' : 'apply.terms')->with('status', $message);
     }
 }

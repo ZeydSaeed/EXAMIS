@@ -33,6 +33,7 @@ class ReferenceDataSeeder extends Seeder
                 ['APA', 'الفنون التطبيقية', 'Applied arts'],
                 ['AGR', 'الزراعي', 'Agricultural'],
                 ['CIT', 'الحاسوب وتقنية المعلومات', 'Computing and IT'],
+                ['TOU', 'السياحة والفندقة', 'Tourism and hospitality'],
             ],
             // Specializations (الاختصاص العام); the fourth value is the branch.
             ReferenceType::Category->value => [
@@ -48,6 +49,7 @@ class ReferenceDataSeeder extends Seeder
                 ['IND_CON', 'البناء', 'Construction', 'IND'],
                 ['IND_PET', 'الصناعات البتروكيمياوية', 'Petrochemical industries', 'IND'],
                 ['IND_HVAC', 'تكييف الهواء والتثليج', 'Air conditioning and refrigeration', 'IND'],
+                ['TOU_HSK', 'الإسكان الفندقي', 'Hotel housekeeping', 'TOU'],
             ],
         ];
 

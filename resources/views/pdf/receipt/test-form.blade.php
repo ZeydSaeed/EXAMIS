@@ -1,9 +1,9 @@
-{{-- Page 5, for the computer assembly and maintenance specialization only: the test form; the decision is filled in by the committees. --}}
+{{-- Page 5, for specializations with a test centre: the test form; the decision is filled in by the committees. --}}
 <div style="padding-top: 20mm;"></div>
 <table class="head" style="width: 100%;">
     <tr>
         <td style="font-size: 14pt; vertical-align: middle;">
-            {{ __('receipt.test_form.centre') }}: {{ __('receipt.test_form.centre_name') }}
+            {{ __('receipt.test_form.centre') }}: {{ $testCentre }}
         </td>
         <td class="photo">
             @if ($hasPhoto)
@@ -18,9 +18,9 @@
 
 <div class="page-heading">{{ __('receipt.test_form.title') }}</div>
 
-<div class="letter" style="margin-top: 10mm;">
+<div class="letter" style="margin-top: 10mm; text-align: justify;">
     {{ __('receipt.test_form.student') }} ({!! $value($fullName) !!})
-    {{ __('receipt.test_form.qualified') }} (<bdo dir="ltr">{{ $academicYear }}</bdo>)<br>
+    {{ __('receipt.test_form.qualified') }} (<bdo dir="ltr">{{ $academicYear }}</bdo>)
     {{ __('receipt.test_form.branch') }} {!! $value($branch) !!} /
     {{ __('receipt.test_form.specialization') }} ({!! $value($specialization) !!})
 </div>
@@ -28,10 +28,10 @@
 <table style="margin-top: 8mm;" align="center">
     <tr>
         <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.yes') }}</td>
-        <td class="choice">&nbsp;</td>
+        <td class="choice" style="background-color: {{ $testShades[1] }};">&nbsp;</td>
         <td style="width: 40mm;">&nbsp;</td>
         <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.no') }}</td>
-        <td class="choice">&nbsp;</td>
+        <td class="choice" style="background-color: {{ $testShades[1] }};">&nbsp;</td>
     </tr>
 </table>
 
@@ -40,7 +40,7 @@
     <table class="form roomy">
         <tr>
             @foreach ($signers as $signer)
-                <td class="label" style="width: 33.33%; text-align: center;">{{ __('receipt.test_form.'.$signer) }}</td>
+                <td style="width: 33.33%; text-align: center; background-color: {{ $testShades[0] }};">{{ __('receipt.test_form.'.$signer) }}</td>
             @endforeach
         </tr>
         <tr>

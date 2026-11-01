@@ -110,7 +110,7 @@ it('sends security headers with a nonce-based script policy', function () {
 });
 
 it('marks authenticated responses as not cacheable', function () {
-    $this->actingAs(applicant())->get(route('dashboard'))->assertHeader('Cache-Control', 'no-store, private');
+    $this->actingAs(applicant())->get(route('apply.specialization'))->assertHeader('Cache-Control', 'no-store, private');
 });
 
 it('reports readiness without revealing dependency details', function () {
@@ -122,7 +122,7 @@ it('reports readiness without revealing dependency details', function () {
 it('never shares the full user model with the browser', function () {
     $user = applicant();
 
-    $this->actingAs($user)->get(route('dashboard'))
+    $this->actingAs($user)->get(route('apply.specialization'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.username', $user->username)
             ->missing('auth.user.password')
@@ -134,9 +134,9 @@ it('never shares the full user model with the browser', function () {
 it('encrypts page history and rotates the key at logout', function () {
     $user = applicant();
 
-    $this->actingAs($user)->get(route('dashboard'))
-        ->assertInertia(fn (Assert $page) => $page->component('applicant/dashboard'));
-    expect($this->get(route('dashboard'))->viewData('page')['encryptHistory'] ?? false)->toBeTrue();
+    $this->actingAs($user)->get(route('apply.specialization'))
+        ->assertInertia(fn (Assert $page) => $page->component('apply/specialization'));
+    expect($this->get(route('apply.specialization'))->viewData('page')['encryptHistory'] ?? false)->toBeTrue();
 
     $this->post(route('logout'))->assertRedirect('/');
 

@@ -46,7 +46,6 @@ return [
     'stamp_note' => 'To be stamped by the last school, whose principal vouches for the information, and handed to the vocational education department.',
     'created_at' => 'Form created on',
     'form_note' => 'Note 1: No scratching, crossing out or correcting of any electronically printed information on the form is allowed. If any details are wrong, the form must be downloaded again from the website; otherwise the applicant and the school principal bear responsibility for the application being rejected.',
-    'reference_number' => 'Reference number',
 
     // Request letter to the Director General of Education (page 2).
     'letter' => [
@@ -83,30 +82,50 @@ return [
     'documents_page' => [
         'title' => 'Required documents',
         'items' => [
-            "The student's civil ID or unified national card, original and colour copy.",
-            "The father's civil ID or unified national card; if the father has died, the death certificate or a civil registry record, original and colour copy.",
-            "The mother's civil ID or unified national card; if the mother has died, the death certificate or a civil registry record, original and colour copy.",
-            "The student's residence card (Karbala only), original and colour copy.",
-            'Each of the documents above must be copied on one page.',
-            'Twelve front-facing photos on a white background (3.5×4.5 cm), without a head cover for males.',
-            "The documents go in a cardboard folder in the branch's colour shown below.",
+            'The external examination participation request.',
+            'The student\'s unified card, original and colour copy.',
+            'The father\'s unified card; if the father has died, the death certificate or a civil registry record, original and colour copy.',
+            'The mother\'s unified card; if the mother has died, the death certificate or a civil registry record, original and colour copy.',
+            'The student\'s residence card (Karbala only), original and colour copy.',
+            'The documents above must be copied on one sheet.',
+            'Front-facing photo on a white background, size (3.5×4.5), 10 copies, no head covering for males.',
+            'Put the documents above in a cardboard folder of the colour shown below.',
+        ],
+        'stages_title' => 'Stages of applying for the general vocational (external) examinations:',
+        'stages' => [
+            'Download the application form from the online portal.',
+            'Hand the form to the school administration to complete and certify it.',
+            'Submit the certified form to the responsible committee.',
+            'The responsible committee reviews the form.',
+            'Pay the participation fee against an official receipt.',
+            'The application is approved or rejected in the online system.',
+            'The student is told the result (accepted or rejected) by a WhatsApp message.',
         ],
         'branch' => 'Branch',
         'folder_colour' => 'Folder colour',
         'branches' => [
             'IND' => ['Industrial', 'Red'],
-            'CIT' => ['Computing and IT', 'Grey'],
+            'CIT' => ['Computing and IT', 'White'],
             'COM' => ['Commercial', 'Yellow'],
             'APA' => ['Applied arts', 'Blue'],
             'AGR' => ['Agricultural', 'Green'],
-            'TOU' => ['Tourism and hospitality', 'White'],
+            'TOU' => ['Tourism and hospitality', 'Red'],
         ],
     ],
 
     // Test form for computer assembly and maintenance applicants, completed by the test committees.
     'test_form' => [
         'centre' => 'Test centre',
-        'centre_name' => 'Al-Abbas Vocational Preparatory School',
+        'centres' => [
+            'CIT_HW' => 'Al-Abbas Vocational Preparatory School',
+            'IND_CON' => 'Nineveh Vocational Preparatory School',
+            'IND_ELC' => 'Al-Tahrir Vocational Preparatory School',
+            'IND_MEC' => 'Al-Tahrir Vocational Preparatory School',
+            'IND_HVAC' => 'Al-Tahrir Vocational Preparatory School',
+            'IND_ECT' => 'Ibn Al-Baitar Vocational Preparatory School',
+            'IND_PET' => 'Ibn Al-Baitar Vocational Preparatory School',
+            'TOU_HSK' => 'Tourism and Hospitality Preparatory School',
+        ],
         'title' => 'Subject: test form',
         'student' => 'The student',
         'qualified' => 'is qualified to sit the external examinations for the school year',
@@ -122,13 +141,5 @@ return [
         'student_affairs' => 'Student affairs officer',
         'deputy_director' => 'Deputy department director',
         'director' => 'Department director',
-    ],
-
-    // The student's sign-in card, printed at the end.
-    'card' => [
-        'title' => 'Student card',
-        'student_number' => 'Student number',
-        'created_at' => 'Account created',
-        'hint' => 'Keep this card: the student number identifies this application.',
     ],
 ];

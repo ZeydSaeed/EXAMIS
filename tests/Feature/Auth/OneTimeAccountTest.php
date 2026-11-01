@@ -84,7 +84,7 @@ test('finishing the print closes the account, removes every way back in and sign
         ->assertRedirect(route('applications.printed', $application));
 
     $this->get(route('applications.printed', $application))
-        ->assertRedirect(route('apply.terms'))
+        ->assertRedirect(route('start'))
         ->assertSessionHas('status', __('auth.account_closed'));
     $this->assertGuest();
 
@@ -108,7 +108,7 @@ test('a repeated finish goes the same way', function () {
     [$student, $application] = printedStudent();
     $this->actingAs($student)->post(route('applications.finish', $application));
 
-    $this->post(route('applications.finish', $application))->assertRedirect(route('apply.terms'));
+    $this->post(route('applications.finish', $application))->assertRedirect(route('start'));
 
     $this->assertGuest();
     expect(AuditEvent::query()->where('action', 'student.account_closed')->where('subject_id', $student->id)->count())->toBe(1);

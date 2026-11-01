@@ -2,21 +2,19 @@
 
 namespace App\Http\Controllers\Applicant;
 
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ApplicationResource;
-use App\Models\ExamPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class DashboardController extends Controller
 {
     /**
-     * Applicant home: their applications plus periods currently open.
-     * Staff are sent to their home page.
+     * Where signing in lands. Nobody stays here: staff go to their home page
+     * and a student goes straight to their next step, because a one-time
+     * account has one application and nothing to choose between.
      */
-    public function __invoke(Request $request): Response|RedirectResponse
+    public function __invoke(Request $request): RedirectResponse
     {
         $user = $request->user();
 
@@ -24,28 +22,16 @@ class DashboardController extends Controller
             return to_route('admin.home');
         }
 
-        $applications = $user->applications()
-            ->with('examPeriod')
-            ->latest('id')
-            ->get();
+        $application = $user->applications()->latest('id')->first();
 
-        $appliedPeriodIds = $applications->pluck('exam_period_id')->all();
+        if ($application === null) {
+            return to_route('apply.specialization');
+        }
 
-        $openPeriods = ExamPeriod::query()
-            ->acceptingApplications()
-            ->orderBy('closes_at')
-            ->get()
-            ->map(fn (ExamPeriod $period): array => [
-                'id' => $period->id,
-                'name' => $period->localizedName(),
-                'academic_year' => $period->academic_year,
-                'closes_at' => $period->closes_at->toIso8601String(),
-                'has_applied' => in_array($period->id, $appliedPeriodIds, true),
-            ]);
+        if ($application->status === ApplicationStatus::Draft || $application->waitsOnStudent()) {
+            return to_route('applications.edit', $application);
+        }
 
-        return Inertia::render('applicant/dashboard', [
-            'applications' => ApplicationResource::collection($applications)->resolve(),
-            'openPeriods' => $openPeriods,
-        ]);
+        return to_route('applications.printed', $application);
     }
 }

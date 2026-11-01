@@ -23,7 +23,8 @@ return [
     ],
 
     'brand' => [
-        'name_en' => 'EXAMIS — External Examination Application System',
+        'name_en' => 'EXAMIS — External Examinations Application System',
+        'full_name' => 'External Examinations Application System',
         'name_ar' => 'منصة التقديم الإلكتروني للامتحانات الخارجية',
     ],
 
@@ -329,6 +330,7 @@ return [
         'address_house' => 'house :value',
         'folder_colors' => [
             'IND' => 'red',
+            'TOU' => 'red',
             'CIT' => 'white',
             'COM' => 'yellow',
             'APA' => 'blue',

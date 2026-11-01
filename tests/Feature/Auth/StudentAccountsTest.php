@@ -207,22 +207,6 @@ test('password-less students cannot sign in through the password form', function
     $this->assertGuest();
 });
 
-test('regenerating the access code replaces it and signs out other devices', function () {
-    $user = User::factory()->student()->create();
-    $current = trustedCookieFor($user);
-    trustedCookieFor($user->fresh());
-
-    $this->actingAs($user)
-        ->withCookie(TrustedDevices::COOKIE, $current)
-        ->post(route('student.access-code'))
-        ->assertRedirect(route('student.card'));
-
-    $user->refresh();
-    expect(app(StudentIdentity::class)->checkAccessCode($user, 'ABCDE-23456'))->toBeFalse()
-        ->and($user->trustedDevices()->usable()->count())->toBe(1)
-        ->and(AuditEvent::query()->where('action', 'student.access_code_regenerated')->exists())->toBeTrue();
-});
-
 test('administrators can reset a student access code; reviewers cannot', function () {
     $student = User::factory()->student()->create();
     trustedCookieFor($student);
@@ -279,23 +263,27 @@ test('allocation falls back to scanning and stops safely when the range is exhau
         ->and($assigned->last())->toBeNull();
 });
 
-test('the student card is only for students and shows the permanent identity', function () {
-    $student = User::factory()->student()->create();
-
-    $this->actingAs($student)->get(route('student.card'))->assertInertia(fn (Assert $page) => $page
-        ->component('applicant/student-card')
-        ->where('student.student_number', $student->student_number)
-        ->where('accessCode', null));
-
-    $this->actingAs(User::factory()->staff(Role::Administrator)->create())
-        ->get(route('student.card'))
+test('students are kept out of the account pages, wherever they try to go', function (string $page) {
+    $this->actingAs(User::factory()->student()->create())
+        ->get(route($page))
         ->assertRedirect(route('dashboard'));
+})->with(['student.card', 'notifications.index', 'profile.edit', 'security.edit', 'appearance.edit']);
+
+test('students cannot change anything through the account pages', function () {
+    $student = User::factory()->student()->create(['phone' => '07701234567']);
+
+    $this->actingAs($student)->post(route('student.access-code'))->assertRedirect(route('dashboard'));
+    $this->patch(route('profile.update'), ['name' => 'x', 'phone' => '07709999999'])->assertRedirect(route('dashboard'));
+    $this->post(route('notifications.read'))->assertRedirect(route('dashboard'));
+
+    expect($student->fresh()->phone)->toBe('07701234567')
+        ->and($student->fresh()->access_code)->toBe('ABCDE-23456');
 });
 
-test('password-less students are sent from security settings to their card', function () {
-    $this->actingAs(User::factory()->student()->create())
-        ->get(route('security.edit'))
-        ->assertRedirect(route('student.card'));
+test('staff still reach their settings', function () {
+    $this->actingAs(User::factory()->staff(Role::Administrator)->create())
+        ->get(route('profile.edit'))
+        ->assertOk();
 });
 
 test('codes issued before plain-text storage are still accepted', function () {

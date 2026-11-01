@@ -1,13 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
-    Bell,
     CalendarRange,
     ClipboardList,
     FileText,
     HelpCircle,
     House,
-    IdCard,
     LayoutGrid,
     ScrollText,
     ShieldCheck,
@@ -30,9 +28,7 @@ import {
 import { useTrans } from '@/hooks/use-trans';
 import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
-import notifications from '@/routes/notifications';
 import pages from '@/routes/pages';
-import student from '@/routes/student';
 import type { NavItem } from '@/types';
 
 /**
@@ -44,24 +40,6 @@ export function AppSidebar() {
     const { t, isRtl } = useTrans();
     const can = (permission: string) =>
         auth.user.permissions.includes(permission);
-
-    const applicantItems: NavItem[] = [
-        {
-            title: t('nav.my_applications'),
-            href: dashboard(),
-            icon: LayoutGrid,
-        },
-        {
-            title: t('nav.notifications'),
-            href: notifications.index(),
-            icon: Bell,
-        },
-        {
-            title: t('nav.student_card'),
-            href: student.card(),
-            icon: IdCard,
-        },
-    ];
 
     const staffItems: NavItem[] = [
         {
@@ -183,7 +161,7 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain
                     label={isStaff ? undefined : t('nav.applicant')}
-                    items={isStaff ? staffItems : applicantItems}
+                    items={isStaff ? staffItems : []}
                 />
             </SidebarContent>
 

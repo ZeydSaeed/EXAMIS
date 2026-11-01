@@ -3,7 +3,7 @@
 use App\Models\User;
 
 test('profile page is displayed', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
 
     $response = $this
         ->actingAs($user)
@@ -13,7 +13,7 @@ test('profile page is displayed', function () {
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
 
     $response = $this
         ->actingAs($user)
@@ -54,26 +54,13 @@ test('students cannot delete their account or its records', function () {
 
     $this->actingAs($user)
         ->delete(route('profile.destroy'), ['password' => 'password'])
-        ->assertForbidden();
+        ->assertRedirect(route('dashboard'));
 
     expect($user->fresh())->not->toBeNull();
 });
 
-test('students can update their mobile number without changing their student number', function () {
-    $user = User::factory()->student()->create();
-    $number = $user->student_number;
-
-    $this->actingAs($user)
-        ->patch(route('profile.update'), ['name' => 'Student Name', 'phone' => '0770 123 4599'])
-        ->assertSessionHasNoErrors();
-
-    $user->refresh();
-    expect($user->phone)->toBe('07701234599')
-        ->and($user->student_number)->toBe($number);
-});
-
 test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
 
     $response = $this
         ->actingAs($user)

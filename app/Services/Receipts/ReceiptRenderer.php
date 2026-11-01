@@ -42,26 +42,27 @@ class ReceiptRenderer
 
     /**
      * Muted shade of each branch's colour for the form's label cells, with a
-     * lighter tint for sub-headings. Any other branch, tourism and hospitality
-     * included, is printed white.
+     * lighter tint for sub-headings. Any other branch is printed white.
      *
      * @var array<string, array{string, string}>
      */
     public const BRANCH_SHADES = [
         'IND' => ['#e39191', '#f4d3d3'],
+        'TOU' => ['#e39191', '#f4d3d3'],
         'COM' => ['#f2cf66', '#faecc2'],
         'AGR' => ['#99cc8f', '#d9edd4'],
         'APA' => ['#8fb3e0', '#d5e3f4'],
-        'CIT' => ['#bfbfbf', '#e6e6e6'],
+        'CIT' => ['#ffffff', '#ffffff'],
     ];
 
     /**
-     * Only applicants to this branch and specialization sit a practical test,
-     * so only their receipt carries the test form.
+     * Shades of the test form page where they differ from the branch's.
      *
-     * @var array{string, string}
+     * @var array<string, array{string, string}>
      */
-    public const TEST_FORM_FOR = ['CIT', 'CIT_HW'];
+    public const TEST_FORM_SHADES = [
+        'CIT_HW' => ['#bfbfbf', '#e6e6e6'],
+    ];
 
     public function __construct(private StudentIdentity $identity) {}
 
@@ -134,7 +135,7 @@ class ReceiptRenderer
     public function render(Application $application): string
     {
         $application->loadMissing(['user', 'examPeriod', 'currentDocuments.documentType']);
-        // The student card on the last page needs the student number and QR id.
+        // The form prints the student number and its barcode.
         $this->identity->ensureIdentity($application->user);
         $locale = app()->getLocale();
         $tempDir = storage_path('app/mpdf');
@@ -185,11 +186,12 @@ class ReceiptRenderer
             'hasPhoto' => $photo !== null,
             'shades' => self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
             'branchShades' => self::BRANCH_SHADES,
-            'hasTestForm' => [$application->branch_code, $application->category_code] === self::TEST_FORM_FOR,
+            // Only specializations with a test centre sit a practical test.
+            'testCentre' => __('receipt.test_form.centres')[$application->category_code] ?? null,
+            'testShades' => self::TEST_FORM_SHADES[$application->category_code] ?? self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
             // Shown left to right so that the first year reads first, on the right.
             'academicYear' => implode('-', array_reverse(explode('-', $application->examPeriod->academic_year))),
             'student' => $application->user,
-            'studentQrUrl' => route('student.qr', $application->user->public_id),
             'fullName' => $this->joined($application->only(Application::NAME_PARTS), ' ') ?? $application->full_name_ar,
             'motherName' => $this->joined($application->only(Application::MOTHER_NAME_PARTS), ' ') ?? $application->mother_name_ar,
             'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),

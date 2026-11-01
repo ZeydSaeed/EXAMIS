@@ -4,7 +4,6 @@ use App\Enums\AccountType;
 use App\Http\Controllers\Public\ApplicationTermsController;
 use App\Models\AuditEvent;
 use App\Models\User;
-use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -49,7 +48,7 @@ test('the registration form ignores a submitted username', function () {
     expect(User::query()->where('phone', '07701234567')->sole()->username)->toBeNull();
 });
 
-test('the access code is shown once on the student card and stored in plain text', function () {
+test('registration tells the student their number and keeps the access code in plain text', function () {
     $response = $this->post(route('register.store'), [
         'phone' => '07701234567',
     ]);
@@ -57,19 +56,7 @@ test('the access code is shown once on the student card and stored in plain text
     $user = User::query()->where('phone', '07701234567')->sole();
     $response->assertInertiaFlash('toast.message', __('auth.registered', ['number' => $user->student_number]));
 
-    $code = null;
-
-    $this->get(route('student.card'))->assertInertia(function (Assert $page) use (&$code) {
-        $page->component('applicant/student-card')
-            ->where('accessCode', fn ($value) => is_string($value) && preg_match('/^[A-Z2-9]{5}-[A-Z2-9]{5}$/', $value) === 1)
-            ->where('qr.url', fn (string $url) => str_contains($url, '/s/'))
-            ->etc();
-        $code = $page->toArray()['props']['accessCode'];
-    });
-
-    expect($user->fresh()->getRawOriginal('access_code'))->toBe($code);
-
-    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
+    expect($user->getRawOriginal('access_code'))->toMatch('/^[A-Z2-9]{5}-[A-Z2-9]{5}$/');
 });
 
 test('several accounts can register with one mobile number, each with its own id', function () {

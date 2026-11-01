@@ -236,12 +236,9 @@
     <pagebreak />
     @include('pdf.receipt.required-documents')
 
-    @if ($hasTestForm)
+    @if ($testCentre !== null)
         <pagebreak />
         @include('pdf.receipt.test-form')
     @endif
-
-    <pagebreak />
-    @include('pdf.receipt.student-card')
 </body>
 </html>

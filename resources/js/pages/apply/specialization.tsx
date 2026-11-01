@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { ApplyHeader } from '@/components/examis/apply-header';
 import { BrandBackdrop } from '@/components/examis/brand-backdrop';
@@ -10,7 +10,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { cn } from '@/lib/utils';
 import apply from '@/routes/apply';
-import student from '@/routes/student';
 
 type Branch = {
     code: string;
@@ -308,14 +307,7 @@ export default function Specialization({
                                 {t('apply.next')}
                                 <Forward className="size-4" aria-hidden />
                             </Button>
-                        ) : (
-                            <Button size="lg" asChild className="px-8">
-                                <Link href={student.card()}>
-                                    {t('apply.next')}
-                                    <Forward className="size-4" aria-hidden />
-                                </Link>
-                            </Button>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>

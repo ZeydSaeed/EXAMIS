@@ -57,8 +57,7 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
         ->and($pdf)->toContain('/MediaBox [0 0 595.280 841.890]');
 
     $text = extractPdfText($pdf);
-    expect($text)->toContain('EX2027-0000019')
-        ->and($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
+    expect($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
         ->and($text)->toContain(visualOrder('عبد الرحمن'))
         ->and($text)->toContain(visualOrder('عبد الكريم'))
         ->and($text)->toContain(visualOrder('زهراء'))
@@ -89,33 +88,42 @@ it('names the form after the student and their student number', function () {
         ->toBe('علي حسن كاظم جاسم_12345');
 });
 
-it('follows the form with the request letter, the information form, the required documents and the student card', function () {
-    $application = Application::factory()->submitted()->create(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
+it('follows the form with the request letter, the information form and the required documents', function () {
+    $application = Application::factory()->submitted()->create(['branch_code' => 'COM', 'category_code' => 'COM_ACC']);
 
     $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
     $user = $application->user->refresh();
 
     $text = extractPdfText($pdf);
-    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(4)
         ->and($text)->toContain(visualOrder('بواسطة السيد مدير قسم'))
         ->and($text)->toContain(visualOrder('استمارة معلومات الطالب الخاصة بالتقديم'))
         ->and($text)->toContain(visualOrder('المستمسكات المطلوبة'))
         ->and($text)->not->toContain(visualOrder('استمارة اختبار'))
-        ->and($text)->toContain(visualOrder('بطاقة الطالب'))
+        ->and($text)->not->toContain(visualOrder('بطاقة الطالب'))
         ->and($user->student_number)->not->toBeNull()
         ->and($text)->toContain((string) $user->student_number);
 });
 
-it('adds the test form for computer assembly and maintenance only', function () {
-    $application = Application::factory()->submitted()->create(['branch_code' => 'CIT', 'category_code' => 'CIT_HW']);
+it('adds the test form with the centre of the specialization', function (string $branch, string $category, string $centre) {
+    $application = Application::factory()->submitted()->create(['branch_code' => $branch, 'category_code' => $category]);
 
     $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
 
     $text = extractPdfText($pdf);
-    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(6)
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
         ->and($text)->toContain(visualOrder('استمارة اختبار'))
-        ->and($text)->toContain(visualOrder('إعدادية العباس المهنية'));
-});
+        ->and($text)->toContain(visualOrder($centre));
+})->with([
+    ['CIT', 'CIT_HW', 'إعدادية العباس المهنية'],
+    ['IND', 'IND_CON', 'إعدادية نينوى المهنية'],
+    ['IND', 'IND_ELC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_MEC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_HVAC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_ECT', 'إعدادية ابن البيطار المهنية'],
+    ['IND', 'IND_PET', 'إعدادية ابن البيطار المهنية'],
+    ['TOU', 'TOU_HSK', 'إعدادية السياحة والفندقة'],
+]);
 
 it('prints the verified personal photo in the photo box', function () {
     Storage::fake('documents');

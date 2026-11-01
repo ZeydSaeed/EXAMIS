@@ -30,7 +30,7 @@ test('registration leads to the branch and specialization page, then to the appl
         ->where('branches.0.name', 'الصناعي')
         ->has('branches.0.specializations', 6)
         ->where('branches.0.specializations.0.name', 'كهرباء')
-        ->has('branches', 5));
+        ->has('branches', 6));
 
     $response = $this->post(route('apply.specialization.store'), ['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
     $application = Application::query()->sole();
@@ -43,11 +43,6 @@ test('registration leads to the branch and specialization page, then to the appl
         ->missing('accessCode')
         ->missing('instructions'));
 
-    // The access code waits for the first visit to the student card, once.
-    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page
-        ->where('accessCode', fn ($code) => is_string($code) && $code !== '')
-        ->etc());
-    $this->get(route('student.card'))->assertInertia(fn (Assert $page) => $page->where('accessCode', null)->etc());
 });
 
 test('the choice is saved into the draft for the open period and audited', function () {
@@ -101,13 +96,13 @@ test('the page shows the saved choice and is locked once the review has started'
         ->where('locked', true));
 });
 
-test('without an open period the page says so and Next goes to the card', function () {
+test('without an open period the page says so and the student stays on it', function () {
     $this->actingAs(User::factory()->student()->create())
         ->get(route('apply.specialization'))
         ->assertInertia(fn (Assert $page) => $page->where('period', null)->where('branches', []));
 
     $this->post(route('apply.specialization.store'), ['branch_code' => 'IND', 'category_code' => 'IND_ELC'])
-        ->assertRedirect(route('student.card'));
+        ->assertRedirect(route('apply.specialization'));
 });
 
 test('staff are sent away from this page', function () {

@@ -71,7 +71,7 @@ class SpecializationController extends Controller
         $period = $this->openPeriod();
 
         if ($period === null) {
-            return to_route('student.card');
+            return to_route('apply.specialization');
         }
 
         $branches = $this->branches($period);

@@ -98,7 +98,7 @@ class DemoApplicationsSeeder extends Seeder
      * @var list<array{string, string}>
      */
     private const SPECIALIZATIONS = [
-        ['COM_ADM', 'COM'], ['COM_ACC', 'COM'], ['APA_HOM', 'APA'], ['APA_DEC', 'APA'], ['AGR_GEN', 'AGR'], ['CIT_HW', 'CIT'],
+        ['COM_ADM', 'COM'], ['COM_ACC', 'COM'], ['APA_HOM', 'APA'], ['APA_DEC', 'APA'], ['AGR_GEN', 'AGR'], ['CIT_HW', 'CIT'], ['TOU_HSK', 'TOU'],
         ['IND_ELC', 'IND'], ['IND_ECT', 'IND'], ['IND_MEC', 'IND'], ['IND_CON', 'IND'], ['IND_PET', 'IND'], ['IND_HVAC', 'IND'],
     ];
 
