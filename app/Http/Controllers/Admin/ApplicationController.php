@@ -80,6 +80,7 @@ class ApplicationController extends Controller
                     'full_name_ar' => $application->full_name_ar,
                     'status' => $application->status->value,
                     'status_label' => $application->status->label(),
+                    'phone' => $application->phone,
                     'decisions' => $decisions,
                     // What the message is filled with, only for those who send it.
                     'contact' => $decisions === [] ? null : [

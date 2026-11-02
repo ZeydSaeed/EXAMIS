@@ -35,6 +35,7 @@ type Row = {
     full_name_ar: string | null;
     status: ApplicationStatus;
     status_label: string;
+    phone: string | null;
     decisions: { value: string; label: string; requires_reason: boolean }[];
     contact: MessageContact | null;
 };
@@ -380,6 +381,12 @@ export default function AdminApplications({
                                             scope="col"
                                             className="text-center!"
                                         >
+                                            {t('auth.mobile')}
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="text-center!"
+                                        >
                                             {t('admin.preview')}
                                         </th>
                                     </tr>
@@ -429,6 +436,12 @@ export default function AdminApplications({
                                                     templates={templates}
                                                     onDecided={setSent}
                                                 />
+                                            </td>
+                                            <td
+                                                className="text-center! tabular-nums"
+                                                dir="ltr"
+                                            >
+                                                {row.phone ?? '—'}
                                             </td>
                                             <td className="text-center!">
                                                 <Button

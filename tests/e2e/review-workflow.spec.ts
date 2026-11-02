@@ -90,6 +90,7 @@ test('the applications list shows the agreed columns and decides in place', asyn
         'رقم الطالب',
         'اسم الطالب الرباعي',
         'الحالة',
+        'رقم الموبايل',
         'معاينة',
     ]);
 

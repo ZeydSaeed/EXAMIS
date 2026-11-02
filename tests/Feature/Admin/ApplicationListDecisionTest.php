@@ -34,6 +34,15 @@ it('lists the student number and four-part name, without assignee or date', func
             ->missing('applications.data.0.submitted_at'));
 });
 
+it('shows the mobile number of each student', function () {
+    $application = listedApplication();
+    $application->forceFill(['phone' => '07701234567'])->save();
+
+    $this->actingAs(staffWith(Role::Reviewer))
+        ->get(route('admin.applications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.phone', '07701234567'));
+});
+
 it('offers the three decisions to those who may take them', function () {
     listedApplication();
 
