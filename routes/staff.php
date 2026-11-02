@@ -55,6 +55,7 @@ Route::middleware(['auth:staff', 'can:admin.access'])
         Route::get('applications/{application}', [Admin\ApplicationController::class, 'show'])->name('applications.show');
         Route::get('applications/{application}/receipt', [Applicant\ApplicationReceiptController::class, 'show'])->name('applications.receipt');
         Route::post('applications/{application}/transition', [Admin\ApplicationTransitionController::class, 'store'])->name('applications.transition');
+        Route::post('applications/{application}/decision', [Admin\ApplicationDecisionController::class, 'store'])->name('applications.decision');
         Route::post('applications/{application}/assign', [Admin\ApplicationAssignmentController::class, 'store'])->name('applications.assign');
 
         Route::get('documents/{document}', [Applicant\ApplicationDocumentController::class, 'show'])->name('documents.show');

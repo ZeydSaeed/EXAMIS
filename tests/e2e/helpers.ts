@@ -162,5 +162,8 @@ export async function sendCompletedForm(page: Page): Promise<void> {
     await page.locator('#declaration').check();
     await page.getByTestId('submit-application').click();
     await page.getByTestId('confirm-action').click();
-    await expect(page.getByTestId('printed-confirmation')).toBeVisible();
+    // Sending builds the PDF form, which is slow on the single PHP test server.
+    await expect(page.getByTestId('printed-confirmation')).toBeVisible({
+        timeout: 45_000,
+    });
 }

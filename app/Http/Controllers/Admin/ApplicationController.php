@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Applications\DecideApplication;
 use App\Enums\ApplicationStatus;
 use App\Enums\Permission;
 use App\Http\Controllers\Controller;
@@ -32,7 +33,7 @@ class ApplicationController extends Controller
      */
     private const ARABIC_FOLDS = ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ى' => 'ي', 'ة' => 'ه'];
 
-    public function index(Request $request): Response|RedirectResponse
+    public function index(Request $request, DecideApplication $decide): Response|RedirectResponse
     {
         Gate::authorize('viewAny', Application::class);
 
@@ -54,7 +55,7 @@ class ApplicationController extends Controller
 
         $applications = Application::query()
             ->visibleToStaff($user)
-            ->with(['examPeriod:id,code,name_ar,name_en', 'assignee:id,name'])
+            ->with('user:id,student_number')
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->when($filters['period'] ?? null, fn (Builder $query, int|string $period) => $query->where('exam_period_id', $period))
             ->when(($filters['assigned'] ?? null) === 'me', fn (Builder $query) => $query->where('assigned_to', $user->id))
@@ -68,13 +69,11 @@ class ApplicationController extends Controller
             ->withQueryString()
             ->through(fn (Application $application): array => [
                 'uuid' => $application->uuid,
-                'reference_number' => $application->reference_number,
+                'student_number' => $application->user->student_number,
                 'full_name_ar' => $application->full_name_ar,
                 'status' => $application->status->value,
                 'status_label' => $application->status->label(),
-                'exam_period' => $application->examPeriod->localizedName(),
-                'assignee' => $application->assignee?->name,
-                'submitted_at' => $application->submitted_at?->toIso8601String(),
+                'decisions' => $decide->options($application, $user),
             ]);
 
         return Inertia::render('admin/applications/index', [

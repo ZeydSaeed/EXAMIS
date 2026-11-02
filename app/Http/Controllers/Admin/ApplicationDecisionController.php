@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Actions\Applications\DecideApplication;
+use App\Enums\ApplicationStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Application;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+
+class ApplicationDecisionController extends Controller
+{
+    public function store(Request $request, Application $application, DecideApplication $decide): RedirectResponse
+    {
+        Gate::authorize('view', $application);
+
+        $validated = $request->validate([
+            'target' => ['required', Rule::enum(ApplicationStatus::class)->only(DecideApplication::DECISIONS)],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $decide->handle($application, ApplicationStatus::from($validated['target']), $request->user(), $validated['reason'] ?? null);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.transitioned')]);
+
+        return back();
+    }
+}

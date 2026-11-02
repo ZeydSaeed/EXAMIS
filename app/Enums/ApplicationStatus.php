@@ -42,6 +42,23 @@ enum ApplicationStatus: string
     }
 
     /**
+     * The legal transitions that lead from this status to a decision: the
+     * decision itself, or a stop at review first. Empty when there is no way,
+     * as for an application waiting on the student.
+     *
+     * @return list<self>
+     */
+    public function stepsTo(self $decision): array
+    {
+        return match (true) {
+            $this === $decision => [],
+            $this->canTransitionTo($decision) => [$decision],
+            $this->canTransitionTo(self::UnderReview) && self::UnderReview->canTransitionTo($decision) => [self::UnderReview, $decision],
+            default => [],
+        };
+    }
+
+    /**
      * Whether a transition into $target from this status needs a written reason.
      */
     public function requiresReasonFor(self $target): bool
