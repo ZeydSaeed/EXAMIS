@@ -8,13 +8,12 @@ use Illuminate\Support\Facades\App;
 use RuntimeException;
 
 /**
- * Synthetic accounts for Playwright: each test owns its own applicant and
- * each browser project its own block of 30, so tests stay independent (one application per applicant per period).
- * Every password is "password". Never runs in production.
+ * Synthetic staff for Playwright, enrolled with a shared test-only authenticator
+ * secret. Every password is "password". Never runs in production.
  */
 class EndToEndSeeder extends Seeder
 {
-    public const APPLICANTS = 120;
+    public const TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
 
     public function run(): void
     {
@@ -29,12 +28,10 @@ class EndToEndSeeder extends Seeder
             DemoSeeder::class,
         ]);
 
-        foreach (range(1, self::APPLICANTS) as $number) {
-            User::factory()->create([
-                'username' => sprintf('e2e.applicant%03d', $number),
-                'name' => 'طالب اختبار '.$number,
-                'email' => 'e2e-family@examis.test',
-            ]);
-        }
+        // Students register through the browser; only staff start out enrolled.
+        User::query()->staff()->each(fn (User $user) => $user->forceFill([
+            'two_factor_secret' => encrypt(self::TOTP_SECRET),
+            'two_factor_confirmed_at' => now(),
+        ])->save());
     }
 }

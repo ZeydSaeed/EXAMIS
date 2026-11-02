@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { applicant, login } from './helpers';
+import { startApplication } from './helpers';
 
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     const overflow = await page.evaluate(
@@ -25,8 +25,7 @@ for (const path of [
 }
 
 test('the application form fits a phone screen', async ({ page }) => {
-    await login(page, applicant(11));
-    await page.getByTestId('start-application').first().click();
+    await startApplication(page);
     await expect(page.locator('#student_name')).toBeVisible();
     await expectNoHorizontalOverflow(page);
 

@@ -1,8 +1,8 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDateTime } from '@/lib/format';
 import admin from '@/routes/admin';
@@ -23,7 +23,7 @@ export default function StaffInvitationLink({
     expiresAt,
 }: Props) {
     const { t, locale } = useTrans();
-    const [copied, setCopied] = useState(false);
+    const [copied, copy] = useClipboard();
 
     setLayoutProps({
         breadcrumbs: [{ title: t('nav.users'), href: admin.users.index() }],
@@ -58,12 +58,9 @@ export default function StaffInvitationLink({
                         type="button"
                         variant="outline"
                         aria-label={t('users.invitation_copy')}
-                        onClick={() => {
-                            void navigator.clipboard.writeText(invitationUrl);
-                            setCopied(true);
-                        }}
+                        onClick={() => void copy(invitationUrl)}
                     >
-                        {copied ? <Check /> : <Copy />}
+                        {copied === invitationUrl ? <Check /> : <Copy />}
                     </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">

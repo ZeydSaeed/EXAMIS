@@ -4,6 +4,7 @@ use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\ContentPage;
 use App\Models\ExamPeriod;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -132,6 +133,7 @@ it('never shares the full user model with the browser', function () {
 });
 
 it('encrypts page history and rotates the key at logout', function () {
+    URL::forceScheme('https');
     $user = applicant();
 
     $this->actingAs($user)->get(route('apply.specialization'))

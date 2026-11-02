@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\User;
 use Illuminate\Routing\Route as RoutingRoute;
+use Illuminate\Session\EncryptedStore;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -121,6 +122,20 @@ it('keeps each portal in its own session', function () {
         ->and(config('session.same_site'))->toBe('strict');
 });
 
+it('starts the session the staff portal way on Fortify routes too', function (string $method, string $path) {
+    $this->call($method, staffUrl($path), ['email' => 'nobody@example.com', 'password' => 'x']);
+
+    $store = app('session.store');
+
+    expect($store->getName())->toBe('examis_staff_session')
+        ->and($store)->toBeInstanceOf(EncryptedStore::class);
+})->with([
+    ['GET', '/login'],
+    ['POST', '/login'],
+    ['GET', '/two-factor-challenge'],
+    ['GET', '/user/confirm-password'],
+]);
+
 it('scopes its cookies to the host alone', function (string $url) {
     foreach ($this->get($url)->headers->getCookies() as $cookie) {
         expect($cookie->getDomain())->toBeNull()
@@ -144,6 +159,15 @@ it('hides the staff portal from search engines and turns off the service worker'
 
     expect($studentPage->getContent())->toContain('data-portal="students"');
 });
+
+it('encrypts page history only where the browser can', function (string $url, bool $encrypted) {
+    $this->get($url);
+
+    expect(config('inertia.history.encrypt'))->toBe($encrypted);
+})->with([
+    'plain HTTP has no Web Crypto' => ['http://students.examis.test/', false],
+    'HTTPS' => ['https://students.examis.test/', true],
+]);
 
 it('sends the roots of the staff portal to the right place', function () {
     $this->get(staffUrl('/'))->assertRedirect(route('staff.login'));

@@ -23,11 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prepend(AssignRequestId::class);
+        $middleware->prepend([SelectPortal::class, AssignRequestId::class]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        $middleware->web(prepend: [SelectPortal::class], append: [
+        $middleware->web(append: [
             SetLocale::class,
             EnsureAccountIsActive::class,
             SecurityHeaders::class,

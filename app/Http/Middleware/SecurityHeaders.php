@@ -45,7 +45,7 @@ class SecurityHeaders
 
         if (Portal::forRequest($request) === Portal::Staff) {
             $headers->set('X-Robots-Tag', 'noindex, nofollow');
-            $headers->set('Referrer-Policy', 'no-referrer');
+            $headers->set('Referrer-Policy', 'same-origin');
         }
 
         if ($request->user() !== null) {

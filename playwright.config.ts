@@ -11,7 +11,16 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export const e2ePort = Number(process.env.E2E_PORT ?? 8765);
 const port = e2ePort;
-export const baseURL = `http://127.0.0.1:${port}`;
+
+/**
+ * Browsers resolve *.localhost to this machine by themselves and treat it as
+ * a secure context, so no hosts file is needed and service workers and page
+ * history encryption run as they do over HTTPS.
+ */
+const studentsHost = 'students.localhost';
+const staffHost = 'staff.localhost';
+export const studentsURL = `http://${studentsHost}:${port}`;
+export const staffURL = `http://${staffHost}:${port}`;
 
 /** Test-only key, deterministic so the server and setup agree. Not a secret. */
 const appKey =
@@ -21,12 +30,14 @@ export const e2eEnv: Record<string, string> = {
     APP_ENV: 'e2e',
     APP_DEBUG: 'false',
     APP_KEY: appKey,
-    APP_URL: baseURL,
+    APP_URL: studentsURL,
+    EXAMIS_STUDENTS_HOST: studentsHost,
+    EXAMIS_STAFF_HOST: staffHost,
     APP_LOCALE: 'ar',
     DB_CONNECTION: 'pgsql',
     DB_DATABASE: 'examis_testing',
     DB_URL: '',
-    SESSION_DRIVER: 'file',
+    SESSION_DRIVER: 'database',
     CACHE_STORE: 'array',
     QUEUE_CONNECTION: 'sync',
     MAIL_MAILER: 'log',
@@ -52,7 +63,7 @@ export default defineConfig({
     globalSetup: './tests/e2e/global-setup.ts',
     globalTeardown: './tests/e2e/global-teardown.ts',
     use: {
-        baseURL,
+        baseURL: studentsURL,
         locale: 'ar-IQ',
         testIdAttribute: 'data-test',
         trace: 'retain-on-failure',
@@ -76,7 +87,7 @@ export default defineConfig({
         // Laravel's router script resolves the public directory from the CWD.
         command: `php -S 127.0.0.1:${port} ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php`,
         cwd: 'public',
-        url: `${baseURL}/up`,
+        url: `http://127.0.0.1:${port}/up`,
         env: e2eEnv,
         reuseExistingServer: false,
         timeout: 60_000,

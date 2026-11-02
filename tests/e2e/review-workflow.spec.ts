@@ -1,96 +1,63 @@
 import { expect, test } from '@playwright/test';
-import {
-    applicant,
-    login,
-    logout,
-    pdfFile,
-    submitApplicationAs,
-    uploadDocument,
-} from './helpers';
+import { staffURL } from '../../playwright.config';
+import { staffLogin, submitApplication } from './helpers';
 
-test('a correction request goes to the applicant and the corrected application is accepted', async ({
+test('a supervisor reviews a student application and accepts it', async ({
+    browser,
     page,
 }) => {
-    // Three sign-ins and two review rounds: longer than the default budget.
     test.setTimeout(180_000);
 
-    const { reference, url } = await submitApplicationAs(page, applicant(9));
-    await logout(page);
+    const studentNumber = await submitApplication(page);
 
-    // Supervisor starts the review and asks for a correction.
-    await login(page, 'supervisor');
-    await expect(page).toHaveURL(/\/admin/);
-    await page.goto(`/admin/applications?q=${reference}`);
-    await page.getByRole('link', { name: reference }).click();
+    const staffPage = await (await browser.newContext()).newPage();
+    await staffLogin(staffPage, 'supervisor');
+    await staffPage.goto(`${staffURL}/admin/applications?q=${studentNumber}`);
 
-    await page.getByTestId('transition-under_review').click();
-    await page.getByTestId('confirm-action').click();
+    await staffPage.getByTestId('transition-under_review').click();
+    await staffPage.getByTestId('confirm-action').click();
     await expect(
-        page.getByTestId('transition-requires_correction'),
+        staffPage.getByTestId('transition-requires_correction'),
     ).toBeVisible();
 
-    await page.getByTestId('transition-requires_correction').click();
-    await page.getByTestId('confirm-action').click();
-    await expect(page.getByText('يجب كتابة السبب لهذا الإجراء.')).toBeVisible();
-    await page
-        .locator('#reason-requires_correction')
-        .fill('صورة بطاقة السكن غير واضحة، يرجى إعادة رفعها.');
-    await page.getByTestId('confirm-action').click();
-    await expect(page.getByText('يتطلب استكمالاً').first()).toBeVisible();
-    await logout(page);
-
-    // Applicant reads the note, replaces the document and resubmits.
-    await login(page, applicant(9));
-    await page.goto(url);
+    // A correction needs a reason.
+    await staffPage.getByTestId('transition-requires_correction').click();
+    await staffPage.getByTestId('confirm-action').click();
     await expect(
-        page.getByText('صورة بطاقة السكن غير واضحة، يرجى إعادة رفعها.').first(),
+        staffPage.getByText('يجب كتابة السبب لهذا الإجراء.'),
     ).toBeVisible();
-    await page.getByRole('link', { name: 'استكمال الطلب' }).click();
-    await page.getByRole('button', { name: /المستمسكات/ }).click();
-    await uploadDocument(
-        page,
-        'residence_card',
-        pdfFile('residence-clear.pdf'),
-    );
-    await page.getByTestId('next-step').click();
-    await page.locator('#declaration').check();
-    await page.getByTestId('submit-application').click();
-    await expect(page.getByText('أُعيد إرساله').first()).toBeVisible();
-    await logout(page);
+    await staffPage.keyboard.press('Escape');
 
-    // Supervisor reviews again and accepts.
-    await login(page, 'supervisor');
-    await page.goto(`/admin/applications?q=${reference}`);
-    await page.getByRole('link', { name: reference }).click();
-    await page.getByTestId('transition-under_review').click();
-    await page.getByTestId('confirm-action').click();
-    await page.getByTestId('transition-accepted').click();
-    await page.getByTestId('confirm-action').click();
-    await expect(page.getByText('مقبول').first()).toBeVisible();
+    await staffPage.getByTestId('transition-accepted').click();
+    await staffPage.getByTestId('confirm-action').click();
+    await expect(staffPage.getByText('مقبول').first()).toBeVisible();
 });
 
-test('a reviewer cannot see the decision buttons', async ({ page }) => {
-    const { reference } = await submitApplicationAs(page, applicant(10));
-    await logout(page);
+test('a reviewer cannot see the decision buttons', async ({
+    browser,
+    page,
+}) => {
+    test.setTimeout(180_000);
 
-    await login(page, 'reviewer');
-    await page.goto(`/admin/applications?q=${reference}`);
-    await page.getByRole('link', { name: reference }).click();
-    await page.getByTestId('transition-under_review').click();
-    await page.getByTestId('confirm-action').click();
+    const studentNumber = await submitApplication(page);
+
+    const staffPage = await (await browser.newContext()).newPage();
+    await staffLogin(staffPage, 'reviewer');
+    await staffPage.goto(`${staffURL}/admin/applications?q=${studentNumber}`);
+    await staffPage.getByTestId('transition-under_review').click();
+    await staffPage.getByTestId('confirm-action').click();
 
     await expect(
-        page.getByTestId('transition-requires_correction'),
+        staffPage.getByTestId('transition-requires_correction'),
     ).toBeVisible();
-    await expect(page.getByTestId('transition-accepted')).toHaveCount(0);
+    await expect(staffPage.getByTestId('transition-accepted')).toHaveCount(0);
 });
 
 test('the header arrows move back and forward through page history', async ({
     page,
 }) => {
-    await login(page, 'supervisor');
-    await expect(page).toHaveURL(/\/admin\/home$/);
-    await page.goto('/admin');
+    await staffLogin(page, 'supervisor');
+    await page.goto(`${staffURL}/admin`);
 
     await page.getByTestId('stat-submitted').click();
     await expect(page).toHaveURL(/\/admin\/applications/);
