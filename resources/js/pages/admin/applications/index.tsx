@@ -1,5 +1,5 @@
 import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
-import { Eye, Inbox } from 'lucide-react';
+import { Eye, Inbox, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
@@ -171,7 +171,7 @@ function StatusCell({
                     })
                 }
                 body={
-                    <div className="grid gap-3 text-start">
+                    <div className="grid max-h-[55svh] gap-3 overflow-y-auto px-1 pb-1 text-start">
                         {available.length > 0 && (
                             <Field
                                 id={`template-${row.uuid}`}
@@ -235,6 +235,24 @@ function StatusCell({
                                 />
                             </Field>
                         ))}
+
+                        {template &&
+                            gaps.length > 0 &&
+                            chosen?.value === 'requires_correction' && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-fit"
+                                    data-test="add-gap"
+                                    onClick={() => {
+                                        setGaps([...gaps, '']);
+                                    }}
+                                >
+                                    <Plus aria-hidden />
+                                    {t('admin.add_gap')}
+                                </Button>
+                            )}
 
                         <Field
                             id={`reason-${row.uuid}`}

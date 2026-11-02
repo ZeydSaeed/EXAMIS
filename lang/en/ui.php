@@ -401,6 +401,7 @@ return [
         'message_template' => 'Ready-made message',
         'no_template' => 'No ready-made message',
         'gap_label' => 'Gap :number',
+        'add_gap' => 'Add a gap',
         'decision_message' => 'Message to the student',
         'message_ready' => 'Decision saved. The message is still to be sent',
         'message_ready_text' => 'Press send on WhatsApp, then press send inside WhatsApp. The system does not send the message itself.',

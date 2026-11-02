@@ -125,6 +125,14 @@ test('the applications list shows the agreed columns and decides in place', asyn
     ).toBeVisible();
 
     await staffPage.getByTestId('gap-0').fill('صورة بطاقة السكن');
+
+    // More missing items than the template has room for keep the numbering.
+    await staffPage.getByTestId('gap-1').fill('شهادة الجنسية');
+    await staffPage.getByTestId('gap-2').fill('صورة شخصية');
+    await staffPage.getByTestId('add-gap').click();
+    await staffPage.getByTestId('gap-3').fill('البطاقة الموحدة');
+    await expect(dialog.locator('textarea')).toHaveValue(/4\. البطاقة الموحدة/);
+
     await staffPage.getByTestId('confirm-action').click();
 
     // Nothing is sent by the system: staff send it from their own WhatsApp.
