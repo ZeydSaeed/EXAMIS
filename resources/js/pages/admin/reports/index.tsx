@@ -41,7 +41,7 @@ function SpecializationTable({ rows }: { rows: SpecializationRow[] }) {
     );
 
     return (
-        <DataTableFrame className="examis-data-table--plain max-h-full">
+        <DataTableFrame className="examis-data-table--plain">
             <table className="w-full [&_td]:whitespace-nowrap">
                 <caption className="sr-only">{title}</caption>
                 <thead>
@@ -121,7 +121,7 @@ function Breakdown({ title, rows }: { title: string; rows: Row[] }) {
     const total = rows.reduce((sum, row) => sum + row.count, 0);
 
     return (
-        <DataTableFrame className="examis-data-table--plain max-h-full">
+        <DataTableFrame className="examis-data-table--plain">
             <table className="w-full [&_td]:whitespace-nowrap">
                 <caption className="sr-only">{title}</caption>
                 <thead>
@@ -267,7 +267,7 @@ export default function Reports({
                 />
             </ListHeader>
 
-            <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 p-4 sm:p-6">
+            <div className="mx-auto grid w-full max-w-6xl gap-3 p-4 sm:p-6">
                 <h1 className="sr-only">{t('nav.reports')}</h1>
 
                 <SpecializationTable rows={bySpecialization} />
