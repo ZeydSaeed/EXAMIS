@@ -22,7 +22,7 @@ function issueLink(User $user, InvitationPurpose $purpose = InvitationPurpose::A
 
 function invitee(): User
 {
-    return User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create();
+    return User::factory()->staff(Role::Reviewer)->create();
 }
 
 function accept(string $token, string $password = STRONG_PASSWORD): array
@@ -115,17 +115,6 @@ it('keeps the page free of the token on a plain visit', function () {
         ->assertInertia(fn (Assert $page) => $page->component('auth/staff-invitation')->missing('invitee'));
 });
 
-it('leaves two-factor in place when a password link is used', function () {
-    $staff = staffWith(Role::Reviewer);
-
-    $this->post(route('staff.invitation.store'), accept(issueLink($staff, InvitationPurpose::ResetPassword)));
-
-    expect($staff->fresh()->two_factor_confirmed_at)->not->toBeNull();
-
-    $this->post(route('login.store'), ['email' => $staff->email, 'password' => STRONG_PASSWORD])
-        ->assertRedirect(route('two-factor.login'));
-});
-
 it('ends existing sessions when the password changes', function () {
     config(['session.driver' => 'database']);
     $staff = invitee();
@@ -137,37 +126,21 @@ it('ends existing sessions when the password changes', function () {
     expect(DB::table('staff_sessions')->where('user_id', $staff->id)->count())->toBe(0);
 });
 
-it('lets an administrator issue a new link and reset two-factor for someone else', function () {
-    $admin = staffWith(Role::Administrator);
-    $staff = staffWith(Role::Reviewer);
-
-    $this->actingAs($admin)->post(route('admin.users.invitation', $staff))
+it('lets an administrator issue a new link for someone else', function () {
+    $this->actingAs(staffWith(Role::Administrator))->post(route('admin.users.invitation', staffWith(Role::Reviewer)))
         ->assertInertia(fn (Assert $page) => $page->component('admin/users/invitation'));
-
-    $this->actingAs($admin)->post(route('admin.users.two-factor-reset', $staff))->assertSessionHasNoErrors();
-
-    $staff->refresh();
-
-    expect($staff->two_factor_confirmed_at)->toBeNull()
-        ->and($staff->two_factor_secret)->toBeNull()
-        ->and(AuditEvent::query()->where('action', 'staff.two_factor_reset')->where('actor_id', $admin->id)->exists())->toBeTrue();
 });
 
-it('refuses both on your own account', function () {
+it('refuses a link for your own account', function () {
     $admin = staffWith(Role::Administrator);
 
     $this->actingAs($admin)->post(route('admin.users.invitation', $admin))->assertSessionHasErrors();
-    $this->actingAs($admin)->post(route('admin.users.two-factor-reset', $admin))->assertSessionHasErrors();
 
-    expect($admin->fresh()->two_factor_confirmed_at)->not->toBeNull()
-        ->and($admin->invitations()->count())->toBe(0);
+    expect($admin->invitations()->count())->toBe(0);
 });
 
-it('keeps both from everyone but administrators, and from students', function () {
-    $staff = staffWith(Role::Reviewer);
-
-    $this->actingAs(staffWith(Role::Supervisor))->post(route('admin.users.invitation', $staff))->assertForbidden();
-    $this->actingAs(staffWith(Role::Supervisor))->post(route('admin.users.two-factor-reset', $staff))->assertForbidden();
+it('keeps links from everyone but administrators, and from students', function () {
+    $this->actingAs(staffWith(Role::Supervisor))->post(route('admin.users.invitation', staffWith(Role::Reviewer)))->assertForbidden();
     $this->actingAs(staffWith(Role::Administrator))->post(route('admin.users.invitation', applicant()))->assertSessionHasErrors();
 });
 
@@ -188,7 +161,6 @@ it('creates an administrator from the command line and prints one link', functio
     $admin = User::query()->where('email', 'primary@example.com')->sole();
 
     expect($admin->hasRole(Role::Administrator))->toBeTrue()
-        ->and($admin->two_factor_confirmed_at)->toBeNull()
         ->and($admin->invitations()->open()->count())->toBe(1);
 });
 
@@ -203,12 +175,11 @@ it('recovers an administrator from the command line and audits it', function () 
     $admin = staffWith(Role::Administrator);
 
     $this->artisan('examis:recover-admin', ['email' => $admin->email])
-        ->expectsConfirmation("Reset two-factor authentication for {$admin->email}?", 'yes')
+        ->expectsConfirmation("Issue a new password link for {$admin->email}?", 'yes')
         ->expectsOutputToContain('/staff/invitation#')
         ->assertSuccessful();
 
-    expect($admin->fresh()->two_factor_confirmed_at)->toBeNull()
-        ->and(AuditEvent::query()->where('action', 'staff.break_glass_recovery')->exists())->toBeTrue();
+    expect(AuditEvent::query()->where('action', 'staff.break_glass_recovery')->exists())->toBeTrue();
 });
 
 it('recovers only active administrators', function () {

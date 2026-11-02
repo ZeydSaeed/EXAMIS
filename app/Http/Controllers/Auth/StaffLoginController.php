@@ -8,8 +8,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Password sign-in for staff. It posts to Fortify's login endpoint, so
- * two-factor challenges and login throttling apply unchanged.
+ * Password sign-in for staff. It posts to Fortify's login endpoint, so login
+ * throttling applies unchanged.
  */
 class StaffLoginController extends Controller
 {

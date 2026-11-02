@@ -25,7 +25,7 @@ ln -sfn releases/<sha> current && sudo systemctl reload php8.4-fpm
 php artisan queue:restart            # workers pick up new code after their current job
 ```
 
-**Administrators:** after the first deployment, run `php artisan examis:create-admin "Name" email` once for the primary and once for the backup administrator, two different people. Each opens their own link, sets a password and links an authenticator. If no administrator can sign in, `php artisan examis:recover-admin email` resets one, and is audited. Keep `APP_KEY` backed up apart from the database: without it every TOTP secret and recovery code is lost.
+**Administrators:** after the first deployment, run `php artisan examis:create-admin "Name" email` once for the primary and once for the backup administrator, two different people. Each opens their own link and sets a password. If no administrator can sign in, `php artisan examis:recover-admin email` prints a new password link, and is audited.
 
 **Rollback:** point `current` back at the previous release, reload PHP-FPM, run `queue:restart`. Migrations are not rolled back in production. Write forward fixes instead (`docs/database/SCHEMA.md` §2). A release whose migration is not backward compatible must say so in its notes and needs a maintenance window.
 

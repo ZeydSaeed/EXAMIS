@@ -24,7 +24,7 @@ Frequency: monthly, and after any change to backup tooling or schema. Environmen
     DB_DATABASE=... DOCUMENTS_ROOT=... php artisan migrate:status && php artisan examis:verify-integrity --hashes
     ```
 4. Point a drill instance of the application at the restored data (`.env` of the drill host) and perform the functional checks:
-    - [ ] Staff login with 2FA works (proves `APP_KEY` is correct)
+    - [ ] Staff login works and a stored document opens (proves `APP_KEY` is correct)
     - [ ] Open a restored application; the timeline is intact
     - [ ] Download one document of each type (proves files are restored and hashes match)
     - [ ] Issue a receipt PDF; scan its QR on the drill host

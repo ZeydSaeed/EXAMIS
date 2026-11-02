@@ -1,5 +1,4 @@
 import { execFileSync } from 'node:child_process';
-import { createHmac } from 'node:crypto';
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { e2eEnv, staffURL, studentsURL } from '../../playwright.config';
@@ -7,9 +6,6 @@ import { e2eEnv, staffURL, studentsURL } from '../../playwright.config';
 export const BIRTH_DATE = '2006-03-15';
 
 export const STAFF_PASSWORD = 'password';
-
-/** The authenticator secret EndToEndSeeder gives the seeded staff accounts. */
-export const SEEDED_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
 
 export function pngFile(name = 'photo.png') {
     const onePixel =
@@ -40,52 +36,6 @@ export function invitationLinkFrom(output: string): string {
     return link;
 }
 
-function base32Decode(secret: string): Buffer {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let bits = '';
-
-    for (const character of secret.replace(/\s/g, '').toUpperCase()) {
-        bits += alphabet.indexOf(character).toString(2).padStart(5, '0');
-    }
-
-    const bytes = bits.match(/.{8}/g) ?? [];
-
-    return Buffer.from(bytes.map((byte) => parseInt(byte, 2)));
-}
-
-/** RFC 6238: SHA-1, six digits, 30 seconds, as every authenticator app does. */
-export function totp(secret: string, timeMs = Date.now()): string {
-    const counter = Buffer.alloc(8);
-    counter.writeBigUInt64BE(BigInt(Math.floor(timeMs / 30_000)));
-
-    const digest = createHmac('sha1', base32Decode(secret))
-        .update(counter)
-        .digest();
-    const offset = digest[digest.length - 1] & 0x0f;
-    const code = (digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000;
-
-    return String(code).padStart(6, '0');
-}
-
-/** A code may be used once, so a second sign-in waits for the next window. */
-export async function nextTotp(page: Page, secret: string): Promise<string> {
-    const remaining = 30_000 - (Date.now() % 30_000);
-
-    await page.waitForTimeout(remaining + 250);
-
-    return totp(secret);
-}
-
-export async function fillOtp(page: Page, code: string): Promise<void> {
-    await page.locator('input[name="code"]').first().fill(code);
-}
-
-/** Answers the sign-in challenge with a code or a recovery code. */
-export async function answerChallenge(page: Page, code: string): Promise<void> {
-    await fillOtp(page, code);
-    await page.getByRole('button', { name: 'Continue' }).click();
-}
-
 export async function staffPassword(
     page: Page,
     email: string,
@@ -97,14 +47,12 @@ export async function staffPassword(
     await page.getByTestId('login-button').click();
 }
 
-/** Signs in a seeded staff account with its password and a live code. */
+/** Signs in a seeded staff account. */
 export async function staffLogin(
     page: Page,
     username: 'admin' | 'supervisor' | 'reviewer' | 'auditor',
 ): Promise<void> {
     await staffPassword(page, `${username}@examis.test`);
-    await expect(page).toHaveURL(/\/two-factor-challenge/);
-    await answerChallenge(page, await nextTotp(page, SEEDED_TOTP_SECRET));
     await expect(page).toHaveURL(/\/admin\/home/);
 }
 

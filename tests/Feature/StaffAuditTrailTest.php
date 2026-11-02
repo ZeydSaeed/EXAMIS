@@ -4,11 +4,8 @@ use App\Actions\Staff\ManageStaffAccess;
 use App\Enums\InvitationPurpose;
 use App\Enums\Role;
 use App\Models\AuditEvent;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Fortify\Features;
-use PragmaRX\Google2FA\Google2FA;
 
 const NEW_PASSWORD = 'New-Password-123!';
 
@@ -16,40 +13,6 @@ function audited(string $action): bool
 {
     return AuditEvent::query()->where('action', $action)->exists();
 }
-
-beforeEach(function () {
-    Features::twoFactorAuthentication(['confirm' => true, 'confirmPassword' => true, 'secret-length' => 32]);
-});
-
-it('records the confirmation of two-factor enrolment without the secret', function () {
-    $staff = User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create();
-
-    $this->actingAs($staff)->withSession(['auth.password_confirmed_at' => time()])
-        ->post(route('two-factor.enable'));
-
-    $secret = decrypt($staff->fresh()->two_factor_secret);
-
-    $this->withSession(['auth.password_confirmed_at' => time()])
-        ->post(route('two-factor.confirm'), ['code' => app(Google2FA::class)->getCurrentOtp($secret)])
-        ->assertSessionHasNoErrors();
-
-    expect($staff->fresh()->two_factor_confirmed_at)->not->toBeNull()
-        ->and(audited('auth.two_factor_confirmed'))->toBeTrue()
-        ->and(AuditEvent::query()->get()->toJson())->not->toContain($secret);
-});
-
-it('records a wrong code at the sign-in challenge', function () {
-    $staff = staffWith(Role::Reviewer);
-    $staff->forceFill(['two_factor_secret' => encrypt('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP')])->save();
-
-    $this->post(route('login.store'), ['email' => $staff->email, 'password' => 'password']);
-    $this->post(route('two-factor.login.store'), ['code' => '000000']);
-
-    $event = AuditEvent::query()->where('action', 'auth.two_factor_failed')->sole();
-
-    expect($event->subject_id)->toBe($staff->id)
-        ->and($event->metadata)->toBeNull();
-});
 
 it('records a password change and ends the other sessions', function () {
     $staff = staffWith(Role::Reviewer);
@@ -78,7 +41,6 @@ it('covers every sensitive staff action in the audit trail', function () {
     $access->acceptInvitation(substr($url, strpos($url, '#') + 1), NEW_PASSWORD);
     $access->syncRoles($staff, [Role::Supervisor], $admin);
     $access->syncOverrides($staff, [], $admin);
-    $access->resetTwoFactor($staff, $admin);
     $access->setActive($staff, false, $admin);
     $access->setActive($staff, true, $admin);
 
@@ -88,7 +50,6 @@ it('covers every sensitive staff action in the audit trail', function () {
         'staff.invitation_used',
         'staff.roles_changed',
         'staff.permissions_changed',
-        'staff.two_factor_reset',
         'user.deactivated',
         'user.reactivated',
     ] as $action) {

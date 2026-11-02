@@ -8,7 +8,7 @@ use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('records successful and failed sign-ins without storing what was typed', function () {
-    $user = User::factory()->staff()->withoutTwoFactor()->create();
+    $user = User::factory()->staff()->create();
 
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password']);
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password']);
@@ -36,7 +36,7 @@ it('refuses to modify application history', function () {
 });
 
 it('tags audit events with the request id', function () {
-    $user = User::factory()->staff()->withoutTwoFactor()->create();
+    $user = User::factory()->staff()->create();
 
     $this->withHeader('X-Request-Id', 'req-1234567890')
         ->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])

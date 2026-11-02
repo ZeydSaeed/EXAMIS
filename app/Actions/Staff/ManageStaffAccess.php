@@ -78,8 +78,7 @@ class ManageStaffAccess
 
     /**
      * Spends a link and sets the password its owner chose. The row lock lets
-     * only one of two simultaneous uses through. Two-factor setup is left
-     * alone: a new password never bypasses it.
+     * only one of two simultaneous uses through.
      */
     public function acceptInvitation(string $token, string $password): void
     {
@@ -107,33 +106,12 @@ class ManageStaffAccess
     }
 
     /**
-     * For a staff member who lost their authenticator and recovery codes. They
-     * enrol again at their next sign-in. Nobody resets their own.
-     */
-    public function resetTwoFactor(User $user, User $actor): void
-    {
-        $this->ensureManageable($user, $actor);
-
-        DB::transaction(function () use ($user, $actor): void {
-            $this->clearTwoFactor($user);
-            $this->audit->record('staff.two_factor_reset', $user, actor: $actor);
-        });
-
-        $this->endSessions($user);
-    }
-
-    /**
      * Break-glass recovery from the server, for when no administrator can
      * sign in. Returns the one-time password link.
      */
     public function recover(User $user): string
     {
-        DB::transaction(function () use ($user): void {
-            $this->clearTwoFactor($user);
-            $this->audit->record('staff.break_glass_recovery', $user);
-        });
-
-        $this->endSessions($user);
+        $this->audit->record('staff.break_glass_recovery', $user);
 
         return $this->issueInvitation($user, InvitationPurpose::ResetPassword, null);
     }
@@ -245,18 +223,6 @@ class ManageStaffAccess
         if ($user->is($actor)) {
             throw new DomainRuleViolation(__('admin.errors.cannot_manage_own_credentials'), 'user');
         }
-    }
-
-    private function clearTwoFactor(User $user): void
-    {
-        $user->forceFill([
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-            'remember_token' => Str::random(60),
-        ])->save();
-
-        $user->staffRecoveryCodes()->delete();
     }
 
     private function revokeInvitations(User $user): void

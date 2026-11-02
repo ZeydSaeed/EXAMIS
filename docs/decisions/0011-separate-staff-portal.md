@@ -2,6 +2,7 @@
 
 - Status: Accepted (2026-11-02)
 - Amends: ADR-0002 for staff accounts. Students are unchanged.
+- Amended by: ADR-0012, which removed the authenticator app, recovery codes and two-factor resets.
 
 ## Context
 

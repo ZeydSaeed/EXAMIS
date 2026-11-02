@@ -5,7 +5,7 @@ import {
     useForm,
     usePage,
 } from '@inertiajs/react';
-import { ShieldCheck, ShieldOff, UserPlus, Users } from 'lucide-react';
+import { UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
@@ -45,7 +45,6 @@ type StaffRow = {
     roles: string[];
     overrides: Record<string, 'grant' | 'deny'>;
     is_active: boolean;
-    two_factor_enabled: boolean;
     invitation_pending: boolean;
     last_login_at: string | null;
 };
@@ -433,9 +432,6 @@ export default function StaffUsers({
                                         </th>
                                         <th scope="col">{t('users.roles')}</th>
                                         <th scope="col">
-                                            {t('users.security')}
-                                        </th>
-                                        <th scope="col">
                                             {t('users.last_login')}
                                         </th>
                                         <th scope="col">
@@ -474,35 +470,6 @@ export default function StaffUsers({
                                                         query={filters.q}
                                                     />
                                                 </p>
-                                            </td>
-                                            <td>
-                                                <RoleEditor
-                                                    key={user.roles.join()}
-                                                    user={user}
-                                                    roles={roles}
-                                                />
-                                            </td>
-                                            <td className="whitespace-nowrap">
-                                                <span className="flex items-center gap-1.5">
-                                                    {user.two_factor_enabled ? (
-                                                        <ShieldCheck
-                                                            className="size-4 text-success"
-                                                            aria-hidden
-                                                        />
-                                                    ) : (
-                                                        <ShieldOff
-                                                            className="size-4 text-warning"
-                                                            aria-hidden
-                                                        />
-                                                    )}
-                                                    {user.two_factor_enabled
-                                                        ? t(
-                                                              'users.two_factor_on',
-                                                          )
-                                                        : t(
-                                                              'users.two_factor_off',
-                                                          )}
-                                                </span>
                                                 {user.invitation_pending && (
                                                     <span className="text-xs text-muted-foreground">
                                                         {t(
@@ -510,6 +477,13 @@ export default function StaffUsers({
                                                         )}
                                                     </span>
                                                 )}
+                                            </td>
+                                            <td>
+                                                <RoleEditor
+                                                    key={user.roles.join()}
+                                                    user={user}
+                                                    roles={roles}
+                                                />
                                             </td>
                                             <td className="whitespace-nowrap text-muted-foreground">
                                                 {formatDateTime(
@@ -562,40 +536,6 @@ export default function StaffUsers({
                                                                     )}
                                                                 </Button>
                                                             </ConfirmDialog>
-                                                            {user.two_factor_enabled && (
-                                                                <ConfirmDialog
-                                                                    title={t(
-                                                                        'users.reset_two_factor',
-                                                                    )}
-                                                                    description={t(
-                                                                        'users.reset_two_factor_text',
-                                                                    )}
-                                                                    confirmLabel={t(
-                                                                        'users.reset_two_factor',
-                                                                    )}
-                                                                    destructive
-                                                                    onConfirm={() =>
-                                                                        router.post(
-                                                                            admin.users.twoFactorReset.url(
-                                                                                user.id,
-                                                                            ),
-                                                                            {},
-                                                                            {
-                                                                                preserveScroll: true,
-                                                                            },
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                    >
-                                                                        {t(
-                                                                            'users.reset_two_factor',
-                                                                        )}
-                                                                    </Button>
-                                                                </ConfirmDialog>
-                                                            )}
                                                         </>
                                                     )}
                                                 <ConfirmDialog

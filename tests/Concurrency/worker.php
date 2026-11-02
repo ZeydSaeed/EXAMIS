@@ -8,7 +8,6 @@
 use App\Actions\Staff\ManageStaffAccess;
 use App\Exceptions\DomainRuleViolation;
 use App\Models\User;
-use App\Services\Staff\RecoveryCodes;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +31,6 @@ try {
         'demote' => $access->syncRoles(User::query()->findOrFail((int) $argv[3]), [], User::query()->findOrFail((int) $argv[2])),
         'deactivate' => $access->setActive(User::query()->findOrFail((int) $argv[3]), false, User::query()->findOrFail((int) $argv[2])),
         'accept' => $access->acceptInvitation($argv[2], 'Str0ng-Passw0rd!'),
-        'recovery' => $app->make(RecoveryCodes::class)->consume(User::query()->findOrFail((int) $argv[2]), $argv[3]) ?: throw new DomainRuleViolation('spent'),
     };
 
     echo 'ok';

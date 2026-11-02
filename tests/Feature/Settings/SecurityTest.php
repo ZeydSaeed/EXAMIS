@@ -3,62 +3,18 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
-use Laravel\Fortify\Features;
 
 test('security page is displayed', function () {
-    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
-
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
-
-    $user = User::factory()->staff()->withoutTwoFactor()->create();
-
-    $this->actingAs($user)
+    $this->actingAs(User::factory()->staff()->create())
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('security.edit'))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
-            ->missing('passkeys')
-            ->where('canManageTwoFactor', true)
-            ->where('twoFactorEnabled', false),
-        );
+        ->assertInertia(fn (Assert $page) => $page->component('settings/security')->has('passwordRules'));
 });
 
-test('security page requires password confirmation when enabled', function () {
-    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
-
-    $user = User::factory()->staff()->create();
-
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
-
-    $response = $this->actingAs($user)
-        ->get(route('security.edit'));
-
-    $response->assertRedirect(route('password.confirm'));
-});
-
-test('security page renders without two factor when feature is disabled', function () {
-    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
-
-    config(['fortify.features' => []]);
-
-    $user = User::factory()->staff()->create();
-
-    $this->actingAs($user)
-        ->withSession(['auth.password_confirmed_at' => time()])
+test('security page requires password confirmation', function () {
+    $this->actingAs(User::factory()->staff()->create())
         ->get(route('security.edit'))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/security')
-            ->where('canManageTwoFactor', false)
-            ->missing('twoFactorEnabled')
-            ->missing('requiresConfirmation'),
-        );
+        ->assertRedirect(route('password.confirm'));
 });
 
 test('password can be updated', function () {

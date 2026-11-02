@@ -9,14 +9,14 @@ use Illuminate\Console\Command;
 
 /**
  * Break-glass recovery for when no administrator can sign in. Needs shell
- * access to the server, clears the account's two-factor setup, and prints a
- * one-time link to set a new password. Every use is audited.
+ * access to the server and prints a one-time link to set a new password.
+ * Every use is audited.
  */
 class RecoverAdministrator extends Command
 {
     protected $signature = 'examis:recover-admin {email : Sign-in email of the administrator}';
 
-    protected $description = 'Reset an administrator\'s two-factor setup and print a one-time password link';
+    protected $description = 'Print a one-time password link for an administrator';
 
     public function handle(ManageStaffAccess $access): int
     {
@@ -29,7 +29,7 @@ class RecoverAdministrator extends Command
             return self::FAILURE;
         }
 
-        if (! $this->confirm("Reset two-factor authentication for {$user->email}?")) {
+        if (! $this->confirm("Issue a new password link for {$user->email}?")) {
             return self::SUCCESS;
         }
 

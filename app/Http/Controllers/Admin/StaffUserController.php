@@ -60,7 +60,6 @@ class StaffUserController extends Controller
                     ->mapWithKeys(fn (StaffPermissionOverride $override): array => [$override->permission->value => $override->effect->value])
                     ->all(),
                 'is_active' => $user->isActive(),
-                'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
                 'invitation_pending' => (bool) $user->getAttribute('invitation_pending'),
                 'last_login_at' => $user->last_login_at?->toIso8601String(),
             ]);
@@ -97,15 +96,6 @@ class StaffUserController extends Controller
     public function storeInvitation(Request $request, User $user, ManageStaffAccess $access): Response
     {
         return $this->invitationPage($user, InvitationPurpose::ResetPassword, $request, $access);
-    }
-
-    public function resetTwoFactor(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
-    {
-        $access->resetTwoFactor($user, $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
-
-        return to_route('admin.users.index');
     }
 
     public function updateRoles(Request $request, User $user, ManageStaffAccess $access): RedirectResponse

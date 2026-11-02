@@ -21,7 +21,7 @@ Students and staff use separate hosts, by default `students.examis.test` and `st
 .\scripts\local.ps1 serve                                   # http://students.examis.test:8000, http://staff.examis.test:8000
 ```
 
-Demo staff (local only, password `password`) sign in by email: `admin@examis.test`, `supervisor@examis.test`, `reviewer@examis.test`, `auditor@examis.test`. Each must link an authenticator app first. All data is synthetic.
+Demo staff (local only, password `password`) sign in by email: `admin@examis.test`, `supervisor@examis.test`, `reviewer@examis.test`, `auditor@examis.test`. All data is synthetic.
 
 To use PostgreSQL, set `DB_CONNECTION=pgsql` and the `DB_*` settings in `.env` (see `.env.example`).
 

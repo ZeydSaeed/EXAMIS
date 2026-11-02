@@ -5,9 +5,7 @@ use App\Enums\InvitationPurpose;
 use App\Enums\Role;
 use App\Models\RoleAssignment;
 use App\Models\StaffInvitation;
-use App\Models\StaffRecoveryCode;
 use App\Models\User;
-use App\Services\Staff\RecoveryCodes;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
@@ -113,14 +111,4 @@ it('spends a one-time link once when two use it at the same moment', function ()
     DB::table((new StaffInvitation)->getTable())->lockForUpdate()->get();
 
     expect(releaseAndCollect([startWorker('accept', $token), startWorker('accept', $token)]))->toBe(['ok', 'rejected']);
-});
-
-it('spends a recovery code once when two use it at the same moment', function () {
-    $staff = staffWith(Role::Reviewer);
-    $code = app(RecoveryCodes::class)->issueOnce($staff)[0];
-
-    DB::beginTransaction();
-    DB::table((new StaffRecoveryCode)->getTable())->lockForUpdate()->get();
-
-    expect(releaseAndCollect([startWorker('recovery', $staff->id, $code), startWorker('recovery', $staff->id, $code)]))->toBe(['ok', 'rejected']);
 });

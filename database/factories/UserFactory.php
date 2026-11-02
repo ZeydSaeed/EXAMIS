@@ -34,43 +34,15 @@ class UserFactory extends Factory
             'account_type' => AccountType::Applicant,
             'locale' => 'ar',
             'remember_token' => Str::random(10),
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
         ];
     }
 
     /**
-     * Indicate that the model has two-factor authentication configured.
-     */
-    public function withTwoFactor(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => encrypt('secret'),
-            'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
-            'two_factor_confirmed_at' => now(),
-        ]);
-    }
-
-    /**
-     * A staff account that has not enrolled in two-factor authentication yet.
-     */
-    public function withoutTwoFactor(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ]);
-    }
-
-    /**
-     * A staff account holding the given roles, enrolled in two-factor
-     * authentication.
+     * A staff account holding the given roles.
      */
     public function staff(Role ...$roles): static
     {
-        return $this->withTwoFactor()->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'account_type' => AccountType::Staff,
         ])->afterCreating(function (User $user) use ($roles): void {
             foreach ($roles as $role) {

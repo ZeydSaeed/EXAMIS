@@ -9,7 +9,6 @@ return [
     'access_code_failed' => 'We could not verify you. Check your sign-in details and access code.',
     'access_code_locked' => 'Too many attempts for this account. Try again in an hour or contact support.',
     'deactivated' => 'Your session has ended. Contact support if you believe this is a mistake.',
-    'invitation_accepted' => 'Password saved. Sign in, then link your authenticator app.',
+    'invitation_accepted' => 'Password saved. You can sign in now.',
     'invitation_unusable' => 'This link is invalid, expired or already used.',
-    'staff_two_factor_required' => 'Staff accounts must enable two-factor authentication before using the administration area.',
 ];

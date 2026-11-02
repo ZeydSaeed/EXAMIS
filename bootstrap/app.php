@@ -4,7 +4,6 @@ use App\Enums\Portal;
 use App\Exceptions\DomainRuleViolation;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureAccountIsActive;
-use App\Http\Middleware\EnsureStaffTwoFactor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
@@ -34,10 +33,6 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-        ]);
-
-        $middleware->alias([
-            'staff.2fa' => EnsureStaffTwoFactor::class,
         ]);
 
         $middleware->redirectGuestsTo(fn (Request $request): string => route(Portal::forRequest($request) === Portal::Staff ? 'staff.login' : 'apply.terms'));

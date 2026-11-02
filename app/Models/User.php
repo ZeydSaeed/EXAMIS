@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
@@ -34,9 +33,6 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property CarbonImmutable|null $deactivated_at
  * @property CarbonImmutable|null $closed_at
  * @property CarbonImmutable|null $last_login_at
- * @property string|null $two_factor_secret
- * @property string|null $two_factor_recovery_codes
- * @property CarbonImmutable|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -46,7 +42,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable;
 
     /**
      * @var array<string, mixed>
@@ -79,7 +75,6 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return [
             'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
             'account_type' => AccountType::class,
             'deactivated_at' => 'datetime',
             'closed_at' => 'datetime',
@@ -134,14 +129,6 @@ class User extends Authenticatable implements HasLocalePreference
     public function invitations(): HasMany
     {
         return $this->hasMany(StaffInvitation::class);
-    }
-
-    /**
-     * @return HasMany<StaffRecoveryCode, $this>
-     */
-    public function staffRecoveryCodes(): HasMany
-    {
-        return $this->hasMany(StaffRecoveryCode::class);
     }
 
     /**
@@ -281,14 +268,6 @@ class User extends Authenticatable implements HasLocalePreference
 
         return $this->resolvedOverrides[$permission->value] ?? null;
     }
-
-    /**
-     * Recovery codes are spent by RecoveryCodes, so Fortify's replacement of a
-     * used code has nothing left to do.
-     *
-     * @param  string  $code
-     */
-    public function replaceRecoveryCode($code): void {}
 
     public function preferredLocale(): string
     {

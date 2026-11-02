@@ -37,7 +37,7 @@ Documents are written to storage **before** their row is committed, and orphan f
 4. Apply configuration and secrets from the secret manager (`APP_KEY` must match the original; otherwise encrypted 2FA secrets and sessions are unusable).
 5. `php artisan migrate:status` (schema matches code) → `php artisan examis:verify-integrity --hashes`.
 6. Compare counts with the backup manifest (`COUNTS.txt`).
-7. Functional checks: staff login with 2FA; open a restored application; download a document; issue a receipt; verify its QR; submit a test application in a test period.
+7. Functional checks: staff login; open a restored application; download a document; issue a receipt; verify its QR; submit a test application in a test period.
 8. Record duration and any data gap; switch traffic (real recovery) or drop the drill database.
 
 ## 5. Scenarios covered by drills

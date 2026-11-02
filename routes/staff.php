@@ -44,7 +44,7 @@ Route::middleware('guest:staff')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:staff', 'can:admin.access', 'staff.2fa'])
+Route::middleware(['auth:staff', 'can:admin.access'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -80,7 +80,6 @@ Route::middleware(['auth:staff', 'can:admin.access', 'staff.2fa'])
             Route::put('users/{user}/permissions', [Admin\StaffUserController::class, 'updatePermissions'])->name('users.permissions');
             Route::put('users/{user}/status', [Admin\StaffUserController::class, 'updateStatus'])->name('users.status');
             Route::post('users/{user}/invitation', [Admin\StaffUserController::class, 'storeInvitation'])->middleware('can:staff.credentials')->name('users.invitation');
-            Route::post('users/{user}/two-factor-reset', [Admin\StaffUserController::class, 'resetTwoFactor'])->middleware('can:staff.credentials')->name('users.two-factor-reset');
             Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
 
@@ -100,24 +99,18 @@ Route::middleware(['auth:staff', 'can:admin.access', 'staff.2fa'])
 */
 
 Route::middleware('auth:staff')->group(function () {
-    Route::middleware('staff.2fa')->group(function () {
-        Route::get('settings', fn () => to_route('profile.edit'));
+    Route::get('settings', fn () => to_route('profile.edit'));
 
-        Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-
-        Route::put('settings/password', [SecurityController::class, 'update'])
-            ->middleware('throttle:6,1')
-            ->name('user-password.update');
-
-        Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
-    });
+    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::get('settings/security', [SecurityController::class, 'edit'])
         ->middleware(RequirePassword::class)
         ->name('security.edit');
 
-    Route::post('settings/recovery-codes', [SecurityController::class, 'issueRecoveryCodes'])
-        ->middleware([RequirePassword::class, 'throttle:6,1'])
-        ->name('security.recovery-codes');
+    Route::put('settings/password', [SecurityController::class, 'update'])
+        ->middleware('throttle:6,1')
+        ->name('user-password.update');
+
+    Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 });

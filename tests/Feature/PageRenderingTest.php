@@ -11,7 +11,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     seedReferenceData();
-    config(['examis.security.require_staff_two_factor' => false]);
 });
 
 it('renders the applicant dashboard with only the applicant\'s own applications', function () {

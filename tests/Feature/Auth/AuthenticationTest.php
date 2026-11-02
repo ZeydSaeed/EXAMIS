@@ -4,11 +4,10 @@ use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\RateLimiter;
-use Laravel\Fortify\Features;
 
 function unenrolledStaff(array $attributes = []): User
 {
-    return User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create($attributes);
+    return User::factory()->staff(Role::Reviewer)->create($attributes);
 }
 
 test('the login path leads to the staff sign-in page', function () {
@@ -25,26 +24,6 @@ test('staff can authenticate by email', function () {
 
     $this->assertAuthenticatedAs($user);
     $response->assertRedirect(route('admin.home'));
-});
-
-test('staff with two factor enabled are redirected to two factor challenge', function () {
-    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
-
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
-
-    $user = User::factory()->staff(Role::Reviewer)->create();
-
-    $response = $this->post(route('login'), [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
-
-    $response->assertRedirect(route('two-factor.login'));
-    $response->assertSessionHas('login.id', $user->id);
-    $this->assertGuest();
 });
 
 test('staff can not authenticate with invalid password', function () {
@@ -100,7 +79,7 @@ test('sign-in is rate limited', function () {
 });
 
 test('deactivated staff receive the same error as a wrong password', function () {
-    $user = User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->deactivated()->create();
+    $user = User::factory()->staff(Role::Reviewer)->deactivated()->create();
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,

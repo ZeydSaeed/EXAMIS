@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Middleware\LockStaffTwoFactor;
-use Laravel\Fortify\Features;
+use App\Http\Middleware\DropRememberMe;
 
 return [
 
@@ -103,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web', LockStaffTwoFactor::class],
+    'middleware' => ['web', DropRememberMe::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -118,7 +117,6 @@ return [
 
     'limiters' => [
         'login' => 'login',
-        'two-factor' => 'two-factor',
     ],
 
     /*
@@ -147,15 +145,9 @@ return [
 
     /*
      * Staff passwords are set through one-time links and students register on
-     * their own portal (ADR-0011), so Fortify's versions of both are disabled.
+     * their own portal (ADR-0011), and staff sign in with a password alone
+     * (ADR-0012), so every optional Fortify feature is off.
      */
-    'features' => [
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            'secret-length' => 32,
-            // 'window' => 0
-        ]),
-    ],
+    'features' => [],
 
 ];

@@ -30,9 +30,7 @@ it('answers staff paths with 404 on the student portal', function (string $metho
     ['GET', '/staff/invitation'],
     ['GET', '/login'],
     ['POST', '/login'],
-    ['GET', '/two-factor-challenge'],
     ['GET', '/settings/security'],
-    ['POST', '/user/two-factor-authentication'],
 ]);
 
 it('answers student paths with 404 on the staff portal', function (string $method, string $path) {
@@ -132,7 +130,6 @@ it('starts the session the staff portal way on Fortify routes too', function (st
 })->with([
     ['GET', '/login'],
     ['POST', '/login'],
-    ['GET', '/two-factor-challenge'],
     ['GET', '/user/confirm-password'],
 ]);
 

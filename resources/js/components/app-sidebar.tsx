@@ -161,11 +161,7 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain
                     label={isStaff ? undefined : t('nav.applicant')}
-                    items={
-                        isStaff && auth.user.two_factor_enabled
-                            ? staffItems
-                            : []
-                    }
+                    items={isStaff ? staffItems : []}
                 />
             </SidebarContent>
 

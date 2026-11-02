@@ -12,7 +12,7 @@ return [
     'periods.manage' => 'إدارة فترات التقديم',
     'content.manage' => 'إدارة المحتوى',
     'users.manage' => 'إدارة المستخدمين',
-    'staff.credentials' => 'روابط الدخول وإعادة ضبط المصادقة',
+    'staff.credentials' => 'روابط الدخول',
     'audit.view' => 'عرض سجل التدقيق',
     'reports.view' => 'عرض التقارير',
     'operations.view' => 'مراقبة التشغيل',

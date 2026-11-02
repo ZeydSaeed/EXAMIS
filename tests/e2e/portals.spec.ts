@@ -8,7 +8,6 @@ test.describe('two portals', () => {
         '/admin/users',
         '/staff/login',
         '/staff/invitation',
-        '/two-factor-challenge',
         '/settings/security',
     ]) {
         test(`${path} does not exist on the student portal`, async ({

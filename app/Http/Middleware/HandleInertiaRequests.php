@@ -75,7 +75,6 @@ class HandleInertiaRequests extends Middleware
             'email' => $user->email,
             'phone' => $user->phone,
             'has_password' => $user->hasPassword(),
-            'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
             'account_type' => $user->account_type->value,
             'locale' => $user->locale,
             'unread_notifications' => $user->isApplicant() ? $user->unreadNotifications()->count() : 0,

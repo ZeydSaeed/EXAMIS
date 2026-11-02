@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Http\Requests\Auth\StaffTwoFactorLoginRequest;
 use App\Http\Responses\LogoutResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -14,7 +13,6 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -30,7 +28,6 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
-        $this->app->bind(TwoFactorLoginRequest::class, StaffTwoFactorLoginRequest::class);
     }
 
     /**
@@ -67,8 +64,6 @@ class FortifyServiceProvider extends ServiceProvider
         // The form lives at /staff/login; Fortify's own /login only leads there.
         Fortify::loginView(fn () => to_route('staff.login'));
 
-        Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
-
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
     }
 
@@ -77,10 +72,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
-
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
 
