@@ -56,7 +56,10 @@ export default function StaffInvitation({
             <Head title={t('auth.invitation_title')} />
 
             {(invalid || token === '') && (
-                <p role="alert" className="text-center text-sm text-destructive">
+                <p
+                    role="alert"
+                    className="text-center text-sm text-destructive"
+                >
                     {t('auth.invitation_unusable')}
                 </p>
             )}

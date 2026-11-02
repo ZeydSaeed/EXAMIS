@@ -576,11 +576,9 @@ export default function StaffUsers({
                                                                     destructive
                                                                     onConfirm={() =>
                                                                         router.post(
-                                                                            admin
-                                                                                .users
-                                                                                .twoFactorReset.url(
-                                                                                    user.id,
-                                                                                ),
+                                                                            admin.users.twoFactorReset.url(
+                                                                                user.id,
+                                                                            ),
                                                                             {},
                                                                             {
                                                                                 preserveScroll: true,
