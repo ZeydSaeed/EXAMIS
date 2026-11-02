@@ -523,5 +523,10 @@ return [
         'share' => 'النسبة',
         'drafts' => 'عدد المسودات غير المرسلة في هذه الدورة: :drafts',
         'by_specialization' => 'حسب الاختصاص',
+        'gender' => 'الجنس',
+        'specialization' => 'الاختصاص',
+        'males' => 'ذكور',
+        'females' => 'إناث',
+        'all' => 'الكل',
     ],
 ];

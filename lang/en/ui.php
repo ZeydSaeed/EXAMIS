@@ -523,5 +523,10 @@ return [
         'share' => 'Share',
         'drafts' => 'Unsubmitted drafts in this round: :drafts',
         'by_specialization' => 'By specialization',
+        'gender' => 'Gender',
+        'specialization' => 'Specialization',
+        'males' => 'Male',
+        'females' => 'Female',
+        'all' => 'All',
     ],
 ];
