@@ -72,6 +72,10 @@ Route::middleware(['auth:staff', 'can:admin.access'])
             Route::get('content', [Admin\ContentPageController::class, 'index'])->name('content.index');
             Route::get('content/{contentPage}/edit', [Admin\ContentPageController::class, 'edit'])->name('content.edit');
             Route::put('content/{contentPage}', [Admin\ContentPageController::class, 'update'])->name('content.update');
+
+            Route::post('message-templates', [Admin\MessageTemplateController::class, 'store'])->name('message-templates.store');
+            Route::put('message-templates/{messageTemplate}', [Admin\MessageTemplateController::class, 'update'])->name('message-templates.update');
+            Route::delete('message-templates/{messageTemplate}', [Admin\MessageTemplateController::class, 'destroy'])->name('message-templates.destroy');
         });
 
         Route::middleware('can:users.manage')->group(function () {
@@ -83,9 +87,6 @@ Route::middleware(['auth:staff', 'can:admin.access'])
             Route::post('users/{user}/invitation', [Admin\StaffUserController::class, 'storeInvitation'])->middleware('can:staff.credentials')->name('users.invitation');
             Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
-
-        Route::get('audit', [Admin\AuditLogController::class, 'index'])->middleware('can:audit.view')->name('audit.index');
-        Route::get('operations', Admin\OperationsController::class)->middleware('can:operations.view')->name('operations');
 
         Route::middleware('can:reports.view')->group(function () {
             Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');

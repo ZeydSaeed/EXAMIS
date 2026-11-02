@@ -19,18 +19,16 @@ enum Permission: string
     case ContentManage = 'content.manage';
     case UsersManage = 'users.manage';
     case StaffCredentials = 'staff.credentials';
-    case AuditView = 'audit.view';
     case ReportsView = 'reports.view';
-    case OperationsView = 'operations.view';
 
     /**
-     * Whether a per-staff exception may touch this permission. These four
+     * Whether a per-staff exception may touch this permission. These three
      * stay with roles, so no exception can make someone an administrator or
      * lock them out of the area.
      */
     public function isOverridable(): bool
     {
-        return ! in_array($this, [self::AdminAccess, self::UsersManage, self::StaffCredentials, self::OperationsView], true);
+        return ! in_array($this, [self::AdminAccess, self::UsersManage, self::StaffCredentials], true);
     }
 
     public function label(): string

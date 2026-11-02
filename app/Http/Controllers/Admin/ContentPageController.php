@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Applications\DecideApplication;
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ContentPage;
+use App\Models\MessageTemplate;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +24,18 @@ class ContentPageController extends Controller
                 'is_published' => $page->is_published,
                 'updated_at' => $page->updated_at?->toIso8601String(),
             ]),
+            'templates' => MessageTemplate::query()->orderBy('id')->get()->map(fn (MessageTemplate $template): array => [
+                'id' => $template->id,
+                'title' => $template->title,
+                'status' => $template->status->value,
+                'status_label' => $template->status->label(),
+                'body' => $template->body,
+            ]),
+            'decisionStatuses' => array_map(
+                fn (ApplicationStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
+                DecideApplication::DECISIONS,
+            ),
+            'placeholders' => MessageTemplate::PLACEHOLDERS,
         ]);
     }
 

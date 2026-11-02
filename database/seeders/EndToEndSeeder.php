@@ -22,6 +22,7 @@ class EndToEndSeeder extends Seeder
             ReferenceDataSeeder::class,
             DocumentTypeSeeder::class,
             ContentPageSeeder::class,
+            MessageTemplateSeeder::class,
             DemoSeeder::class,
         ]);
 

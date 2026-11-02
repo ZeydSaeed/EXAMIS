@@ -143,7 +143,6 @@ it('restricts configuration sections to their permission', function (Role $role,
 })->with([
     'reviewer cannot manage periods' => [Role::Reviewer, 'admin.periods.index', 403],
     'reviewer cannot manage users' => [Role::Reviewer, 'admin.users.index', 403],
-    'supervisor cannot read the audit log' => [Role::Supervisor, 'admin.audit.index', 403],
     'auditor cannot manage content' => [Role::Auditor, 'admin.content.index', 403],
     'administrator can open reports' => [Role::Administrator, 'admin.reports.index', 200],
 ]);

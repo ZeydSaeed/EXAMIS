@@ -2,19 +2,15 @@
 
 namespace App\Services\Operations;
 
-use App\Enums\DocumentStatus;
-use App\Models\ApplicationDocument;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Dependency checks shared by the public readiness probe (pass/fail only)
- * and the admin operations page (details). Failure details are never
- * exposed publicly.
+ * Dependency checks behind the public readiness probe (pass/fail only).
+ * Failure details are never exposed publicly.
  */
 class HealthReport
 {
@@ -48,23 +44,6 @@ class HealthReport
     public function isReady(): bool
     {
         return ! in_array(false, $this->checks(), true);
-    }
-
-    /**
-     * @return array<string, int|null>
-     */
-    public function queueMetrics(): array
-    {
-        $usesDatabaseQueue = config('queue.default') === 'database' && Schema::hasTable('jobs');
-
-        $oldestPending = $usesDatabaseQueue ? DB::table('jobs')->min('created_at') : null;
-
-        return [
-            'pending_jobs' => $usesDatabaseQueue ? DB::table('jobs')->count() : null,
-            'oldest_pending_seconds' => $oldestPending !== null ? max(0, now()->getTimestamp() - (int) $oldestPending) : null,
-            'failed_jobs' => Schema::hasTable('failed_jobs') ? DB::table('failed_jobs')->count() : null,
-            'documents_pending_scan' => ApplicationDocument::query()->where('status', DocumentStatus::Pending)->whereNull('replaced_at')->count(),
-        ];
     }
 
     private function attempt(callable $check): bool

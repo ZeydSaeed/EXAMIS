@@ -45,7 +45,6 @@ test('dynamic keys built from enums are translated', function (string $locale) {
         ...array_map(fn ($step) => "applicant.steps.{$step}", ['personal', 'contact', 'education', 'documents', 'review']),
         ...array_map(fn ($status) => "documents.status.{$status->value}", DocumentStatus::cases()),
         ...array_map(fn ($status) => "periods.status.{$status->value}", ExamPeriodStatus::cases()),
-        ...array_map(fn ($check) => "operations.check.{$check}", ['database', 'cache', 'storage']),
     ];
 
     expect(array_values(array_filter($dynamic, fn (string $key) => ! array_key_exists($key, $dictionary))))->toBe([]);

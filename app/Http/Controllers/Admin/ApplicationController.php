@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Applications\DecideApplication;
 use App\Enums\ApplicationStatus;
 use App\Enums\Permission;
+use App\Enums\ReferenceType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
+use App\Models\ApplicationEvent;
 use App\Models\DocumentType;
 use App\Models\ExamPeriod;
+use App\Models\MessageTemplate;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\ReferenceData;
 use App\Services\Students\StudentIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +37,7 @@ class ApplicationController extends Controller
      */
     private const ARABIC_FOLDS = ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ى' => 'ي', 'ة' => 'ه'];
 
-    public function index(Request $request, DecideApplication $decide): Response|RedirectResponse
+    public function index(Request $request, DecideApplication $decide, ReferenceData $referenceData): Response|RedirectResponse
     {
         Gate::authorize('viewAny', Application::class);
 
@@ -67,17 +71,32 @@ class ApplicationController extends Controller
             ->orderBy('id')
             ->paginate((int) ($filters['per_page'] ?? self::PER_PAGE))
             ->withQueryString()
-            ->through(fn (Application $application): array => [
-                'uuid' => $application->uuid,
-                'student_number' => $application->user->student_number,
-                'full_name_ar' => $application->full_name_ar,
-                'status' => $application->status->value,
-                'status_label' => $application->status->label(),
-                'decisions' => $decide->options($application, $user),
-            ]);
+            ->through(function (Application $application) use ($decide, $user, $referenceData): array {
+                $decisions = $decide->options($application, $user);
+
+                return [
+                    'uuid' => $application->uuid,
+                    'student_number' => $application->user->student_number,
+                    'full_name_ar' => $application->full_name_ar,
+                    'status' => $application->status->value,
+                    'status_label' => $application->status->label(),
+                    'decisions' => $decisions,
+                    // What the message is filled with, only for those who send it.
+                    'contact' => $decisions === [] ? null : [
+                        'name' => $application->full_name_ar,
+                        'number' => $application->user->student_number,
+                        'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),
+                        'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
+                        'phone' => StudentIdentity::internationalPhone($application->phone),
+                    ],
+                ];
+            });
 
         return Inertia::render('admin/applications/index', [
             'applications' => $applications,
+            'templates' => $user->hasPermission(Permission::ApplicationsReview)
+                ? MessageTemplate::query()->orderBy('id')->get(['id', 'title', 'status', 'body'])
+                : [],
             'filters' => $filters,
             'periods' => ExamPeriod::query()->latest('opens_at')->get(['id', 'name_ar', 'name_en'])
                 ->map(fn (ExamPeriod $period): array => ['id' => $period->id, 'name' => $period->localizedName()]),
@@ -122,6 +141,7 @@ class ApplicationController extends Controller
                     'required' => (bool) $type->pivot->is_required,
                 ])->values(),
             'transitions' => $transitions,
+            'decisionMessage' => $this->decisionMessage($application),
             'canViewDocuments' => $user->hasPermission(Permission::DocumentsView),
             'canAssign' => Gate::allows('assign', $application),
             'reviewers' => Gate::allows('assign', $application) ? $this->reviewers() : [],
@@ -134,6 +154,25 @@ class ApplicationController extends Controller
             ],
             'canResetStudentAccess' => $user->hasPermission(Permission::UsersManage),
         ]);
+    }
+
+    /**
+     * The message of the current decision, to send it again.
+     *
+     * @return array{text: string, phone: string|null}|null
+     */
+    private function decisionMessage(Application $application): ?array
+    {
+        if (! in_array($application->status, DecideApplication::DECISIONS, true)) {
+            return null;
+        }
+
+        $event = $application->events->last(fn (ApplicationEvent $event): bool => $event->to_status === $application->status && filled($event->reason));
+
+        return $event === null ? null : [
+            'text' => (string) $event->reason,
+            'phone' => StudentIdentity::internationalPhone($application->phone),
+        ];
     }
 
     /**

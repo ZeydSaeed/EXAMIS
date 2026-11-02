@@ -2,21 +2,21 @@
 
 Each entry: **symptom → check → action → verify**. Record every incident (time, impact, actions, follow-ups) in the incident log.
 
-## Queue backlog growing (Operations page: oldest pending job > 5 min)
+## Queue backlog growing (oldest pending job > 5 min)
 
 - Check: are the workers running (`systemctl status examis-worker@*`)? Recent `failed_jobs`? CPU and DB load?
 - Action: restart workers (`php artisan queue:restart` + service restart); scale the `documents` pool if scans dominate; look for a poison job in `failed_jobs`. Inspect it with `php artisan queue:failed`, fix the cause, then `queue:retry <id>`.
-- Verify: `oldest_pending_seconds` falls; documents move from pending to verified.
+- Verify: the oldest row in `jobs` gets younger; documents move from pending to verified.
 
 ## Documents stuck "being checked"
 
-- Check: Operations page `documents_pending_scan`; scanner availability; `storage/logs` for scanner errors.
+- Check: `application_documents` with status `pending` and no `replaced_at`; scanner availability; `storage/logs` for scanner errors.
 - Action: restore the scanner; run `php artisan examis:rescan-pending --older-than=0`.
 - Verify: count returns to near zero.
 
 ## Spike of failed logins / lockouts
 
-- Check: Operations page counters; access logs for source IPs and user agents; `audit_events` `auth.failed` grouped by `ip_address`.
+- Check: access logs for source IPs and user agents; `audit_events` `auth.failed` grouped by `ip_address`.
 - Action: block abusive IPs or ASNs at the WAF; if one account is targeted, deactivate it temporarily (Admin → Users) and contact the owner.
 - Verify: counters return to baseline; legitimate users can log in.
 

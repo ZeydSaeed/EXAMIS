@@ -7,10 +7,8 @@ import {
     HelpCircle,
     House,
     LayoutGrid,
-    ScrollText,
     ShieldCheck,
     Users,
-    Activity,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -94,24 +92,6 @@ export function AppSidebar() {
                       title: t('nav.users'),
                       href: admin.users.index(),
                       icon: Users,
-                  },
-              ]
-            : []),
-        ...(can('audit.view')
-            ? [
-                  {
-                      title: t('nav.audit'),
-                      href: admin.audit.index(),
-                      icon: ScrollText,
-                  },
-              ]
-            : []),
-        ...(can('operations.view')
-            ? [
-                  {
-                      title: t('nav.operations'),
-                      href: admin.operations(),
-                      icon: Activity,
                   },
               ]
             : []),

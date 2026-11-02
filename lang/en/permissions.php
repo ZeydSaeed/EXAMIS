@@ -13,7 +13,5 @@ return [
     'content.manage' => 'Manage content',
     'users.manage' => 'Manage users',
     'staff.credentials' => 'Sign-in links',
-    'audit.view' => 'View the audit log',
     'reports.view' => 'View reports',
-    'operations.view' => 'Monitor operations',
 ];

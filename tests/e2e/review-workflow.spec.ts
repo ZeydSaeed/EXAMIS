@@ -111,16 +111,27 @@ test('the applications list shows the agreed columns and decides in place', asyn
         'وجود نقص بالمعاملة',
     ]);
 
-    // Missing paperwork needs a reason for the student.
+    // The ready-made message asks staff to fill in what is missing.
     await status.selectOption('requires_correction');
+    const dialog = staffPage.getByRole('dialog');
+    await expect(dialog.locator('textarea')).toHaveValue(
+        new RegExp(`رقم الطالب: ${studentNumber}`),
+    );
+
     await staffPage.getByTestId('confirm-action').click();
     await expect(
-        staffPage.getByText('يجب كتابة السبب لهذا الإجراء.'),
+        staffPage.getByText('أكمل الفراغات في الرسالة قبل الإرسال.'),
     ).toBeVisible();
-    await staffPage
-        .getByRole('dialog')
-        .locator('textarea')
-        .fill('صورة غير واضحة');
+
+    await staffPage.getByTestId('gap-0').fill('صورة بطاقة السكن');
     await staffPage.getByTestId('confirm-action').click();
-    await expect(staffPage.getByRole('dialog')).toHaveCount(0);
+
+    // Nothing is sent by the system: staff send it from their own WhatsApp.
+    const message = staffPage.getByTestId('decision-message');
+    await expect(message).toContainText('صورة بطاقة السكن');
+    await expect(message).not.toContainText('{فراغ}');
+    await expect(staffPage.getByTestId('whatsapp-link')).toHaveAttribute(
+        'href',
+        /^https:\/\/wa\.me\/964\d+\?text=/,
+    );
 });

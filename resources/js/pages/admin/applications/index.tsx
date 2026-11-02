@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
 import { EmptyState } from '@/components/examis/empty-state';
-import { selectClassName, textareaClassName } from '@/components/examis/field';
+import {
+    Field,
+    selectClassName,
+    textareaClassName,
+} from '@/components/examis/field';
 import { Highlight } from '@/components/examis/highlight';
 import {
     HeaderFilter,
@@ -12,12 +16,15 @@ import {
     ListHeader,
 } from '@/components/examis/list-header';
 import { NumberedPagination } from '@/components/examis/pagination';
+import { SendMessageDialog } from '@/components/examis/send-message-dialog';
 import { StatusBadge, statusSurface } from '@/components/examis/status-badge';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useListQuery } from '@/hooks/use-list-query';
 import { useTrans } from '@/hooks/use-trans';
+import { composeMessage, gapCount } from '@/lib/decision-message';
+import type { MessageContact } from '@/lib/decision-message';
 import { cn } from '@/lib/utils';
 import admin from '@/routes/admin';
 import type { ApplicationStatus, Paginated } from '@/types';
@@ -29,7 +36,10 @@ type Row = {
     status: ApplicationStatus;
     status_label: string;
     decisions: { value: string; label: string; requires_reason: boolean }[];
+    contact: MessageContact | null;
 };
+
+type Template = { id: number; title: string; status: string; body: string };
 
 type Filters = {
     status?: string;
@@ -41,6 +51,7 @@ type Filters = {
 
 type Props = {
     applications: Paginated<Row>;
+    templates: Template[];
     filters: Filters;
     periods: { id: number; name: string }[];
     statuses: { value: ApplicationStatus; label: string }[];
@@ -49,13 +60,18 @@ type Props = {
 /**
  * The status of one application, changed in place. The server offers only
  * what this staff member may do now; with nothing to offer it is just a label.
+ * Choosing a status opens its ready-made messages; the gaps are filled here
+ * and the finished text is what the student receives.
  */
-function StatusCell({ row }: { row: Row }) {
+function StatusCell({ row, templates }: { row: Row; templates: Template[] }) {
     const { t } = useTrans();
     const [chosen, setChosen] = useState<Row['decisions'][number] | null>(null);
+    const [templateId, setTemplateId] = useState('');
+    const [gaps, setGaps] = useState<string[]>([]);
+    const [sent, setSent] = useState<string | null>(null);
     const form = useForm({ target: '', reason: '' });
 
-    if (row.decisions.length === 0) {
+    if (row.decisions.length === 0 || row.contact === null) {
         return (
             <StatusBadge
                 status={row.status}
@@ -64,6 +80,32 @@ function StatusCell({ row }: { row: Row }) {
             />
         );
     }
+
+    const contact = row.contact;
+    const available = templates.filter(
+        (template) => template.status === chosen?.value,
+    );
+    const template = available.find((item) => String(item.id) === templateId);
+
+    const fill = (next: Template | undefined, values: string[]) =>
+        form.setData(
+            'reason',
+            next ? composeMessage(next.body, contact, values) : '',
+        );
+
+    const choose = (decision: Row['decisions'][number]) => {
+        const first = templates.find((item) => item.status === decision.value);
+        const empty = Array<string>(first ? gapCount(first.body) : 0).fill('');
+
+        form.clearErrors();
+        form.setData({
+            target: decision.value,
+            reason: first ? composeMessage(first.body, contact, empty) : '',
+        });
+        setTemplateId(first ? String(first.id) : '');
+        setGaps(empty);
+        setChosen(decision);
+    };
 
     return (
         <>
@@ -78,9 +120,7 @@ function StatusCell({ row }: { row: Row }) {
                     );
 
                     if (decision) {
-                        form.setData({ target: decision.value, reason: '' });
-                        form.clearErrors();
-                        setChosen(decision);
+                        choose(decision);
                     }
                 }}
             >
@@ -107,26 +147,98 @@ function StatusCell({ row }: { row: Row }) {
                 onConfirm={() =>
                     form.post(admin.applications.decision.url(row.uuid), {
                         preserveScroll: true,
-                        onSuccess: () => setChosen(null),
+                        preserveState: true,
+                        onSuccess: () => {
+                            setChosen(null);
+
+                            if (form.data.reason.trim() !== '') {
+                                setSent(form.data.reason);
+                            }
+                        },
                     })
                 }
                 body={
-                    <div className="grid gap-2 text-start">
-                        <Label htmlFor={`reason-${row.uuid}`}>
-                            {chosen?.requires_reason
-                                ? t('admin.reason_required')
-                                : t('admin.reason_optional')}
-                        </Label>
-                        <textarea
+                    <div className="grid gap-3 text-start">
+                        {available.length > 0 && (
+                            <Field
+                                id={`template-${row.uuid}`}
+                                label={t('admin.message_template')}
+                            >
+                                <select
+                                    id={`template-${row.uuid}`}
+                                    className={selectClassName}
+                                    value={templateId}
+                                    data-test="message-template"
+                                    onChange={(event) => {
+                                        const next = available.find(
+                                            (item) =>
+                                                String(item.id) ===
+                                                event.target.value,
+                                        );
+                                        const empty = Array<string>(
+                                            next ? gapCount(next.body) : 0,
+                                        ).fill('');
+
+                                        setTemplateId(event.target.value);
+                                        setGaps(empty);
+                                        fill(next, empty);
+                                    }}
+                                >
+                                    <option value="">
+                                        {t('admin.no_template')}
+                                    </option>
+                                    {available.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </Field>
+                        )}
+
+                        {gaps.map((gap, index) => (
+                            <Field
+                                key={index}
+                                id={`gap-${row.uuid}-${index}`}
+                                label={t('admin.gap_label', {
+                                    number: index + 1,
+                                })}
+                            >
+                                <Input
+                                    id={`gap-${row.uuid}-${index}`}
+                                    value={gap}
+                                    data-test={`gap-${index}`}
+                                    onChange={(event) => {
+                                        const values = gaps.map(
+                                            (current, position) =>
+                                                position === index
+                                                    ? event.target.value
+                                                    : current,
+                                        );
+
+                                        setGaps(values);
+                                        fill(template, values);
+                                    }}
+                                />
+                            </Field>
+                        ))}
+
+                        <Field
                             id={`reason-${row.uuid}`}
-                            className={textareaClassName}
-                            maxLength={1000}
-                            required={chosen?.requires_reason}
-                            value={form.data.reason}
-                            onChange={(event) =>
-                                form.setData('reason', event.target.value)
-                            }
-                        />
+                            label={t('admin.decision_message')}
+                        >
+                            <textarea
+                                id={`reason-${row.uuid}`}
+                                className={textareaClassName}
+                                rows={8}
+                                maxLength={2000}
+                                required={chosen?.requires_reason}
+                                value={form.data.reason}
+                                onChange={(event) =>
+                                    form.setData('reason', event.target.value)
+                                }
+                            />
+                        </Field>
                         <InputError
                             message={
                                 form.errors.reason ??
@@ -142,12 +254,20 @@ function StatusCell({ row }: { row: Row }) {
                     </div>
                 }
             />
+
+            <SendMessageDialog
+                message={sent ?? ''}
+                phone={contact.phone}
+                open={sent !== null}
+                onOpenChange={(open) => !open && setSent(null)}
+            />
         </>
     );
 }
 
 export default function AdminApplications({
     applications,
+    templates,
     filters,
     periods,
     statuses,
@@ -291,8 +411,8 @@ export default function AdminApplications({
                                                 )}
                                             >
                                                 <StatusCell
-                                                    key={row.status}
                                                     row={row}
+                                                    templates={templates}
                                                 />
                                             </td>
                                             <td className="text-center!">

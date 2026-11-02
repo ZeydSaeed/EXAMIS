@@ -32,10 +32,6 @@ EXPLAIN (ANALYZE, BUFFERS)
 SELECT governorate_code, count(*) FROM applications
 WHERE exam_period_id = 1 AND status <> 'draft' GROUP BY governorate_code ORDER BY 2 DESC;
 
--- Audit viewer (cursor pagination).
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM audit_events WHERE action LIKE 'application.%' AND id < 1000000 ORDER BY id DESC LIMIT 51;
-
 -- Lock monitoring during load tests.
 SELECT pid, wait_event_type, wait_event, state, now() - xact_start AS xact_age, left(query, 80)
 FROM pg_stat_activity WHERE datname = current_database() AND state <> 'idle' ORDER BY xact_age DESC NULLS LAST;

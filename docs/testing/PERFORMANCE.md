@@ -26,7 +26,7 @@
     4. `k6 run tests/load/spike.js`
     5. `k6 run -e SOAK_DURATION=2h tests/load/soak.js`
     6. `k6 run tests/load/stress.js` (find the breaking point)
-4. During each run, sample every minute: node CPU/RAM, PHP-FPM active/idle processes, `pg_stat_activity` counts and locks, queue metrics (Admin → Operations), Redis memory.
+4. During each run, sample every minute: node CPU/RAM, PHP-FPM active/idle processes, `pg_stat_activity` counts and locks, `jobs` and `failed_jobs` counts, Redis memory.
 5. Fill in §3 and attach the k6 summary (`--summary-export=results/<run>.json`).
 
 Never run these scripts against production. `tests/load/lib/common.js` refuses production-looking hosts unless `I_HAVE_WRITTEN_APPROVAL=yes`.
@@ -49,7 +49,7 @@ Raw outputs: `storage/load-results/*.json|*.log|*.csv`.
 
 ## 4. Optimizations already in place (design, not yet measured)
 
-- Indexed queries for every list and filter (`docs/database/SCHEMA.md` §3); offset pagination (25/page) for admin lists, cursor pagination for the audit log.
+- Indexed queries for every list and filter (`docs/database/SCHEMA.md` §3); offset pagination (25/page) for admin lists.
 - Grouped count queries for dashboards (one query, not one per status).
 - Eager loading everywhere; lazy loading throws outside production (N+1 guard).
 - Cached reference data (1 h, keys per type, not per user).

@@ -6,6 +6,7 @@ use App\Actions\Applications\DecideApplication;
 use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\MessageTemplate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -20,8 +21,8 @@ class ApplicationDecisionController extends Controller
 
         $validated = $request->validate([
             'target' => ['required', Rule::enum(ApplicationStatus::class)->only(DecideApplication::DECISIONS)],
-            'reason' => ['nullable', 'string', 'max:1000'],
-        ]);
+            'reason' => ['nullable', 'string', 'max:2000', 'not_regex:/\{'.MessageTemplate::GAP.'\}/u'],
+        ], ['reason.not_regex' => __('admin.errors.fill_gaps')]);
 
         $decide->handle($application, ApplicationStatus::from($validated['target']), $request->user(), $validated['reason'] ?? null);
 

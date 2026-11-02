@@ -54,10 +54,10 @@ More workers do not mean more throughput once CPU or database connections satura
 | Availability            | external check on `/up` (liveness) and `/health/ready` (readiness: DB, cache, storage) | 2 consecutive failures                             |
 | Error rate              | access logs / APM (5xx share)                                                          | > 1% for 5 min                                     |
 | Latency                 | access logs / APM p95                                                                  | reads > 1 s or writes > 2 s for 10 min             |
-| Queue backlog           | Admin → Operations (`pending_jobs`, `oldest_pending_seconds`) or `queue:monitor`       | oldest job > 5 min                                 |
+| Queue backlog           | `queue:monitor` or the age of the oldest row in `jobs`                                 | oldest job > 5 min                                 |
 | Failed jobs             | `failed_jobs` count                                                                    | any increase in 15 min                             |
-| Documents awaiting scan | Operations page                                                                        | > 50 for 15 min                                    |
-| Auth anomalies          | `audit_events` `auth.failed` / `auth.lockout` per hour (Operations page)               | > 5× baseline                                      |
+| Documents awaiting scan | `application_documents` with status `pending` and no `replaced_at`                     | > 50 for 15 min                                    |
+| Auth anomalies          | `audit_events` `auth.failed` / `auth.lockout` per hour                                 | > 5× baseline                                      |
 | Rate-limit hits         | 429s in access logs                                                                    | sustained spike (possible attack or limit too low) |
 | CPU / RAM / disk        | node exporter                                                                          | CPU > 85% for 10 min, RAM > 90%, disk > 80%        |
 | PostgreSQL              | `pg_stat_activity`, locks, replication lag, connections                                | waiting locks > 30 s, connections > 80% of pool    |
@@ -67,7 +67,7 @@ More workers do not mean more throughput once CPU or database connections satura
 
 Logs are structured, and every request carries `X-Request-Id`, which is also stored on audit rows. Never log passwords, OTPs, tokens or document contents. The application does not do this, and log shippers must not add request bodies.
 
-Public endpoints reveal no versions, dependency names or connection details. Details are on the admin Operations page (permission `operations.view`).
+Public endpoints reveal no versions, dependency names or connection details. Failure details go to the application log.
 
 ## 5. External service outages — expected behavior
 

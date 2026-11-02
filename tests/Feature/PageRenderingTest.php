@@ -140,7 +140,7 @@ it('treats search input as data, not SQL', function () {
 
 it('renders every admin section for an administrator', function (string $route) {
     $this->actingAs(staffWith(Role::Administrator))->get(route($route))->assertOk();
-})->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.audit.index', 'admin.operations', 'admin.reports.index']);
+})->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.reports.index']);
 
 it('finds exam periods by part of the code or name and filters them by status', function () {
     $target = ExamPeriod::factory()->create(['code' => 'EX2031', 'name_ar' => 'دورة الربيع']);

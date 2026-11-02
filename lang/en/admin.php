@@ -6,6 +6,8 @@ return [
     'errors' => [
         'cannot_change_own_roles' => 'You cannot change the roles of your own account. Another administrator must do it.',
         'cannot_manage_own_credentials' => 'You cannot issue a link for your own account. Another administrator must do it.',
+        'fill_gaps' => 'Complete the gaps in the message first.',
+        'unknown_placeholder' => 'The text has an unknown value between { }.',
         'last_administrator' => 'The last active administrator cannot be deactivated or demoted.',
         'administrators_have_no_overrides' => 'Permission exceptions do not apply to administrators.',
         'cannot_deactivate_self' => 'You cannot deactivate your own account.',

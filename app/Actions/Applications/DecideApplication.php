@@ -38,7 +38,10 @@ class DecideApplication
             }
 
             foreach ($steps as $step) {
-                $this->transition->handle($locked, $step, $actor, $reason);
+                // The message belongs to the decision, not to a stop on the way.
+                $needed = $step === $decision || $locked->status->requiresReasonFor($step);
+
+                $this->transition->handle($locked, $step, $actor, $needed ? $reason : null);
                 $locked->refresh();
             }
         }, 3);

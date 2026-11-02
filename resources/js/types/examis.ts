@@ -139,10 +139,3 @@ export type Paginated<T> = {
     prev_page_url: string | null;
     next_page_url: string | null;
 };
-
-export type CursorPaginated<T> = {
-    data: T[];
-    per_page: number;
-    next_page_url: string | null;
-    prev_page_url: string | null;
-};

@@ -29,6 +29,21 @@ class StudentIdentity
      * Arabic-Indic digits are converted and spaces, dashes and brackets
      * dropped; a "00" international prefix becomes "+".
      */
+    /**
+     * The number as WhatsApp links want it: digits with the country code.
+     */
+    public static function internationalPhone(?string $phone): ?string
+    {
+        $digits = preg_replace('/\D/', '', (string) self::normalizePhone($phone));
+
+        return match (true) {
+            $digits === null, $digits === '' => null,
+            str_starts_with($digits, '00') => substr($digits, 2),
+            str_starts_with($digits, '0') => '964'.substr($digits, 1),
+            default => $digits,
+        };
+    }
+
     public static function normalizePhone(?string $phone): ?string
     {
         if ($phone === null) {

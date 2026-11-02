@@ -14,10 +14,10 @@ use App\Models\User;
 function reviewedMatrix(): array
 {
     return [
-        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'staff.credentials', 'audit.view', 'reports.view', 'operations.view'],
+        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'staff.credentials', 'reports.view'],
         'supervisor' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'reports.view'],
         'reviewer' => ['admin.access', 'applications.view', 'applications.review', 'documents.view'],
-        'auditor' => ['admin.access', 'applications.view', 'applications.view_all', 'audit.view', 'reports.view'],
+        'auditor' => ['admin.access', 'applications.view', 'applications.view_all', 'reports.view'],
     ];
 }
 
@@ -56,17 +56,17 @@ it('ignores an exception that reached a protected permission', function (Permiss
     $staff->permissionOverrides()->create(['permission' => $permission, 'effect' => OverrideEffect::Grant]);
 
     expect($staff->fresh()->hasPermission($permission))->toBe(in_array($permission, Role::Reviewer->permissions(), true));
-})->with([Permission::UsersManage, Permission::OperationsView]);
+})->with([Permission::UsersManage, Permission::StaffCredentials]);
 
 it('ignores exceptions on administrators and deactivated staff', function () {
     $admin = staffWith(Role::Administrator);
-    $admin->permissionOverrides()->create(['permission' => Permission::AuditView, 'effect' => OverrideEffect::Deny]);
+    $admin->permissionOverrides()->create(['permission' => Permission::ReportsView, 'effect' => OverrideEffect::Deny]);
 
     $inactive = staffWith(Role::Reviewer);
     $inactive->permissionOverrides()->create(['permission' => Permission::ReportsView, 'effect' => OverrideEffect::Grant]);
     $inactive->forceFill(['deactivated_at' => now()])->save();
 
-    expect($admin->fresh()->hasPermission(Permission::AuditView))->toBeTrue()
+    expect($admin->fresh()->hasPermission(Permission::ReportsView))->toBeTrue()
         ->and($inactive->fresh()->hasPermission(Permission::ReportsView))->toBeFalse();
 });
 
@@ -91,7 +91,7 @@ it('rejects exceptions on protected permissions', function (string $permission) 
         ->assertSessionHasErrors('overrides');
 
     expect($staff->permissionOverrides()->count())->toBe(0);
-})->with(['users.manage', 'staff.credentials', 'admin.access', 'operations.view']);
+})->with(['users.manage', 'staff.credentials', 'admin.access']);
 
 it('refuses exceptions for oneself, for an administrator and for a student', function () {
     $admin = staffWith(Role::Administrator);

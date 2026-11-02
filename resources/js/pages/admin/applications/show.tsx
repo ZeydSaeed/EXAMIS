@@ -1,11 +1,17 @@
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { ExternalLink, FileWarning, Printer } from 'lucide-react';
+import {
+    ExternalLink,
+    FileWarning,
+    MessageCircle,
+    Printer,
+} from 'lucide-react';
 import { useState } from 'react';
 import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { selectClassName, textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { StatusBadge } from '@/components/examis/status-badge';
+import { SendMessageDialog } from '@/components/examis/send-message-dialog';
 import type { StudentAccount } from '@/components/examis/student-account-card';
 import { StudentAccountCard } from '@/components/examis/student-account-card';
 import { Timeline } from '@/components/examis/timeline';
@@ -27,6 +33,7 @@ type Props = {
         label: string;
         requires_reason: boolean;
     }[];
+    decisionMessage: { text: string; phone: string | null } | null;
     canViewDocuments: boolean;
     canAssign: boolean;
     reviewers: { id: number; name: string }[];
@@ -111,6 +118,7 @@ export default function AdminApplicationShow({
     application,
     documentTypes,
     transitions,
+    decisionMessage,
     canViewDocuments,
     canAssign,
     reviewers,
@@ -118,6 +126,7 @@ export default function AdminApplicationShow({
     canResetStudentAccess,
 }: Props) {
     const { t, locale } = useTrans();
+    const [showMessage, setShowMessage] = useState(false);
     const assignment = useForm<{ assignee_id: number | null }>({
         assignee_id: application.assignee?.id ?? null,
     });
@@ -183,6 +192,27 @@ export default function AdminApplicationShow({
                         </>
                     }
                 />
+
+                {decisionMessage && (
+                    <Button
+                        variant="outline"
+                        className="w-fit"
+                        onClick={() => setShowMessage(true)}
+                        data-test="send-decision-message"
+                    >
+                        <MessageCircle aria-hidden />
+                        {t('admin.send_whatsapp')}
+                    </Button>
+                )}
+
+                {decisionMessage && (
+                    <SendMessageDialog
+                        message={decisionMessage.text}
+                        phone={decisionMessage.phone}
+                        open={showMessage}
+                        onOpenChange={setShowMessage}
+                    />
+                )}
 
                 {transitions.length > 0 && (
                     <section
