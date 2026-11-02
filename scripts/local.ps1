@@ -28,6 +28,8 @@ $env:DB_CONNECTION = 'pgsql'
 $env:DB_DATABASE = 'examis_testing'
 $env:SESSION_DRIVER = 'database'
 $env:APP_URL = "http://students.examis.test:$port"
+$env:EXAMIS_STUDENTS_HOST = 'students.examis.test'
+$env:EXAMIS_STAFF_HOST = 'staff.examis.test'
 
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root

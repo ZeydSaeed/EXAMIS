@@ -23,6 +23,8 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_URL" value="http://students.examis.test"/>
+        <env name="EXAMIS_STUDENTS_HOST" value="students.examis.test"/>
+        <env name="EXAMIS_STAFF_HOST" value="staff.examis.test"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
