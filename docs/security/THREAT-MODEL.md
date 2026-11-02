@@ -57,3 +57,4 @@ Boundaries: browser ↔ web tier (HTTPS); web tier ↔ PostgreSQL / Redis / obje
 2. Structural scanning is not antivirus. **Must** be replaced or complemented with an AV engine before production.
 3. An administrator who hands over a one-time link could use it first, because no mail service delivers it directly (ADR-0011).
 4. Staff accounts have no second factor (ADR-0012): a stolen password is enough to enter one.
+5. Decision messages carry a student's name, number and specialization through WhatsApp, sent by hand from a staff member's number (ADR-0013).

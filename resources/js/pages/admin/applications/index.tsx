@@ -41,6 +41,8 @@ type Row = {
 
 type Template = { id: number; title: string; status: string; body: string };
 
+type SentMessage = { text: string; phone: string | null };
+
 type Filters = {
     status?: string;
     period?: string | number;
@@ -63,12 +65,19 @@ type Props = {
  * Choosing a status opens its ready-made messages; the gaps are filled here
  * and the finished text is what the student receives.
  */
-function StatusCell({ row, templates }: { row: Row; templates: Template[] }) {
+function StatusCell({
+    row,
+    templates,
+    onDecided,
+}: {
+    row: Row;
+    templates: Template[];
+    onDecided: (message: SentMessage) => void;
+}) {
     const { t } = useTrans();
     const [chosen, setChosen] = useState<Row['decisions'][number] | null>(null);
     const [templateId, setTemplateId] = useState('');
     const [gaps, setGaps] = useState<string[]>([]);
-    const [sent, setSent] = useState<string | null>(null);
     const form = useForm({ target: '', reason: '' });
 
     if (row.decisions.length === 0 || row.contact === null) {
@@ -152,7 +161,10 @@ function StatusCell({ row, templates }: { row: Row; templates: Template[] }) {
                             setChosen(null);
 
                             if (form.data.reason.trim() !== '') {
-                                setSent(form.data.reason);
+                                onDecided({
+                                    text: form.data.reason,
+                                    phone: contact.phone,
+                                });
                             }
                         },
                     })
@@ -254,13 +266,6 @@ function StatusCell({ row, templates }: { row: Row; templates: Template[] }) {
                     </div>
                 }
             />
-
-            <SendMessageDialog
-                message={sent ?? ''}
-                phone={contact.phone}
-                open={sent !== null}
-                onOpenChange={(open) => !open && setSent(null)}
-            />
         </>
     );
 }
@@ -273,6 +278,8 @@ export default function AdminApplications({
     statuses,
 }: Props) {
     const { t } = useTrans();
+    // Held here: a decision can take the row out of a filtered list.
+    const [sent, setSent] = useState<SentMessage | null>(null);
     const { search, setSearch, urlFor, visit, tableArea } = useListQuery({
         url: admin.applications.index.url,
         filters,
@@ -299,6 +306,13 @@ export default function AdminApplications({
     return (
         <>
             <Head title={t('nav.applications')} />
+
+            <SendMessageDialog
+                message={sent?.text ?? ''}
+                phone={sent?.phone ?? null}
+                open={sent !== null}
+                onOpenChange={(open) => !open && setSent(null)}
+            />
 
             <ListHeader
                 search={search}
@@ -413,6 +427,7 @@ export default function AdminApplications({
                                                 <StatusCell
                                                     row={row}
                                                     templates={templates}
+                                                    onDecided={setSent}
                                                 />
                                             </td>
                                             <td className="text-center!">
