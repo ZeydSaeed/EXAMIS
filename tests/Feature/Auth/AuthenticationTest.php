@@ -1,8 +1,15 @@
 <?php
 
+use App\Enums\Role;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+
+function unenrolledStaff(array $attributes = []): User
+{
+    return User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create($attributes);
+}
 
 test('the old login page redirects to the terms page', function () {
     $response = $this->get(route('login'));
@@ -10,19 +17,19 @@ test('the old login page redirects to the terms page', function () {
     $response->assertRedirect(route('apply.terms'));
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('staff can authenticate by email', function () {
+    $user = unenrolledStaff();
 
     $response = $this->post(route('login.store'), [
-        'username' => $user->username,
+        'email' => $user->email,
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticated();
+    $this->assertAuthenticatedAs($user);
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('users with two factor enabled are redirected to two factor challenge', function () {
+test('staff with two factor enabled are redirected to two factor challenge', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
     Features::twoFactorAuthentication([
@@ -30,10 +37,10 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'confirmPassword' => true,
     ]);
 
-    $user = User::factory()->withTwoFactor()->create();
+    $user = User::factory()->staff(Role::Reviewer)->create();
 
     $response = $this->post(route('login'), [
-        'username' => $user->username,
+        'email' => $user->email,
         'password' => 'password',
     ]);
 
@@ -42,13 +49,31 @@ test('users with two factor enabled are redirected to two factor challenge', fun
     $this->assertGuest();
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+test('staff can not authenticate with invalid password', function () {
+    $user = unenrolledStaff();
 
     $this->post(route('login.store'), [
-        'username' => $user->username,
+        'email' => $user->email,
         'password' => 'wrong-password',
     ]);
+
+    $this->assertGuest();
+});
+
+test('the username no longer signs anyone in', function () {
+    $user = unenrolledStaff();
+
+    $this->post(route('login.store'), ['username' => $user->username, 'password' => 'password'])
+        ->assertSessionHasErrors('email');
+
+    $this->assertGuest();
+});
+
+test('a student account can not use the staff sign-in, even with a password', function () {
+    $student = User::factory()->create(['email' => 'family@example.com']);
+
+    $this->post(route('login.store'), ['email' => $student->email, 'password' => 'password'])
+        ->assertSessionHasErrors(['email' => __('auth.failed')]);
 
     $this->assertGuest();
 });
@@ -63,37 +88,57 @@ test('users can logout', function () {
     $this->assertGuest();
 });
 
-test('users are rate limited', function () {
-    $user = User::factory()->create();
+test('sign-in is rate limited', function () {
+    $user = unenrolledStaff();
 
-    RateLimiter::increment(md5('login'.implode('|', [$user->username, '127.0.0.1'])), amount: 5);
+    RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
 
     $response = $this->post(route('login.store'), [
-        'username' => $user->username,
+        'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
     $response->assertTooManyRequests();
 });
-test('deactivated users receive the same error as a wrong password', function () {
-    $user = User::factory()->deactivated()->create();
+
+test('deactivated staff receive the same error as a wrong password', function () {
+    $user = User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->deactivated()->create();
 
     $response = $this->post(route('login.store'), [
-        'username' => $user->username,
+        'email' => $user->email,
         'password' => 'password',
     ]);
 
     $this->assertGuest();
-    $response->assertSessionHasErrors(['username' => __('auth.failed')]);
+    $response->assertSessionHasErrors(['email' => __('auth.failed')]);
 });
 
-test('usernames are matched case-insensitively', function () {
-    $user = User::factory()->create(['username' => 'ali.hasan']);
+test('an unknown email receives the same error as a wrong password', function () {
+    $this->post(route('login.store'), ['email' => 'nobody@example.com', 'password' => 'password'])
+        ->assertSessionHasErrors(['email' => __('auth.failed')]);
+});
+
+test('emails are matched case-insensitively', function () {
+    $user = unenrolledStaff(['email' => 'ali.hasan@example.com']);
 
     $this->post(route('login.store'), [
-        'username' => 'Ali.Hasan',
+        'email' => 'Ali.Hasan@Example.com',
         'password' => 'password',
     ]);
 
     $this->assertAuthenticatedAs($user);
+});
+
+test('a staff email belongs to one staff account, in any letter case', function () {
+    unenrolledStaff(['email' => 'shared@example.com']);
+
+    expect(fn () => unenrolledStaff(['email' => 'SHARED@example.com']))->toThrow(QueryException::class);
+});
+
+test('students may still share an email with each other and with staff', function () {
+    unenrolledStaff(['email' => 'shared@example.com']);
+
+    User::factory()->count(2)->create(['email' => 'shared@example.com']);
+
+    expect(User::query()->where('email', 'shared@example.com')->count())->toBe(3);
 });

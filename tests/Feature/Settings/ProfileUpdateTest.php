@@ -12,7 +12,7 @@ test('profile page is displayed', function () {
     $response->assertOk();
 });
 
-test('profile information can be updated', function () {
+test('staff can update their name but not their sign-in email', function () {
     $user = User::factory()->staff()->create();
 
     $response = $this
@@ -22,6 +22,8 @@ test('profile information can be updated', function () {
             'email' => 'test@example.com',
         ]);
 
+    $email = $user->email;
+
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('profile.edit'));
@@ -29,7 +31,7 @@ test('profile information can be updated', function () {
     $user->refresh();
 
     expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
+    expect($user->email)->toBe($email);
 });
 
 test('nobody can delete their own account', function () {

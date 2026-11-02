@@ -75,7 +75,6 @@ export default function TwoFactorRecoveryCodes({
                         />
                         {codesAreVisible ? 'Hide' : 'View'} recovery codes
                     </Button>
-
                 </div>
                 <div
                     id="recovery-codes-section"
@@ -124,8 +123,8 @@ export default function TwoFactorRecoveryCodes({
 
                                 <div className="text-xs text-muted-foreground select-none">
                                     <p>
-                                        Each recovery code can be used once.
-                                        Ask an administrator if you run out.
+                                        Each recovery code can be used once. Ask
+                                        an administrator if you run out.
                                     </p>
                                 </div>
                             </>

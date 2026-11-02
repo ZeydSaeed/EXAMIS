@@ -19,7 +19,9 @@ test.describe('security boundaries', () => {
         expect(response?.status()).toBe(404);
     });
 
-    test('guests are sent to the sign-in on the terms page', async ({ page }) => {
+    test('guests are sent to the sign-in on the terms page', async ({
+        page,
+    }) => {
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/\/apply\/terms/);
     });

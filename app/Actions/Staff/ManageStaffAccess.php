@@ -30,10 +30,10 @@ class ManageStaffAccess
      *
      * @param  list<Role>  $roles
      */
-    public function create(string $username, string $name, string $email, array $roles, User $actor): User
+    public function create(string $name, string $email, array $roles, User $actor): User
     {
-        $user = DB::transaction(function () use ($username, $name, $email, $roles, $actor): User {
-            $user = new User(['username' => Str::lower($username), 'name' => $name, 'email' => Str::lower($email), 'password' => Str::random(64)]);
+        $user = DB::transaction(function () use ($name, $email, $roles, $actor): User {
+            $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => Str::random(64)]);
             $user->account_type = AccountType::Staff;
             $user->save();
 

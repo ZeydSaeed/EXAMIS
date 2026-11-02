@@ -229,11 +229,10 @@ function CreateStaffDialog({
 }) {
     const { t } = useTrans();
     const create = useForm<{
-        username: string;
         name: string;
         email: string;
         roles: string[];
-    }>({ username: '', name: '', email: '', roles: [] });
+    }>({ name: '', email: '', roles: [] });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -256,22 +255,7 @@ function CreateStaffDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={submit} className="grid gap-4 sm:grid-cols-3">
-                    <Field
-                        id="new-username"
-                        label={t('auth.username')}
-                        error={create.errors.username}
-                        required
-                    >
-                        <Input
-                            id="new-username"
-                            dir="auto"
-                            value={create.data.username}
-                            onChange={(event) =>
-                                create.setData('username', event.target.value)
-                            }
-                        />
-                    </Field>
+                <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
                     <Field
                         id="new-name"
                         label={t('auth.full_name')}
@@ -302,7 +286,7 @@ function CreateStaffDialog({
                             }
                         />
                     </Field>
-                    <fieldset className="sm:col-span-3">
+                    <fieldset className="sm:col-span-2">
                         <legend className="mb-2 text-sm font-medium">
                             {t('users.roles')}
                         </legend>
@@ -347,7 +331,7 @@ function CreateStaffDialog({
                     <Button
                         type="submit"
                         disabled={create.processing}
-                        className="sm:col-start-3"
+                        className="sm:col-start-2"
                     >
                         {t('users.create')}
                     </Button>
@@ -484,11 +468,6 @@ export default function StaffUsers({
                                                     className="text-xs text-muted-foreground"
                                                     dir="ltr"
                                                 >
-                                                    <Highlight
-                                                        text={user.username}
-                                                        query={filters.q}
-                                                    />
-                                                    {' · '}
                                                     <Highlight
                                                         text={user.email}
                                                         query={filters.q}

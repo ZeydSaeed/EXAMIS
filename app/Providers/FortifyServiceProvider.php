@@ -22,6 +22,12 @@ use Laravel\Fortify\Fortify;
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
+     * A bcrypt hash of a discarded random value, checked when no account
+     * matched so that case takes as long as a wrong password.
+     */
+    private const UNUSABLE_HASH = '$2y$12$HxPf28n8172LkwiS.REQDulRTzalpsxyH3zVG/4/AhMxjIY/S0En.';
+
+    /**
      * Register any application services.
      */
     public function register(): void
@@ -51,19 +57,18 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Authenticate by username. Deactivated accounts fail with the same
-     * generic message as a wrong password, so account state is not leaked.
+     * Authenticate staff by email (ADR-0011). Student, unknown and deactivated
+     * accounts fail like a wrong password, and with the same cost, so nothing
+     * about an account is leaked.
      */
     private function configureAuthentication(): void
     {
         Fortify::authenticateUsing(function (Request $request): ?User {
-            $user = User::query()->where('username', Str::lower((string) $request->input('username')))->first();
+            $user = User::query()->staff()->whereRaw('lower(email) = ?', [Str::lower(trim((string) $request->input('email')))])->first();
 
-            if ($user === null || ! $user->isActive() || ! Hash::check((string) $request->input('password'), $user->password)) {
-                return null;
-            }
+            $passwordMatches = Hash::check((string) $request->input('password'), $user->password ?? self::UNUSABLE_HASH);
 
-            return $user;
+            return $passwordMatches && $user?->isActive() ? $user : null;
         });
     }
 

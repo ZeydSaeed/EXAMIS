@@ -29,7 +29,7 @@ export default function Profile() {
                 <Heading
                     variant="small"
                     title="Profile"
-                    description="Update your name and email address"
+                    description="Update your profile details"
                 />
 
                 <Form
@@ -69,7 +69,7 @@ export default function Profile() {
                                     className="mt-1 block w-full"
                                     defaultValue={auth.user.email ?? ''}
                                     name="email"
-                                    required={!isStudent}
+                                    disabled={!isStudent}
                                     autoComplete="username"
                                     placeholder="Email address"
                                 />
@@ -117,7 +117,6 @@ export default function Profile() {
                     )}
                 </Form>
             </div>
-
         </>
     );
 }

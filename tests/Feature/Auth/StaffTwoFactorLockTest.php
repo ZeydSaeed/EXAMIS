@@ -97,7 +97,7 @@ it('never remembers a staff sign-in', function () {
     $staff = User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create();
     $token = $staff->remember_token;
 
-    $response = $this->post(route('login.store'), ['username' => $staff->username, 'password' => 'password', 'remember' => 'on']);
+    $response = $this->post(route('login.store'), ['email' => $staff->email, 'password' => 'password', 'remember' => 'on']);
 
     $this->assertAuthenticatedAs($staff);
     expect($staff->fresh()->remember_token)->toBe($token)
@@ -107,7 +107,7 @@ it('never remembers a staff sign-in', function () {
 it('challenges an enrolled staff member with remember off', function () {
     $staff = staffWith(Role::Reviewer);
 
-    $this->post(route('login.store'), ['username' => $staff->username, 'password' => 'password', 'remember' => 'on'])
+    $this->post(route('login.store'), ['email' => $staff->email, 'password' => 'password', 'remember' => 'on'])
         ->assertRedirect(route('two-factor.login'))
         ->assertSessionHas('login.remember', false);
 

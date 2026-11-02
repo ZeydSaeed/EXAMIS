@@ -93,7 +93,10 @@ export default function Start() {
                                 >
                                     <Link href={dashboard()}>
                                         {t('home.go_to_account')}
-                                        <Forward className="size-4" aria-hidden />
+                                        <Forward
+                                            className="size-4"
+                                            aria-hidden
+                                        />
                                     </Link>
                                 </Button>
                             ) : (

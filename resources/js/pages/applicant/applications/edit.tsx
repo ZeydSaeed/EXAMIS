@@ -11,11 +11,7 @@ import type { FormEvent, KeyboardEvent } from 'react';
 import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DocumentUploader } from '@/components/examis/document-uploader';
-import {
-    describedBy,
-    Field,
-    selectClassName,
-} from '@/components/examis/field';
+import { describedBy, Field, selectClassName } from '@/components/examis/field';
 import { PageContainer } from '@/components/examis/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -559,8 +555,7 @@ export default function EditApplication({
                                         </option>
                                     </select>
                                 </Field>
-                                {form.data.birth_place_code ===
-                                    OTHER_CODE && (
+                                {form.data.birth_place_code === OTHER_CODE && (
                                     <Field
                                         id="birth_place_other"
                                         label={t('fields.birth_place_other')}
@@ -993,7 +988,9 @@ export default function EditApplication({
                                                 {t('applicant.print_back_text')}
                                             </p>
                                         }
-                                        confirmLabel={t('applicant.print_accept')}
+                                        confirmLabel={t(
+                                            'applicant.print_accept',
+                                        )}
                                         cancelLabel={t('applicant.print_back')}
                                         open={confirmingPrint}
                                         onOpenChange={setConfirmingPrint}

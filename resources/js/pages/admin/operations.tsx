@@ -137,7 +137,10 @@ export default function Operations({
                     </div>
                 </section>
 
-                <section aria-labelledby="student-numbers" className="space-y-3">
+                <section
+                    aria-labelledby="student-numbers"
+                    className="space-y-3"
+                >
                     <h2 id="student-numbers" className="font-semibold">
                         {t('operations.student_numbers')}
                     </h2>

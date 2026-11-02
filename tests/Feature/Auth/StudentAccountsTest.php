@@ -196,14 +196,14 @@ test('staff still sign in with a password at the staff login', function () {
 
     $this->get(route('staff.login'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('auth/staff-login'));
 
-    $this->post(route('login.store'), ['username' => $staff->username, 'password' => 'password']);
+    $this->post(route('login.store'), ['email' => $staff->email, 'password' => 'password']);
     $this->assertAuthenticatedAs($staff);
 });
 
 test('password-less students cannot sign in through the password form', function () {
     $user = User::factory()->student()->create();
 
-    $this->post(route('login.store'), ['username' => $user->username, 'password' => '']);
+    $this->post(route('login.store'), ['email' => $user->email, 'password' => '']);
     $this->assertGuest();
 });
 

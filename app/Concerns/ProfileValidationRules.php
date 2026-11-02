@@ -3,8 +3,9 @@
 namespace App\Concerns;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 trait ProfileValidationRules
 {
@@ -43,13 +44,17 @@ trait ProfileValidationRules
     }
 
     /**
-     * The unique login identifier of a staff account.
+     * A staff email is the sign-in identifier, unique among staff (ADR-0011).
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
-    protected function usernameRules(): array
+    protected function staffEmailRules(): array
     {
-        return ['required', 'string', 'min:3', 'max:32', 'regex:/^[a-z0-9._\x{0621}-\x{063A}\x{0641}-\x{064A}-]+$/u', 'not_regex:/^[0-9]+$/', Rule::unique(User::class, 'username')];
+        return ['required', 'string', 'email:rfc', 'max:255', function (string $attribute, mixed $value, Closure $fail): void {
+            if (User::query()->staff()->whereRaw('lower(email) = ?', [Str::lower((string) $value)])->exists()) {
+                $fail(__('validation.unique', ['attribute' => $attribute]));
+            }
+        }];
     }
 
     /**

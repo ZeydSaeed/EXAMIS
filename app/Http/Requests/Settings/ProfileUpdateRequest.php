@@ -18,8 +18,9 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        // The staff email is the sign-in identifier, so it is not self-service.
         if (! $this->user()->isApplicant()) {
-            return $this->profileRules($this->user()->id);
+            return ['name' => $this->nameRules()];
         }
 
         // Students may add an email but are not required to. Older accounts

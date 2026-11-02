@@ -76,14 +76,13 @@ class StaffUserController extends Controller
     public function store(Request $request, ManageStaffAccess $access): RedirectResponse
     {
         $validated = $request->validate([
-            'username' => $this->usernameRules(),
             'name' => $this->nameRules(),
-            'email' => $this->emailRules(),
+            'email' => $this->staffEmailRules(),
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => [Rule::enum(Role::class), 'distinct'],
         ]);
 
-        $access->create($validated['username'], $validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user());
+        $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.staff_created')]);
 

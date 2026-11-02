@@ -13,18 +13,25 @@ it('creates staff accounts that set their own password through a reset link', fu
 
     $this->actingAs(staffWith(Role::Administrator))
         ->post(route('admin.users.store'), [
-            'username' => 'new.reviewer',
             'name' => 'مدقق جديد',
             'email' => 'reviewer@example.com',
             'roles' => ['reviewer'],
         ])
         ->assertSessionHasNoErrors();
 
-    $staff = User::query()->where('username', 'new.reviewer')->sole();
+    $staff = User::query()->where('email', 'reviewer@example.com')->sole();
     expect($staff->account_type)->toBe(AccountType::Staff)
         ->and($staff->hasRole(Role::Reviewer))->toBeTrue()
         ->and(AuditEvent::query()->where('action', 'staff.created')->exists())->toBeTrue();
     Notification::assertSentTo($staff, ResetPassword::class);
+});
+
+it('refuses a staff email already in use, in any letter case', function () {
+    staffWith(Role::Reviewer)->forceFill(['email' => 'taken@example.com'])->save();
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->post(route('admin.users.store'), ['name' => 'موظف جديد', 'email' => 'TAKEN@example.com', 'roles' => ['reviewer']])
+        ->assertSessionHasErrors('email');
 });
 
 it('records role changes with before and after values', function () {
@@ -57,7 +64,7 @@ it('deactivates an account and blocks its next sign-in', function () {
 
     auth()->logout();
 
-    $this->post(route('login.store'), ['username' => $staff->username, 'password' => 'password']);
+    $this->post(route('login.store'), ['email' => $staff->email, 'password' => 'password']);
     $this->assertGuest();
 });
 
@@ -71,10 +78,10 @@ it('ends the current session of a deactivated user on their next request', funct
 
 it('only administrators manage staff', function () {
     $this->actingAs(staffWith(Role::Supervisor))
-        ->post(route('admin.users.store'), ['username' => 'x.y.z', 'name' => 'x', 'email' => 'x@example.com', 'roles' => ['administrator']])
+        ->post(route('admin.users.store'), ['name' => 'xxx', 'email' => 'x@example.com', 'roles' => ['administrator']])
         ->assertForbidden();
 
-    expect(User::query()->where('username', 'x.y.z')->exists())->toBeFalse();
+    expect(User::query()->where('email', 'x@example.com')->exists())->toBeFalse();
 });
 
 it('finds staff by part of the name, username or email, ignoring case', function () {

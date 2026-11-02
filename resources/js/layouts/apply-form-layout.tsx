@@ -12,10 +12,7 @@ export default function ApplyFormLayout({ children }: { children: ReactNode }) {
         <div className="relative isolate flex min-h-svh flex-col overflow-hidden bg-[var(--examis-pearl)] text-[var(--examis-navy)] dark:bg-[#0a1230] dark:text-white">
             <BrandBackdrop />
             <ApplyHeader />
-            <main
-                id="main-content"
-                className="mx-auto w-full max-w-3xl flex-1"
-            >
+            <main id="main-content" className="mx-auto w-full max-w-3xl flex-1">
                 {children}
             </main>
             <NetworkStatus />

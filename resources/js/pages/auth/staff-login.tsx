@@ -49,13 +49,12 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="username">
-                                    {t('auth.username')}
-                                </Label>
+                                <Label htmlFor="email">{t('auth.email')}</Label>
                                 <Input
-                                    id="username"
-                                    name="username"
-                                    dir="auto"
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    dir="ltr"
                                     required
                                     autoFocus
                                     tabIndex={1}
@@ -63,17 +62,15 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                                     autoCapitalize="none"
                                     spellCheck={false}
                                     aria-invalid={
-                                        errors.username ? true : undefined
+                                        errors.email ? true : undefined
                                     }
                                     aria-describedby={
-                                        errors.username
-                                            ? 'username-error'
-                                            : undefined
+                                        errors.email ? 'email-error' : undefined
                                     }
                                 />
                                 <InputError
-                                    id="username-error"
-                                    message={errors.username}
+                                    id="email-error"
+                                    message={errors.email}
                                 />
                             </div>
 
