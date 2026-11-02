@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Portal;
 use App\Exceptions\DomainRuleViolation;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureAccountIsActive;
@@ -7,6 +8,7 @@ use App\Http\Middleware\EnsureStaffTwoFactor;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SelectPortal;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        $middleware->web(append: [
+        $middleware->web(prepend: [SelectPortal::class], append: [
             SetLocale::class,
             EnsureAccountIsActive::class,
             SecurityHeaders::class,
@@ -37,6 +39,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'staff.2fa' => EnsureStaffTwoFactor::class,
         ]);
+
+        $middleware->redirectGuestsTo(fn (Request $request): string => route(Portal::forRequest($request) === Portal::Staff ? 'staff.login' : 'apply.terms'));
+        $middleware->redirectUsersTo(fn (Request $request): string => route(Portal::forRequest($request) === Portal::Staff ? 'admin.home' : 'dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

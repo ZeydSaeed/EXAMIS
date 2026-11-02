@@ -198,7 +198,7 @@ describe('downloading', function () {
         $document = ApplicationDocument::factory()->verified()->create(['application_id' => $application->id]);
         $reviewer = staffWith(Role::Reviewer);
 
-        $this->actingAs($reviewer)->get(route('documents.show', $document))->assertOk();
+        $this->actingAs($reviewer)->get(route('admin.documents.show', $document))->assertOk();
 
         expect(AuditEvent::query()->where('action', 'document.viewed')->where('actor_id', $reviewer->id)->exists())->toBeTrue();
     });
@@ -207,18 +207,18 @@ describe('downloading', function () {
         $application = Application::factory()->submitted()->create();
         $document = ApplicationDocument::factory()->verified()->create(['application_id' => $application->id]);
 
-        $this->actingAs(staffWith(Role::Auditor))->get(route('documents.show', $document))->assertNotFound();
+        $this->actingAs(staffWith(Role::Auditor))->get(route('admin.documents.show', $document))->assertNotFound();
     });
 
     it('hides draft documents from staff', function () {
         $document = ApplicationDocument::factory()->verified()->create();
 
-        $this->actingAs(staffWith(Role::Supervisor))->get(route('documents.show', $document))->assertNotFound();
+        $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.documents.show', $document))->assertNotFound();
     });
 
     it('requires authentication', function () {
         $document = ApplicationDocument::factory()->verified()->create();
 
-        $this->get(route('documents.show', $document))->assertRedirect(route('login'));
+        $this->get(route('documents.show', $document))->assertRedirect(route('apply.terms'));
     });
 });

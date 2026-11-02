@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\LockStaffTwoFactor;
-use App\Http\Middleware\ThrottleAuthEndpoints;
 use Laravel\Fortify\Features;
 
 return [
@@ -17,7 +16,7 @@ return [
     |
     */
 
-    'guard' => 'web',
+    'guard' => 'staff',
 
     /*
     |--------------------------------------------------------------------------
@@ -75,7 +74,7 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/admin/home',
 
     /*
     |--------------------------------------------------------------------------
@@ -90,7 +89,8 @@ return [
 
     'prefix' => '',
 
-    'domain' => null,
+    // Fortify serves the staff portal only (ADR-0011); see Portal::routeDomain().
+    'domain' => app()->runningConsoleCommand('wayfinder:generate') ? null : env('EXAMIS_STAFF_HOST', 'staff.examis.test'),
 
     /*
     |--------------------------------------------------------------------------
@@ -103,7 +103,7 @@ return [
     |
     */
 
-    'middleware' => ['web', ThrottleAuthEndpoints::class, LockStaffTwoFactor::class],
+    'middleware' => ['web', LockStaffTwoFactor::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -146,11 +146,10 @@ return [
     */
 
     /*
-     * Password reset is implemented by App\Http\Controllers\Auth because it is
-     * keyed by username, not email (ADR-0002); Fortify's version is disabled.
+     * Staff passwords are set through one-time links and students register on
+     * their own portal (ADR-0011), so Fortify's versions of both are disabled.
      */
     'features' => [
-        Features::registration(),
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

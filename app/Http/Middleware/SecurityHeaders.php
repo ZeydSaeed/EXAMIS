@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Portal;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -40,6 +41,11 @@ class SecurityHeaders
 
         if (config('examis.security.hsts') && $request->isSecure()) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
+        if (Portal::forRequest($request) === Portal::Staff) {
+            $headers->set('X-Robots-Tag', 'noindex, nofollow');
+            $headers->set('Referrer-Policy', 'no-referrer');
         }
 
         if ($request->user() !== null) {

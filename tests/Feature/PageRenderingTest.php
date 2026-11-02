@@ -24,10 +24,6 @@ it('renders the applicant dashboard with only the applicant\'s own applications'
         ->assertRedirect(route('applications.printed', $mine));
 });
 
-it('sends staff from the applicant dashboard to the admin area', function () {
-    $this->actingAs(staffWith(Role::Reviewer))->get(route('dashboard'))->assertRedirect(route('admin.home'));
-});
-
 it('renders the application form with the governorates and what is missing', function () {
     $application = readyDraft();
 

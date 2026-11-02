@@ -130,11 +130,11 @@ it('ends existing sessions when the password changes', function () {
     config(['session.driver' => 'database']);
     $staff = invitee();
 
-    DB::table('sessions')->insert(['id' => 'old-session', 'user_id' => $staff->id, 'payload' => '', 'last_activity' => time()]);
+    DB::table('staff_sessions')->insert(['id' => 'old-session', 'user_id' => $staff->id, 'payload' => '', 'last_activity' => time()]);
 
     $this->post(route('staff.invitation.store'), accept(issueLink($staff)));
 
-    expect(DB::table('sessions')->where('user_id', $staff->id)->count())->toBe(0);
+    expect(DB::table('staff_sessions')->where('user_id', $staff->id)->count())->toBe(0);
 });
 
 it('lets an administrator issue a new link and reset two-factor for someone else', function () {

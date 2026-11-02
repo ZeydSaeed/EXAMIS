@@ -35,7 +35,9 @@ class EnsureAccountIsActive
         $closed = $user->isClosed();
         $message = $closed ? __('auth.account_closed') : __('auth.deactivated');
 
-        Auth::guard('web')->logout();
+        $staff = $user->isStaff();
+
+        Auth::guard()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -43,6 +45,10 @@ class EnsureAccountIsActive
         Inertia::clearHistory();
 
         // A student who finished printing is done, so back to the start page.
-        return redirect()->route($closed ? 'start' : 'apply.terms')->with('status', $message);
+        return redirect()->route(match (true) {
+            $staff => 'staff.login',
+            $closed => 'start',
+            default => 'apply.terms',
+        })->with('status', $message);
     }
 }

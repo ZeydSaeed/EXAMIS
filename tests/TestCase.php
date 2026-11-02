@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Features;
@@ -25,6 +27,14 @@ abstract class TestCase extends BaseTestCase
         }
 
         return $app;
+    }
+
+    /**
+     * Signs in through the guard that account type really uses.
+     */
+    public function actingAs(UserContract $user, $guard = null)
+    {
+        return parent::actingAs($user, $guard ?? ($user instanceof User && $user->isStaff() ? 'staff' : 'web'));
     }
 
     /**

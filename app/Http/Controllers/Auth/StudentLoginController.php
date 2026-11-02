@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Laravel\Fortify\Fortify;
 
 /**
  * Student sign-in (ADR-0009, ADR-0010). The student number or the QR link
@@ -141,6 +140,6 @@ class StudentLoginController extends Controller
         Auth::guard('web')->login($user, $remember);
         $request->session()->regenerate();
 
-        return redirect()->intended(Fortify::redirects('login'));
+        return redirect()->intended(route('dashboard'));
     }
 }

@@ -50,16 +50,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Portals (ADR-0011)
+    |--------------------------------------------------------------------------
+    |
+    | The host each portal answers on. Every other host gets a 404.
+    |
+    */
+
+    'portals' => [
+        'students' => env('EXAMIS_STUDENTS_HOST', 'students.examis.test'),
+        'staff' => env('EXAMIS_STAFF_HOST', 'staff.examis.test'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Staff accounts (ADR-0011)
     |--------------------------------------------------------------------------
     |
-    | How long a one-time link stays valid. Administrators hand it to the staff
-    | member themselves, so no mail service is needed.
+    | How long a one-time link stays valid and how long an idle staff session
+    | lasts. Administrators hand links to staff themselves, so no mail service
+    | is needed.
     |
     */
 
     'staff' => [
         'invitation_hours' => (int) env('EXAMIS_INVITATION_HOURS', 48),
+        'idle_minutes' => (int) env('EXAMIS_STAFF_IDLE_MINUTES', 30),
     ],
 
     /*

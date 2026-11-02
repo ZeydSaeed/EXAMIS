@@ -108,7 +108,7 @@ test('without an open period the page says so and the student stays on it', func
 test('staff are sent away from this page', function () {
     $this->actingAs(User::factory()->staff()->create())
         ->get(route('apply.specialization'))
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('apply.terms'));
 });
 
 test('only branches eligible in the period are offered and accepted', function () {

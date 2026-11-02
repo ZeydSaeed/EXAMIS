@@ -2,11 +2,8 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\CreateNewUser;
-use App\Http\Controllers\Public\ApplicationTermsController;
 use App\Http\Requests\Auth\StaffTwoFactorLoginRequest;
 use App\Http\Responses\LogoutResponse;
-use App\Http\Responses\RegisterResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -16,7 +13,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
-use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
 
@@ -34,7 +30,6 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
-        $this->app->singleton(RegisterResponseContract::class, RegisterResponse::class);
         $this->app->bind(TwoFactorLoginRequest::class, StaffTwoFactorLoginRequest::class);
     }
 
@@ -43,18 +38,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureActions();
         $this->configureAuthentication();
         $this->configureViews();
         $this->configureRateLimiting();
-    }
-
-    /**
-     * Configure Fortify actions.
-     */
-    private function configureActions(): void
-    {
-        Fortify::createUsersUsing(CreateNewUser::class);
     }
 
     /**
@@ -78,13 +64,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        // The login page is gone; the framework still sends guests to this route.
-        Fortify::loginView(fn () => to_route('apply.terms'));
-
-        // Registration starts with reading and accepting the application terms.
-        Fortify::registerView(fn (Request $request) => ApplicationTermsController::accepted($request)
-            ? Inertia::render('auth/register')
-            : to_route('apply.terms'));
+        // The form lives at /staff/login; Fortify's own /login only leads there.
+        Fortify::loginView(fn () => to_route('staff.login'));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 

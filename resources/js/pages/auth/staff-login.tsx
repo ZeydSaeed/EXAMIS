@@ -1,13 +1,11 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import apply from '@/routes/apply';
 import { store } from '@/routes/login';
 
 type Props = {
@@ -101,12 +99,6 @@ export default function StaffLogin({ status }: Props) {
                                 {processing && <Spinner />}
                                 {t('auth.login')}
                             </Button>
-                        </div>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            <TextLink href={apply.terms()} tabIndex={6}>
-                                {t('auth.student_login_link')}
-                            </TextLink>
                         </div>
                     </>
                 )}

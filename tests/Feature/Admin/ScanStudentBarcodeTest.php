@@ -60,7 +60,7 @@ it('prints the student number as a barcode, without the old footer', function ()
         ->create();
 
     $pdf = (string) $this->actingAs(User::factory()->staff(Role::Administrator)->create())
-        ->get(route('applications.receipt', $application))
+        ->get(route('admin.applications.receipt', $application))
         ->getContent();
 
     expect($pdf)->toStartWith('%PDF-');

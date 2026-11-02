@@ -294,7 +294,7 @@ class ManageStaffAccess
     private function endSessions(User $user): void
     {
         if (config('session.driver') === 'database') {
-            DB::table((string) config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
+            DB::table('staff_sessions')->where('user_id', $user->id)->delete();
         }
     }
 }

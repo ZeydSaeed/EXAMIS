@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Auth\AccountTypeUserProvider;
 use App\Enums\Permission;
 use App\Models\User;
 use App\Services\Documents\DocumentScanner;
@@ -10,6 +11,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -72,6 +74,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureAuthorization(): void
     {
+        Auth::provider('account_type', fn ($app, array $config): AccountTypeUserProvider => new AccountTypeUserProvider(
+            $app['hash'],
+            $config['model'],
+            $config['account_type'],
+        ));
+
         foreach (Permission::cases() as $permission) {
             Gate::define($permission->value, fn (User $user): bool => $user->hasPermission($permission));
         }

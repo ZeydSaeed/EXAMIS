@@ -138,7 +138,7 @@ it('encrypts page history and rotates the key at logout', function () {
         ->assertInertia(fn (Assert $page) => $page->component('apply/specialization'));
     expect($this->get(route('apply.specialization'))->viewData('page')['encryptHistory'] ?? false)->toBeTrue();
 
-    $this->post(route('logout'))->assertRedirect('/');
+    $this->post(route('student.logout'))->assertRedirect(route('start'));
 
     expect($this->get('/')->viewData('page')['clearHistory'] ?? false)->toBeTrue();
 });

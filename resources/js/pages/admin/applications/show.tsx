@@ -170,7 +170,7 @@ export default function AdminApplicationShow({
                             />
                             <Button variant="outline" size="sm" asChild>
                                 <a
-                                    href={applications.receipt.url(
+                                    href={admin.applications.receipt.url(
                                         application.uuid,
                                     )}
                                     target="_blank"

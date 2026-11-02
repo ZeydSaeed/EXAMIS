@@ -36,7 +36,7 @@ test('staff can update their name but not their sign-in email', function () {
 
 test('nobody can delete their own account', function () {
     foreach ([User::factory()->staff()->create(), User::factory()->create()] as $user) {
-        $this->actingAs($user)->delete('/settings/profile', ['password' => 'password'])->assertMethodNotAllowed();
+        $this->actingAs($user)->delete(route('profile.update'), ['password' => 'password'])->assertMethodNotAllowed();
 
         expect($user->fresh())->not->toBeNull();
     }

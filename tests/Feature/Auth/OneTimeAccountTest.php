@@ -101,7 +101,7 @@ test('the form cannot be reached once the account has closed', function () {
     finishPrinting($this, $student, $application);
 
     $this->assertGuest();
-    $this->get(route('applications.receipt', $application))->assertRedirect(route('login'));
+    $this->get(route('applications.receipt', $application))->assertRedirect(route('apply.terms'));
 });
 
 test('a repeated finish goes the same way', function () {
@@ -142,7 +142,7 @@ test('until the print is finished nothing else can be reached, not even sign-out
     $this->get(route('dashboard'))->assertRedirect($finalPage);
     $this->get(route('applications.edit', $application))->assertRedirect($finalPage);
     $this->get(route('student.card'))->assertRedirect($finalPage);
-    $this->post(route('logout'))->assertRedirect($finalPage);
+    $this->post(route('student.logout'))->assertRedirect($finalPage);
 
     $this->assertAuthenticatedAs($student);
 });
@@ -201,7 +201,7 @@ test('staff printing a form do not close the student account', function () {
     [$student, $application] = printedStudent();
     $staff = User::factory()->staff(Role::Administrator)->create();
 
-    $this->actingAs($staff)->get(route('applications.receipt', $application))->assertOk();
+    $this->actingAs($staff)->get(route('admin.applications.receipt', $application))->assertOk();
 
     expect($student->fresh()->isActive())->toBeTrue();
 });

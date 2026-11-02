@@ -11,10 +11,8 @@ function unenrolledStaff(array $attributes = []): User
     return User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create($attributes);
 }
 
-test('the old login page redirects to the terms page', function () {
-    $response = $this->get(route('login'));
-
-    $response->assertRedirect(route('apply.terms'));
+test('the login path leads to the staff sign-in page', function () {
+    $this->get(route('login'))->assertRedirect(route('staff.login'));
 });
 
 test('staff can authenticate by email', function () {
@@ -26,7 +24,7 @@ test('staff can authenticate by email', function () {
     ]);
 
     $this->assertAuthenticatedAs($user);
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('admin.home'));
 });
 
 test('staff with two factor enabled are redirected to two factor challenge', function () {
@@ -81,7 +79,7 @@ test('a student account can not use the staff sign-in, even with a password', fu
 test('users can logout', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('logout'));
+    $response = $this->actingAs($user)->post(route('student.logout'));
 
     $response->assertRedirect(route('start'));
 

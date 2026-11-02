@@ -233,7 +233,7 @@ test('students cannot change application decisions', function () {
 
     $this->actingAs($student)
         ->post(route('admin.applications.transition', $application), ['target' => 'accepted'])
-        ->assertForbidden();
+        ->assertRedirect(route('staff.login'));
 });
 
 test('new student numbers are six digits, unique and permanent', function () {
@@ -263,17 +263,23 @@ test('allocation falls back to scanning and stops safely when the range is exhau
         ->and($assigned->last())->toBeNull();
 });
 
-test('students are kept out of the account pages, wherever they try to go', function (string $page) {
+test('students are kept out of the account pages, wherever they try to go', function (string $page, string $target) {
     $this->actingAs(User::factory()->student()->create())
         ->get(route($page))
-        ->assertRedirect(route('dashboard'));
-})->with(['student.card', 'notifications.index', 'profile.edit', 'security.edit', 'appearance.edit']);
+        ->assertRedirect(route($target));
+})->with([
+    ['student.card', 'dashboard'],
+    ['notifications.index', 'dashboard'],
+    ['profile.edit', 'staff.login'],
+    ['security.edit', 'staff.login'],
+    ['appearance.edit', 'staff.login'],
+]);
 
 test('students cannot change anything through the account pages', function () {
     $student = User::factory()->student()->create(['phone' => '07701234567']);
 
     $this->actingAs($student)->post(route('student.access-code'))->assertRedirect(route('dashboard'));
-    $this->patch(route('profile.update'), ['name' => 'x', 'phone' => '07709999999'])->assertRedirect(route('dashboard'));
+    $this->patch(route('profile.update'), ['name' => 'x', 'phone' => '07709999999'])->assertRedirect(route('staff.login'));
     $this->post(route('notifications.read'))->assertRedirect(route('dashboard'));
 
     expect($student->fresh()->phone)->toBe('07701234567')

@@ -46,12 +46,12 @@ describe('starting an application', function () {
         expect(Application::query()->count())->toBe(0);
     });
 
-    it('forbids staff accounts from applying', function () {
+    it('does not let a staff session apply', function () {
         $period = ExamPeriod::factory()->create();
 
         $this->actingAs(staffWith(Role::Reviewer))
             ->post(route('applications.store'), ['exam_period_id' => $period->id])
-            ->assertForbidden();
+            ->assertRedirect(route('apply.terms'));
     });
 });
 

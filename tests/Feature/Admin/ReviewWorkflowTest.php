@@ -136,7 +136,7 @@ it('does not let reviewers reassign work', function () {
 });
 
 it('keeps applicants out of the administration area', function () {
-    $this->actingAs(applicant())->get(route('admin.dashboard'))->assertForbidden();
+    $this->actingAs(applicant())->get(route('admin.dashboard'))->assertRedirect(route('staff.login'));
 });
 
 it('requires two-factor authentication for staff', function () {

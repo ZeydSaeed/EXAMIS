@@ -73,16 +73,16 @@ it('lets an unenrolled staff member start setup with a strong standard secret', 
 it('sends unenrolled staff to the security page from every staff area', function (string $url) {
     $staff = User::factory()->staff(Role::Administrator)->withoutTwoFactor()->create();
 
-    $this->actingAs($staff)->get($url)->assertRedirect(route('security.edit'));
-})->with(['/admin', '/admin/users', '/dashboard', '/settings/profile', '/notifications']);
+    $this->actingAs($staff)->get('http://staff.examis.test'.$url)->assertRedirect(route('security.edit'));
+})->with(['/admin', '/admin/users', '/admin/home', '/settings/profile', '/settings/appearance']);
 
 it('blocks documents and forms for unenrolled staff', function () {
     $staff = User::factory()->staff(Role::Supervisor)->withoutTwoFactor()->create();
     $document = ApplicationDocument::factory()->verified()->create();
     $application = Application::factory()->submitted()->create();
 
-    $this->actingAs($staff)->get(route('documents.show', $document))->assertRedirect(route('security.edit'));
-    $this->actingAs($staff)->get(route('applications.receipt', $application))->assertRedirect(route('security.edit'));
+    $this->actingAs($staff)->get(route('admin.documents.show', $document))->assertRedirect(route('security.edit'));
+    $this->actingAs($staff)->get(route('admin.applications.receipt', $application))->assertRedirect(route('security.edit'));
 });
 
 it('still lets an unenrolled staff member reach setup and sign out', function () {

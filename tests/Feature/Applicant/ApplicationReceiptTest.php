@@ -177,5 +177,5 @@ it('answers 404 to other applicants', function () {
 it('lets staff who can see the application reprint the receipt', function () {
     $application = Application::factory()->submitted()->create();
 
-    $this->actingAs(staffWith(Role::Reviewer))->get(route('applications.receipt', $application))->assertOk();
+    $this->actingAs(staffWith(Role::Reviewer))->get(route('admin.applications.receipt', $application))->assertOk();
 });

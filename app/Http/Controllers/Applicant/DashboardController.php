@@ -10,17 +10,13 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     /**
-     * Where signing in lands. Nobody stays here: staff go to their home page
-     * and a student goes straight to their next step, because a one-time
-     * account has one application and nothing to choose between.
+     * Where signing in lands. Nobody stays here: a student goes straight to
+     * their next step, because a one-time account has one application and
+     * nothing to choose between.
      */
     public function __invoke(Request $request): RedirectResponse
     {
         $user = $request->user();
-
-        if ($user->isStaff()) {
-            return to_route('admin.home');
-        }
 
         $application = $user->applications()->latest('id')->first();
 
