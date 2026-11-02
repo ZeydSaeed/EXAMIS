@@ -3,10 +3,14 @@
 namespace App\Actions\Staff;
 
 use App\Enums\AccountType;
+use App\Enums\OverrideEffect;
 use App\Enums\Role;
 use App\Exceptions\DomainRuleViolation;
+use App\Models\RoleAssignment;
+use App\Models\StaffPermissionOverride;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -61,6 +65,8 @@ class ManageStaffAccess
         }
 
         DB::transaction(function () use ($user, $roles, $actor): void {
+            $this->keepAnAdministrator($user, in_array(Role::Administrator, $roles, true), $actor);
+
             $before = $user->roleAssignments()->pluck('role')->map(fn (Role $role): string => $role->value)->all();
             $after = array_map(fn (Role $role): string => $role->value, $roles);
 
@@ -71,7 +77,7 @@ class ManageStaffAccess
             }
 
             $this->audit->record('staff.roles_changed', $user, ['before' => $before, 'after' => $after], $actor);
-        });
+        }, 3);
 
         $user->flushRoles();
         $this->endSessions($user);
@@ -87,11 +93,85 @@ class ManageStaffAccess
             throw new DomainRuleViolation(__('admin.errors.cannot_deactivate_self'), 'user');
         }
 
-        $user->forceFill(['deactivated_at' => $active ? null : now()])->save();
-        $this->audit->record($active ? 'user.reactivated' : 'user.deactivated', $user, actor: $actor);
+        DB::transaction(function () use ($user, $active, $actor): void {
+            if (! $active) {
+                $this->keepAnAdministrator($user, false, $actor);
+            }
+
+            $user->forceFill(['deactivated_at' => $active ? null : now()])->save();
+            $this->audit->record($active ? 'user.reactivated' : 'user.deactivated', $user, actor: $actor);
+        }, 3);
 
         if (! $active) {
             $this->endSessions($user);
+        }
+    }
+
+    /**
+     * Replaces the staff member's exceptions. Administrators have none, and
+     * nobody edits their own.
+     *
+     * @param  array<string, OverrideEffect>  $overrides  permission value => effect
+     */
+    public function syncOverrides(User $user, array $overrides, User $actor): void
+    {
+        if (! $user->isStaff()) {
+            throw DomainRuleViolation::assigneeNotEligible();
+        }
+
+        if ($user->is($actor)) {
+            throw new DomainRuleViolation(__('admin.errors.cannot_change_own_roles'), 'overrides');
+        }
+
+        if ($user->hasRole(Role::Administrator)) {
+            throw new DomainRuleViolation(__('admin.errors.administrators_have_no_overrides'), 'overrides');
+        }
+
+        DB::transaction(function () use ($user, $overrides, $actor): void {
+            $before = $user->permissionOverrides()->get()
+                ->mapWithKeys(fn (StaffPermissionOverride $override): array => [$override->permission->value => $override->effect->value])
+                ->all();
+
+            $user->permissionOverrides()->delete();
+
+            foreach ($overrides as $permission => $effect) {
+                $user->permissionOverrides()->create(['permission' => $permission, 'effect' => $effect, 'granted_by' => $actor->id]);
+            }
+
+            $this->audit->record('staff.permissions_changed', $user, [
+                'before' => $before,
+                'after' => array_map(fn (OverrideEffect $effect): string => $effect->value, $overrides),
+            ], $actor);
+        });
+
+        $user->flushRoles();
+        $this->endSessions($user);
+    }
+
+    /**
+     * Stops a change that would leave no active administrator, including two
+     * that race each other. The first statement waits for every active
+     * administrator's row; the second reads what the winner committed, which
+     * the first cannot see because its snapshot predates the wait.
+     */
+    private function keepAnAdministrator(User $user, bool $staysAdministrator, User $actor): void
+    {
+        $administrators = fn () => User::query()
+            ->whereIn('id', RoleAssignment::query()->where('role', Role::Administrator)->select('user_id'))
+            ->whereNull('deactivated_at')
+            ->whereNull('closed_at')
+            ->orderBy('id');
+
+        $administrators()->lockForUpdate()->pluck('id');
+
+        $active = $administrators()->pluck('id')->all();
+
+        if (! in_array($actor->id, $active, true)) {
+            throw new AuthorizationException;
+        }
+
+        if (array_diff($active, $staysAdministrator ? [] : [$user->id]) === []) {
+            throw new DomainRuleViolation(__('admin.errors.last_administrator'), 'user');
         }
     }
 

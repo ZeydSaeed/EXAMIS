@@ -207,10 +207,10 @@ class ApplicationController extends Controller
         return array_values(User::query()
             ->staff()
             ->whereNull('deactivated_at')
-            ->with('roleAssignments')
+            ->with(['roleAssignments', 'permissionOverrides'])
             ->orderBy('name')
             ->get()
-            ->filter(fn (User $user): bool => $user->hasPermission(Permission::ApplicationsReview))
+            ->filter(fn (User $user): bool => $user->canBeAssignedApplications())
             ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
             ->all());
     }

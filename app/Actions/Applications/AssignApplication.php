@@ -26,7 +26,7 @@ class AssignApplication
             throw new AuthorizationException;
         }
 
-        if ($assignee !== null && ! $assignee->hasPermission(Permission::ApplicationsReview)) {
+        if ($assignee !== null && ! $assignee->canBeAssignedApplications()) {
             throw DomainRuleViolation::assigneeNotEligible();
         }
 

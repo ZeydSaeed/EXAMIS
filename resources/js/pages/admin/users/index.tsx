@@ -43,6 +43,7 @@ type StaffRow = {
     name: string;
     email: string;
     roles: string[];
+    overrides: Record<string, 'grant' | 'deny'>;
     is_active: boolean;
     two_factor_enabled: boolean;
     last_login_at: string | null;
@@ -57,7 +58,104 @@ type Props = {
         per_page?: string | number;
     };
     roles: { value: string; label: string }[];
+    permissions: { value: string; label: string }[];
 };
+
+function PermissionExceptions({
+    user,
+    permissions,
+}: {
+    user: StaffRow;
+    permissions: Props['permissions'];
+}) {
+    const { t } = useTrans();
+    const [open, setOpen] = useState(false);
+    const form = useForm({ overrides: user.overrides });
+
+    return (
+        <>
+            <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+                {t('users.permission_exceptions')}
+            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader className="text-start">
+                        <DialogTitle>
+                            {t('users.permission_exceptions')}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t('users.permission_exceptions_text')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="grid gap-3"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.put(admin.users.permissions.url(user.id), {
+                                preserveScroll: true,
+                                onSuccess: () => setOpen(false),
+                            });
+                        }}
+                    >
+                        {permissions.map((permission) => (
+                            <div
+                                key={permission.value}
+                                className="flex items-center justify-between gap-3"
+                            >
+                                <Label htmlFor={`override-${permission.value}`}>
+                                    {permission.label}
+                                </Label>
+                                <select
+                                    id={`override-${permission.value}`}
+                                    className="h-8 rounded-md border bg-background px-2 text-sm"
+                                    value={
+                                        form.data.overrides[permission.value] ??
+                                        ''
+                                    }
+                                    onChange={(event) => {
+                                        const {
+                                            [permission.value]: _,
+                                            ...rest
+                                        } = form.data.overrides;
+                                        const effect = event.target.value as
+                                            | 'grant'
+                                            | 'deny'
+                                            | '';
+
+                                        form.setData(
+                                            'overrides',
+                                            effect === ''
+                                                ? rest
+                                                : {
+                                                      ...rest,
+                                                      [permission.value]:
+                                                          effect,
+                                                  },
+                                        );
+                                    }}
+                                >
+                                    <option value="">
+                                        {t('users.by_role')}
+                                    </option>
+                                    <option value="grant">
+                                        {t('users.grant')}
+                                    </option>
+                                    <option value="deny">
+                                        {t('users.deny')}
+                                    </option>
+                                </select>
+                            </div>
+                        ))}
+                        <InputError message={form.errors.overrides} />
+                        <Button type="submit" disabled={form.processing}>
+                            {t('common.save')}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
 
 function RoleEditor({
     user,
@@ -259,8 +357,14 @@ function CreateStaffDialog({
     );
 }
 
-export default function StaffUsers({ staff, filters, roles }: Props) {
+export default function StaffUsers({
+    staff,
+    filters,
+    roles,
+    permissions,
+}: Props) {
     const { t, locale } = useTrans();
+    const currentUserId = usePage().props.auth.user?.id;
     const [showCreate, setShowCreate] = useState(false);
     const { search, setSearch, urlFor, visit, tableArea } = useListQuery({
         url: admin.users.index.url,
@@ -426,7 +530,21 @@ export default function StaffUsers({ staff, filters, roles }: Props) {
                                                     locale,
                                                 )}
                                             </td>
-                                            <td>
+                                            <td className="whitespace-nowrap">
+                                                {user.id !== currentUserId &&
+                                                    !user.roles.includes(
+                                                        'administrator',
+                                                    ) && (
+                                                        <PermissionExceptions
+                                                            key={JSON.stringify(
+                                                                user.overrides,
+                                                            )}
+                                                            user={user}
+                                                            permissions={
+                                                                permissions
+                                                            }
+                                                        />
+                                                    )}
                                                 <ConfirmDialog
                                                     title={
                                                         user.is_active

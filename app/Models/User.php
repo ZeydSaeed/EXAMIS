@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\OverrideEffect;
 use App\Enums\Permission;
 use App\Enums\Role;
 use Carbon\CarbonImmutable;
@@ -63,6 +64,13 @@ class User extends Authenticatable implements HasLocalePreference
     private ?array $resolvedRoles = null;
 
     /**
+     * Memoized exceptions for the lifetime of this model instance.
+     *
+     * @var array<string, OverrideEffect>|null
+     */
+    private ?array $resolvedOverrides = null;
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -110,6 +118,14 @@ class User extends Authenticatable implements HasLocalePreference
     public function roleAssignments(): HasMany
     {
         return $this->hasMany(RoleAssignment::class);
+    }
+
+    /**
+     * @return HasMany<StaffPermissionOverride, $this>
+     */
+    public function permissionOverrides(): HasMany
+    {
+        return $this->hasMany(StaffPermissionOverride::class);
     }
 
     /**
@@ -190,28 +206,64 @@ class User extends Authenticatable implements HasLocalePreference
         return in_array($role, $this->roles(), true);
     }
 
+    /**
+     * Roles decide, then a per-staff exception may change the answer. A
+     * denial beats a grant by construction: each permission has one exception.
+     */
     public function hasPermission(Permission $permission): bool
     {
         if (! $this->isActive()) {
             return false;
         }
 
+        $granted = false;
+
         foreach ($this->roles() as $role) {
-            if (in_array($permission, $role->permissions(), true)) {
-                return true;
-            }
+            $granted = $granted || in_array($permission, $role->permissions(), true);
         }
 
-        return false;
+        if (! $permission->isOverridable() || $this->hasRole(Role::Administrator)) {
+            return $granted;
+        }
+
+        return match ($this->overrideFor($permission)) {
+            OverrideEffect::Grant => true,
+            OverrideEffect::Deny => false,
+            null => $granted,
+        };
     }
 
     /**
-     * Forget memoized roles after grants change.
+     * Applications are assigned to the people who review them, never to an
+     * administrator who merely may.
+     */
+    public function canBeAssignedApplications(): bool
+    {
+        return $this->hasPermission(Permission::ApplicationsReview) && ! $this->hasRole(Role::Administrator);
+    }
+
+    /**
+     * Forget memoized roles and exceptions after grants change.
      */
     public function flushRoles(): void
     {
         $this->resolvedRoles = null;
+        $this->resolvedOverrides = null;
         $this->unsetRelation('roleAssignments');
+        $this->unsetRelation('permissionOverrides');
+    }
+
+    private function overrideFor(Permission $permission): ?OverrideEffect
+    {
+        if (! $this->isStaff()) {
+            return null;
+        }
+
+        $this->resolvedOverrides ??= $this->permissionOverrides
+            ->mapWithKeys(fn (StaffPermissionOverride $override): array => [$override->permission->value => $override->effect])
+            ->all();
+
+        return $this->resolvedOverrides[$permission->value] ?? null;
     }
 
     public function preferredLocale(): string

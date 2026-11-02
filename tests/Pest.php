@@ -26,6 +26,9 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+// Real commits between real connections, so no wrapping transaction here.
+pest()->extend(TestCase::class)->in('Concurrency');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
