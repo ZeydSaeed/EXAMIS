@@ -9,6 +9,8 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Events\TwoFactorAuthenticationConfirmed;
+use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 
 /**
  * Writes authentication events to the audit trail. Attempted emails are
@@ -48,6 +50,16 @@ class RecordAuthenticationActivity
         if ($event->user instanceof User) {
             $this->audit->record('auth.logout', $event->user, actor: $event->user);
         }
+    }
+
+    public function handleTwoFactorConfirmed(TwoFactorAuthenticationConfirmed $event): void
+    {
+        $this->audit->record('auth.two_factor_confirmed', $event->user, actor: $event->user);
+    }
+
+    public function handleTwoFactorFailed(TwoFactorAuthenticationFailed $event): void
+    {
+        $this->audit->record('auth.two_factor_failed', $event->user);
     }
 
     private function hashIdentifier(string $identifier): string

@@ -21,7 +21,7 @@ Scope: the EXAMIS application and its configuration. Dynamic or offensive testin
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Applicant isolation (404 for foreign records) | `ApplicationDraftTest`, `ApplicationSubmissionTest`, `ApplicationDocumentTest`, `ApplicationReceiptTest`, `ApplicationPolicyTest`, E2E `security.spec.ts` |
 | Role matrix and separation of duties          | `ApplicationPolicyTest`, `ReviewWorkflowTest::restricts configuration sections…`                                                                          |
-| Staff 2FA enforcement                         | `ReviewWorkflowTest::requires two-factor…`                                                                                                                |
+| Staff 2FA enforcement                         | `StaffTwoFactorLockTest`, `ReviewWorkflowTest::requires two-factor…`                                                                                                                |
 | Brute force / enumeration                     | `AuthenticationTest`, `PasswordResetTest`, `RegistrationTest`, `PublicPortalTest` (tracking)                                                              |
 | Shared-email isolation                        | `RegistrationTest`, `PasswordResetTest`                                                                                                                   |
 | Mass assignment                               | `ApplicationDraftTest::ignores attempts to mass-assign…`                                                                                                  |

@@ -1,6 +1,6 @@
 # ADR-0002: Username login; email is a shareable contact channel
 
-- Status: Accepted (2026-10-14)
+- Status: Accepted (2026-10-14). Amended by ADR-0011 for staff, who sign in by a unique email. ADR-0009 and ADR-0010 replaced the student sign-in.
 
 ## Context
 

@@ -33,6 +33,8 @@ reference_items (type, code)            content_pages (slug)
 
 Deletion policy: applicants with applications cannot be deleted (`RESTRICT`). Retention is handled by the archival policy (§5), not by cascades.
 
+Staff tables (ADR-0011): `staff_invitations` (hashed one-time links), `staff_recovery_codes` (keyed hashes, one row per code), `staff_permission_overrides` (per-staff grants and denials, unique per user and permission), `staff_sessions` (same shape as `sessions`). `users_staff_email_unique` is a partial unique index on `lower(email)` for staff, and `users_staff_email_check` requires a staff email.
+
 ## 3. Indexes and the queries they serve
 
 | Index                                                                                                      | Query                                                                                   |

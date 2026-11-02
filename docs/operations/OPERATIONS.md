@@ -10,7 +10,7 @@
 | PostgreSQL 16+                                                    | See `docs/database/SCHEMA.md` for settings and roles                                                                                                                         |
 | Redis 7                                                           | Cache and queue in production (`maxmemory-policy allkeys-lru` for the cache DB; `noeviction` for the queue DB, or separate instances)                                        |
 | Object storage                                                    | Private bucket, block public access, versioning plus object lock, server-side encryption                                                                                     |
-| Mail/SMS provider                                                 | Through Laravel mail/notification channels; credentials in the secret manager                                                                                                |
+| Mail/SMS provider                                                 | Optional. Staff links are handed over by administrators (ADR-0011); never run production with `MAIL_MAILER=log` if mail is added                                             |
 
 ## 2. Deployment (zero-downtime release directories)
 
@@ -25,9 +25,11 @@ ln -sfn releases/<sha> current && sudo systemctl reload php8.4-fpm
 php artisan queue:restart            # workers pick up new code after their current job
 ```
 
+**Administrators:** after the first deployment, run `php artisan examis:create-admin "Name" email` once for the primary and once for the backup administrator, two different people. Each opens their own link, sets a password and links an authenticator. If no administrator can sign in, `php artisan examis:recover-admin email` resets one, and is audited. Keep `APP_KEY` backed up apart from the database: without it every TOTP secret and recovery code is lost.
+
 **Rollback:** point `current` back at the previous release, reload PHP-FPM, run `queue:restart`. Migrations are not rolled back in production. Write forward fixes instead (`docs/database/SCHEMA.md` §2). A release whose migration is not backward compatible must say so in its notes and needs a maintenance window.
 
-Production `.env` essentials: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`, `EXAMIS_REQUIRE_STAFF_2FA=true`, `DOCUMENTS_DISK=<private s3 disk>`, `DOCUMENT_SCANNER=<av scanner>`, `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `LOG_LEVEL=warning`, `LOG_CHANNEL=daily` or `stderr` to a log shipper.
+Production `.env` essentials: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`, `EXAMIS_STUDENTS_HOST=<student host>`, `EXAMIS_STAFF_HOST=<staff host>`, `DOCUMENTS_DISK=<private s3 disk>`, `DOCUMENT_SCANNER=<av scanner>`, `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `LOG_LEVEL=warning`, `LOG_CHANNEL=daily` or `stderr` to a log shipper.
 
 ## 3. Capacity planning (initial: 1000 concurrent users — to be validated by k6)
 

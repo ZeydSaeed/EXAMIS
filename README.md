@@ -13,18 +13,27 @@ php artisan migrate --seed          # reference data, content pages, demo period
 npm run build                       # or: composer run dev
 ```
 
-Demo accounts (local only, password `password`): `admin`, `supervisor`, `reviewer`, `auditor`, `student`. All data is synthetic.
+Students and staff use separate hosts, by default `students.examis.test` and `staff.examis.test` (ADR-0011). To run both on this computer against the test database only, map both names to `127.0.0.1` in the hosts file, then:
+
+```powershell
+.\scripts\local.ps1 fresh                                   # rebuild examis_testing with demo data
+.\scripts\local.ps1 artisan examis:create-admin "Name" a@b.c  # print a one-time activation link
+.\scripts\local.ps1 serve                                   # http://students.examis.test:8000, http://staff.examis.test:8000
+```
+
+Demo staff (local only, password `password`) sign in by email: `admin@examis.test`, `supervisor@examis.test`, `reviewer@examis.test`, `auditor@examis.test`. Each must link an authenticator app first. All data is synthetic.
 
 To use PostgreSQL, set `DB_CONNECTION=pgsql` and the `DB_*` settings in `.env` (see `.env.example`).
 
 ## Quality gates
 
 ```bash
-php artisan test --compact         # Pest: unit, feature, authorization, integrity
+php artisan test --compact         # Pest: unit, feature, authorization, integrity (SQLite)
+composer test:pgsql                # the same on PostgreSQL, with real concurrent connections
 composer types:check               # Larastan level 7
 vendor/bin/pint --test             # PHP style
 npm run types:check && npm run check
-npm run build && npm run test:e2e  # Playwright (isolated database/e2e.sqlite); E2E_ALL_BROWSERS=1 for Firefox/WebKit
+npm run build && npm run test:e2e  # Playwright on both portals (examis_testing); E2E_ALL_BROWSERS=1 for Firefox/WebKit
 ```
 
 Load tests (k6, staging only): see `docs/testing/PERFORMANCE.md`.
