@@ -47,11 +47,11 @@ it('does not let staff regenerate recovery codes', function () {
     expect($staff->fresh()->two_factor_recovery_codes)->toBe($codes);
 });
 
-it('does not reveal the secret or QR code once enrolled', function (string $route) {
+it('does not reveal the secret, the QR code or any recovery code once enrolled', function (string $route) {
     $this->actingAs(staffWith(Role::Reviewer))->withSession(passwordConfirmed())
         ->getJson(route($route))
         ->assertForbidden();
-})->with(['two-factor.qr-code', 'two-factor.secret-key']);
+})->with(['two-factor.qr-code', 'two-factor.secret-key', 'two-factor.recovery-codes']);
 
 it('lets an unenrolled staff member start setup with a strong standard secret', function () {
     $staff = User::factory()->staff(Role::Reviewer)->withoutTwoFactor()->create();

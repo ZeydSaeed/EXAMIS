@@ -129,6 +129,22 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
+     * @return HasMany<StaffInvitation, $this>
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(StaffInvitation::class);
+    }
+
+    /**
+     * @return HasMany<StaffRecoveryCode, $this>
+     */
+    public function staffRecoveryCodes(): HasMany
+    {
+        return $this->hasMany(StaffRecoveryCode::class);
+    }
+
+    /**
      * @return HasMany<Application, $this>
      */
     public function applications(): HasMany
@@ -266,17 +282,16 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->resolvedOverrides[$permission->value] ?? null;
     }
 
+    /**
+     * Recovery codes are spent by RecoveryCodes, so Fortify's replacement of a
+     * used code has nothing left to do.
+     *
+     * @param  string  $code
+     */
+    public function replaceRecoveryCode($code): void {}
+
     public function preferredLocale(): string
     {
         return $this->locale;
-    }
-
-    /**
-     * Password reset tokens are keyed by the unique username because several
-     * accounts may share an email address (ADR-0002).
-     */
-    public function getEmailForPasswordReset(): string
-    {
-        return $this->username;
     }
 }

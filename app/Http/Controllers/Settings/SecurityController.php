@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Services\Staff\RecoveryCodes;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +19,7 @@ class SecurityController extends Controller
     /**
      * Show the user's security settings page.
      */
-    public function edit(TwoFactorAuthenticationRequest $request): Response
+    public function edit(TwoFactorAuthenticationRequest $request, RecoveryCodes $recoveryCodes): Response
     {
         $props = [
             'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
@@ -28,9 +31,28 @@ class SecurityController extends Controller
 
             $props['twoFactorEnabled'] = $request->user()->hasEnabledTwoFactorAuthentication();
             $props['requiresConfirmation'] = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
+            $props['recoveryCodesIssued'] = $request->user()->staffRecoveryCodes()->exists();
+            $props['recoveryCodesRemaining'] = $recoveryCodes->remaining($request->user());
         }
 
         return Inertia::render('settings/security', $props);
+    }
+
+    /**
+     * Shows the recovery codes for the one time they exist in clear. Only an
+     * administrator's reset allows a new set.
+     */
+    public function issueRecoveryCodes(Request $request, RecoveryCodes $recoveryCodes): JsonResponse
+    {
+        $user = $request->user();
+
+        abort_if($user->two_factor_confirmed_at === null, 403);
+
+        $codes = $recoveryCodes->issueOnce($user);
+
+        abort_if($codes === null, 403);
+
+        return response()->json(['codes' => $codes])->header('Cache-Control', 'no-store, private');
     }
 
     /**

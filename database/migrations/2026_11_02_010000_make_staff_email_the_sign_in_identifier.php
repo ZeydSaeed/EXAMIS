@@ -15,13 +15,8 @@ return new class extends Migration
     {
         $missing = DB::table('users')->where('account_type', 'staff')->whereNull('email')->count();
 
-        $repeated = DB::table('users')
-            ->where('account_type', 'staff')
-            ->whereNotNull('email')
-            ->groupByRaw('lower(email)')
-            ->havingRaw('count(*) > 1')
-            ->pluck(DB::raw('lower(email)'))
-            ->count();
+        $staffEmails = DB::table('users')->where('account_type', 'staff')->whereNotNull('email');
+        $repeated = (clone $staffEmails)->count() - (clone $staffEmails)->distinct()->count(DB::raw('lower(email)'));
 
         if ($missing > 0 || $repeated > 0) {
             throw new RuntimeException("Fix staff emails first: {$missing} missing, {$repeated} repeated.");

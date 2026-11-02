@@ -46,6 +46,7 @@ type StaffRow = {
     overrides: Record<string, 'grant' | 'deny'>;
     is_active: boolean;
     two_factor_enabled: boolean;
+    invitation_pending: boolean;
     last_login_at: string | null;
 };
 
@@ -502,6 +503,13 @@ export default function StaffUsers({
                                                               'users.two_factor_off',
                                                           )}
                                                 </span>
+                                                {user.invitation_pending && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {t(
+                                                            'users.invitation_pending',
+                                                        )}
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="whitespace-nowrap text-muted-foreground">
                                                 {formatDateTime(
@@ -523,6 +531,74 @@ export default function StaffUsers({
                                                                 permissions
                                                             }
                                                         />
+                                                    )}
+                                                {user.id !== currentUserId &&
+                                                    user.is_active && (
+                                                        <>
+                                                            <ConfirmDialog
+                                                                title={t(
+                                                                    'users.new_link',
+                                                                )}
+                                                                description={t(
+                                                                    'users.new_link_text',
+                                                                )}
+                                                                confirmLabel={t(
+                                                                    'users.new_link',
+                                                                )}
+                                                                onConfirm={() =>
+                                                                    router.post(
+                                                                        admin.users.invitation.url(
+                                                                            user.id,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                >
+                                                                    {t(
+                                                                        'users.new_link',
+                                                                    )}
+                                                                </Button>
+                                                            </ConfirmDialog>
+                                                            {user.two_factor_enabled && (
+                                                                <ConfirmDialog
+                                                                    title={t(
+                                                                        'users.reset_two_factor',
+                                                                    )}
+                                                                    description={t(
+                                                                        'users.reset_two_factor_text',
+                                                                    )}
+                                                                    confirmLabel={t(
+                                                                        'users.reset_two_factor',
+                                                                    )}
+                                                                    destructive
+                                                                    onConfirm={() =>
+                                                                        router.post(
+                                                                            admin
+                                                                                .users
+                                                                                .twoFactorReset.url(
+                                                                                    user.id,
+                                                                                ),
+                                                                            {},
+                                                                            {
+                                                                                preserveScroll: true,
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                    >
+                                                                        {t(
+                                                                            'users.reset_two_factor',
+                                                                        )}
+                                                                    </Button>
+                                                                </ConfirmDialog>
+                                                            )}
+                                                        </>
                                                     )}
                                                 <ConfirmDialog
                                                     title={

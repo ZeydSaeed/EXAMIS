@@ -9,17 +9,15 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import apply from '@/routes/apply';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
 type Props = {
     status?: string;
-    canResetPassword: boolean;
 };
 
 /**
  * Password sign-in for staff. Students sign in with their QR code.
  */
-export default function StaffLogin({ status, canResetPassword }: Props) {
+export default function StaffLogin({ status }: Props) {
     const { t } = useTrans();
 
     setLayoutProps({
@@ -79,15 +77,6 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                                     <Label htmlFor="password">
                                         {t('auth.password')}
                                     </Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ms-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            {t('auth.forgot_password')}
-                                        </TextLink>
-                                    )}
                                 </div>
                                 <PasswordInput
                                     id="password"
@@ -97,6 +86,9 @@ export default function StaffLogin({ status, canResetPassword }: Props) {
                                     autoComplete="current-password"
                                 />
                                 <InputError message={errors.password} />
+                                <p className="text-xs text-muted-foreground">
+                                    {t('auth.forgot_password_hint')}
+                                </p>
                             </div>
 
                             <Button

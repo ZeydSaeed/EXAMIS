@@ -12,6 +12,7 @@ return [
     'periods.manage' => 'Manage periods',
     'content.manage' => 'Manage content',
     'users.manage' => 'Manage users',
+    'staff.credentials' => 'Sign-in links and two-factor resets',
     'audit.view' => 'View the audit log',
     'reports.view' => 'View reports',
     'operations.view' => 'Monitor operations',

@@ -14,7 +14,7 @@ use App\Models\User;
 function reviewedMatrix(): array
 {
     return [
-        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'audit.view', 'reports.view', 'operations.view'],
+        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'staff.credentials', 'audit.view', 'reports.view', 'operations.view'],
         'supervisor' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'reports.view'],
         'reviewer' => ['admin.access', 'applications.view', 'applications.review', 'documents.view'],
         'auditor' => ['admin.access', 'applications.view', 'applications.view_all', 'audit.view', 'reports.view'],
@@ -91,7 +91,7 @@ it('rejects exceptions on protected permissions', function (string $permission) 
         ->assertSessionHasErrors('overrides');
 
     expect($staff->permissionOverrides()->count())->toBe(0);
-})->with(['users.manage', 'admin.access', 'operations.view']);
+})->with(['users.manage', 'staff.credentials', 'admin.access', 'operations.view']);
 
 it('refuses exceptions for oneself, for an administrator and for a student', function () {
     $admin = staffWith(Role::Administrator);

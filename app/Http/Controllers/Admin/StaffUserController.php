@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Staff\ManageStaffAccess;
 use App\Concerns\ProfileValidationRules;
+use App\Enums\InvitationPurpose;
 use App\Enums\OverrideEffect;
 use App\Enums\Permission;
 use App\Enums\Role;
@@ -38,6 +39,7 @@ class StaffUserController extends Controller
         $staff = User::query()
             ->staff()
             ->with(['roleAssignments', 'permissionOverrides'])
+            ->withExists(['invitations as invitation_pending' => fn ($query) => $query->open()])
             ->when($filters['role'] ?? null, fn (Builder $query, string $role) => $query->whereHas('roleAssignments', fn (Builder $query) => $query->where('role', $role)))
             ->when(($filters['state'] ?? null) === 'active', fn (Builder $query) => $query->whereNull('deactivated_at'))
             ->when(($filters['state'] ?? null) === 'inactive', fn (Builder $query) => $query->whereNotNull('deactivated_at'))
@@ -59,6 +61,7 @@ class StaffUserController extends Controller
                     ->all(),
                 'is_active' => $user->isActive(),
                 'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+                'invitation_pending' => (bool) $user->getAttribute('invitation_pending'),
                 'last_login_at' => $user->last_login_at?->toIso8601String(),
             ]);
 
@@ -73,7 +76,7 @@ class StaffUserController extends Controller
         ]);
     }
 
-    public function store(Request $request, ManageStaffAccess $access): RedirectResponse
+    public function store(Request $request, ManageStaffAccess $access): Response
     {
         $validated = $request->validate([
             'name' => $this->nameRules(),
@@ -82,9 +85,25 @@ class StaffUserController extends Controller
             'roles.*' => [Rule::enum(Role::class), 'distinct'],
         ]);
 
-        $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user());
+        $user = $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.staff_created')]);
+        return $this->invitationPage($user, InvitationPurpose::Activate, $request, $access);
+    }
+
+    /**
+     * A new one-time link replaces any open one, for a staff member who lost
+     * theirs or forgot their password.
+     */
+    public function storeInvitation(Request $request, User $user, ManageStaffAccess $access): Response
+    {
+        return $this->invitationPage($user, InvitationPurpose::ResetPassword, $request, $access);
+    }
+
+    public function resetTwoFactor(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
+    {
+        $access->resetTwoFactor($user, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.users.index');
     }
@@ -132,6 +151,21 @@ class StaffUserController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return back();
+    }
+
+    /**
+     * The link is rendered straight into this response and not flashed: a
+     * flash would write it to the session table.
+     */
+    private function invitationPage(User $user, InvitationPurpose $purpose, Request $request, ManageStaffAccess $access): Response
+    {
+        $url = $access->issueInvitation($user, $purpose, $request->user());
+
+        return Inertia::render('admin/users/invitation', [
+            'invitee' => ['name' => $user->name, 'email' => $user->email],
+            'invitationUrl' => $url,
+            'expiresAt' => now()->addHours((int) config('examis.staff.invitation_hours'))->toIso8601String(),
+        ]);
     }
 
     /**

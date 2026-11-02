@@ -1,6 +1,7 @@
 import { useHttp } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
-import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
+import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
+import { qrCode, secretKey } from '@/routes/two-factor';
 
 export type UseTwoFactorAuthReturn = {
     qrCodeSvg: string | null;
@@ -14,7 +15,7 @@ export type UseTwoFactorAuthReturn = {
     fetchQrCode: () => Promise<void>;
     fetchSetupKey: () => Promise<void>;
     fetchSetupData: () => Promise<void>;
-    fetchRecoveryCodes: () => Promise<void>;
+    issueRecoveryCodes: () => Promise<void>;
 };
 
 export const OTP_MAX_LENGTH = 6;
@@ -73,13 +74,15 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
         }
     }, [submit]);
 
-    const fetchRecoveryCodes = useCallback(async (): Promise<void> => {
+    const issueRecoveryCodes = useCallback(async (): Promise<void> => {
         try {
             setErrors([]);
-            const codes = (await submit(recoveryCodes())) as string[];
+            const { codes } = (await submit(
+                SecurityController.issueRecoveryCodes(),
+            )) as { codes: string[] };
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
+            setErrors((prev) => [...prev, 'Failed to issue recovery codes']);
             setRecoveryCodesList([]);
         }
     }, [submit]);
@@ -106,6 +109,6 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
         fetchQrCode,
         fetchSetupKey,
         fetchSetupData,
-        fetchRecoveryCodes,
+        issueRecoveryCodes,
     };
 };

@@ -4,26 +4,26 @@ use App\Enums\AccountType;
 use App\Enums\Role;
 use App\Models\AuditEvent;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('creates staff accounts that set their own password through a reset link', function () {
-    Notification::fake();
-
+it('creates a staff account and shows its one-time link once', function () {
     $this->actingAs(staffWith(Role::Administrator))
         ->post(route('admin.users.store'), [
             'name' => 'مدقق جديد',
             'email' => 'reviewer@example.com',
             'roles' => ['reviewer'],
         ])
-        ->assertSessionHasNoErrors();
+        ->assertSessionHasNoErrors()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/invitation')
+            ->where('invitee.email', 'reviewer@example.com')
+            ->where('invitationUrl', fn (string $url): bool => str_contains($url, '/staff/invitation#')));
 
     $staff = User::query()->where('email', 'reviewer@example.com')->sole();
+
     expect($staff->account_type)->toBe(AccountType::Staff)
         ->and($staff->hasRole(Role::Reviewer))->toBeTrue()
         ->and(AuditEvent::query()->where('action', 'staff.created')->exists())->toBeTrue();
-    Notification::assertSentTo($staff, ResetPassword::class);
 });
 
 it('refuses a staff email already in use, in any letter case', function () {

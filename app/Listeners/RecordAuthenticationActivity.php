@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 
 /**
@@ -48,13 +47,6 @@ class RecordAuthenticationActivity
     {
         if ($event->user instanceof User) {
             $this->audit->record('auth.logout', $event->user, actor: $event->user);
-        }
-    }
-
-    public function handlePasswordReset(PasswordReset $event): void
-    {
-        if ($event->user instanceof User) {
-            $this->audit->record('auth.password_reset', $event->user, actor: $event->user);
         }
     }
 

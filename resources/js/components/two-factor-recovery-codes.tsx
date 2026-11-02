@@ -1,5 +1,4 @@
-import { Eye, EyeOff, LockKeyhole } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { LockKeyhole } from 'lucide-react';
 import AlertError from '@/components/alert-error';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,44 +10,24 @@ import {
 } from '@/components/ui/card';
 
 type Props = {
+    issued: boolean;
+    remaining: number;
     recoveryCodesList: string[];
-    fetchRecoveryCodes: () => Promise<void>;
+    issueRecoveryCodes: () => Promise<void>;
     errors: string[];
 };
 
+/**
+ * Recovery codes exist in clear for this one view. Only their hashes are
+ * stored, so they cannot be shown again; an administrator's reset starts over.
+ */
 export default function TwoFactorRecoveryCodes({
+    issued,
+    remaining,
     recoveryCodesList,
-    fetchRecoveryCodes,
+    issueRecoveryCodes,
     errors,
 }: Props) {
-    const [codesAreVisible, setCodesAreVisible] = useState<boolean>(false);
-    const codesSectionRef = useRef<HTMLDivElement | null>(null);
-
-    const toggleCodesVisibility = useCallback(async () => {
-        if (!codesAreVisible && !recoveryCodesList.length) {
-            await fetchRecoveryCodes();
-        }
-
-        setCodesAreVisible(!codesAreVisible);
-
-        if (!codesAreVisible) {
-            setTimeout(() => {
-                codesSectionRef.current?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                });
-            });
-        }
-    }, [codesAreVisible, recoveryCodesList.length, fetchRecoveryCodes]);
-
-    useEffect(() => {
-        if (!recoveryCodesList.length) {
-            void fetchRecoveryCodes();
-        }
-    }, [recoveryCodesList.length, fetchRecoveryCodes]);
-
-    const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
-
     return (
         <Card>
             <CardHeader>
@@ -58,79 +37,39 @@ export default function TwoFactorRecoveryCodes({
                 </CardTitle>
                 <CardDescription>
                     Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
+                    device. Each works once. Store them in a secure password
+                    manager: they are shown only one time.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
-                    <Button
-                        onClick={toggleCodesVisibility}
-                        className="w-fit"
-                        aria-expanded={codesAreVisible}
-                        aria-controls="recovery-codes-section"
-                    >
-                        <RecoveryCodeIconComponent
-                            className="size-4"
-                            aria-hidden="true"
-                        />
-                        {codesAreVisible ? 'Hide' : 'View'} recovery codes
-                    </Button>
-                </div>
-                <div
-                    id="recovery-codes-section"
-                    className={`relative overflow-hidden transition-all duration-300 ${codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0'}`}
-                    aria-hidden={!codesAreVisible}
-                >
-                    <div className="mt-3 space-y-3">
-                        {errors?.length ? (
-                            <AlertError errors={errors} />
-                        ) : (
-                            <>
-                                <div
-                                    ref={codesSectionRef}
-                                    className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
-                                    role="list"
-                                    aria-label="Recovery codes"
-                                >
-                                    {recoveryCodesList.length ? (
-                                        recoveryCodesList.map((code, index) => (
-                                            <div
-                                                key={index}
-                                                role="listitem"
-                                                className="select-text"
-                                            >
-                                                {code}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div
-                                            className="space-y-2"
-                                            aria-label="Loading recovery codes"
-                                        >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+            <CardContent className="space-y-3">
+                {errors.length > 0 && <AlertError errors={errors} />}
 
-                                <div className="text-xs text-muted-foreground select-none">
-                                    <p>
-                                        Each recovery code can be used once. Ask
-                                        an administrator if you run out.
-                                    </p>
-                                </div>
-                            </>
-                        )}
+                {recoveryCodesList.length > 0 ? (
+                    <div
+                        className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm select-text"
+                        role="list"
+                        aria-label="Recovery codes"
+                        data-test="recovery-codes"
+                    >
+                        {recoveryCodesList.map((code) => (
+                            <div key={code} role="listitem">
+                                {code}
+                            </div>
+                        ))}
                     </div>
-                </div>
+                ) : issued ? (
+                    <p className="text-sm text-muted-foreground">
+                        Codes left: {remaining}. Ask an administrator if you run
+                        out.
+                    </p>
+                ) : (
+                    <Button
+                        onClick={() => void issueRecoveryCodes()}
+                        data-test="issue-recovery-codes"
+                    >
+                        Show my recovery codes
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );

@@ -34,5 +34,4 @@ Artisan::command('examis:rescan-pending {--older-than=10 : Minutes a document ma
 
 Schedule::command('examis:rescan-pending')->everyTenMinutes()->withoutOverlapping()->onOneServer();
 Schedule::command('examis:verify-integrity')->dailyAt('02:30')->withoutOverlapping()->onOneServer();
-Schedule::command('auth:clear-resets')->hourly()->onOneServer();
 Schedule::command('queue:prune-failed --hours=720')->daily()->onOneServer();

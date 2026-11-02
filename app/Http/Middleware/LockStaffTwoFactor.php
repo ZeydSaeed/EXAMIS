@@ -18,7 +18,7 @@ class LockStaffTwoFactor
     /**
      * @var list<string>
      */
-    private const CLOSED = ['two-factor.disable', 'two-factor.regenerate-recovery-codes'];
+    private const CLOSED = ['two-factor.disable', 'two-factor.recovery-codes', 'two-factor.regenerate-recovery-codes'];
 
     /**
      * @var list<string>

@@ -18,6 +18,10 @@ Route::middleware(['auth', KeepStudentsOnTheirPath::class])->group(function () {
         ->middleware(RequirePassword::class)
         ->name('security.edit');
 
+    Route::post('settings/recovery-codes', [SecurityController::class, 'issueRecoveryCodes'])
+        ->middleware([RequirePassword::class, 'throttle:6,1'])
+        ->name('security.recovery-codes');
+
     Route::put('settings/password', [SecurityController::class, 'update'])
         ->middleware(['staff.2fa', 'throttle:6,1'])
         ->name('user-password.update');

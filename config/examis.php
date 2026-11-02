@@ -50,6 +50,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Staff accounts (ADR-0011)
+    |--------------------------------------------------------------------------
+    |
+    | How long a one-time link stays valid. Administrators hand it to the staff
+    | member themselves, so no mail service is needed.
+    |
+    */
+
+    'staff' => [
+        'invitation_hours' => (int) env('EXAMIS_INVITATION_HOURS', 48),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Student accounts (ADR-0009)
     |--------------------------------------------------------------------------
     |

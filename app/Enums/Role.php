@@ -37,6 +37,7 @@ enum Role: string
                 Permission::PeriodsManage,
                 Permission::ContentManage,
                 Permission::UsersManage,
+                Permission::StaffCredentials,
                 Permission::AuditView,
                 Permission::ReportsView,
                 Permission::OperationsView,

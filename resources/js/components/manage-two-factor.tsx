@@ -12,6 +12,8 @@ export type Props = {
     canManageTwoFactor?: boolean;
     requiresConfirmation?: boolean;
     twoFactorEnabled?: boolean;
+    recoveryCodesIssued?: boolean;
+    recoveryCodesRemaining?: number;
 };
 
 export default function ManageTwoFactor(props: Props) {
@@ -26,7 +28,7 @@ export default function ManageTwoFactor(props: Props) {
         clearTwoFactorAuthData,
         fetchSetupData,
         recoveryCodesList,
-        fetchRecoveryCodes,
+        issueRecoveryCodes,
         errors,
     } = useTwoFactorAuth();
     const [showSetupModal, setShowSetupModal] = useState<boolean>(false);
@@ -60,8 +62,10 @@ export default function ManageTwoFactor(props: Props) {
                     </p>
 
                     <TwoFactorRecoveryCodes
+                        issued={props.recoveryCodesIssued ?? false}
+                        remaining={props.recoveryCodesRemaining ?? 0}
                         recoveryCodesList={recoveryCodesList}
-                        fetchRecoveryCodes={fetchRecoveryCodes}
+                        issueRecoveryCodes={issueRecoveryCodes}
                         errors={errors}
                     />
                 </div>

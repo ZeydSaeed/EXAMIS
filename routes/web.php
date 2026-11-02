@@ -2,8 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Applicant;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\StaffInvitationController;
 use App\Http\Controllers\Auth\StaffLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Public;
@@ -65,19 +64,18 @@ Route::get('s/{publicId}', [StudentLoginController::class, 'qr'])
 
 /*
 |--------------------------------------------------------------------------
-| Password reset (by username, see ADR-0002)
+| One-time staff links (ADR-0011)
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('guest')->group(function () {
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:password-reset')
-        ->name('password.email');
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:password-reset')
-        ->name('password.update');
+    Route::get('staff/invitation', [StaffInvitationController::class, 'show'])->name('staff.invitation.show');
+    Route::post('staff/invitation/inspect', [StaffInvitationController::class, 'inspect'])
+        ->middleware('throttle:staff-invitation')
+        ->name('staff.invitation.inspect');
+    Route::post('staff/invitation', [StaffInvitationController::class, 'store'])
+        ->middleware('throttle:staff-invitation')
+        ->name('staff.invitation.store');
 });
 
 /*
@@ -163,6 +161,8 @@ Route::middleware(['auth', 'can:admin.access', 'staff.2fa'])
             Route::put('users/{user}/roles', [Admin\StaffUserController::class, 'updateRoles'])->name('users.roles');
             Route::put('users/{user}/permissions', [Admin\StaffUserController::class, 'updatePermissions'])->name('users.permissions');
             Route::put('users/{user}/status', [Admin\StaffUserController::class, 'updateStatus'])->name('users.status');
+            Route::post('users/{user}/invitation', [Admin\StaffUserController::class, 'storeInvitation'])->middleware('can:staff.credentials')->name('users.invitation');
+            Route::post('users/{user}/two-factor-reset', [Admin\StaffUserController::class, 'resetTwoFactor'])->middleware('can:staff.credentials')->name('users.two-factor-reset');
             Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
 

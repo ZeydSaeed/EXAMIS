@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Controllers\Public\ApplicationTermsController;
+use App\Http\Requests\Auth\StaffTwoFactorLoginRequest;
 use App\Http\Responses\LogoutResponse;
 use App\Http\Responses\RegisterResponse;
 use App\Models\User;
@@ -18,6 +18,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -34,6 +35,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
         $this->app->singleton(RegisterResponseContract::class, RegisterResponse::class);
+        $this->app->bind(TwoFactorLoginRequest::class, StaffTwoFactorLoginRequest::class);
     }
 
     /**
@@ -52,7 +54,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureActions(): void
     {
-        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
     }
 
@@ -129,10 +130,10 @@ class FortifyServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('password-reset', function (Request $request) {
+        RateLimiter::for('staff-invitation', function (Request $request) {
             return [
-                Limit::perMinute(3)->by('reset|'.Str::lower((string) $request->input('username')).'|'.$request->ip()),
-                Limit::perHour(20)->by('reset-ip|'.$request->ip()),
+                Limit::perMinute(10)->by('staff-invitation|'.$request->ip()),
+                Limit::perHour(60)->by('staff-invitation-hour|'.$request->ip()),
             ];
         });
     }

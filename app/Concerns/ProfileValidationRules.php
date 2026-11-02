@@ -46,7 +46,7 @@ trait ProfileValidationRules
     /**
      * A staff email is the sign-in identifier, unique among staff (ADR-0011).
      *
-     * @return array<int, ValidationRule|array<mixed>|string>
+     * @return array<int, ValidationRule|Closure|array<mixed>|string>
      */
     protected function staffEmailRules(): array
     {
