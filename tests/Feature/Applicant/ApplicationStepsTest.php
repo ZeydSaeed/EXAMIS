@@ -24,7 +24,7 @@ function personalStep(): array
 {
     return [
         'student_name' => 'علي', 'father_name' => 'حسن', 'grandfather_name' => 'كاظم', 'great_grandfather_name' => 'جواد',
-        'mother_first_name' => 'زينب', 'mother_father_name' => 'مهدي', 'birth_date' => '2000-01-01',
+        'mother_first_name' => 'زينب', 'mother_father_name' => 'مهدي', 'mother_grandfather_name' => 'كريم', 'birth_date' => '2000-01-01',
         'birth_place_code' => 'KRB', 'gender' => 'male',
     ];
 }

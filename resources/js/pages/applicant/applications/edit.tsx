@@ -77,6 +77,7 @@ const FIELD_ORDER: Record<(typeof STEPS)[number], TextField[]> = {
         'great_grandfather_name',
         'mother_first_name',
         'mother_father_name',
+        'mother_grandfather_name',
         'birth_date',
         'birth_place_code',
         'gender',
@@ -488,6 +489,17 @@ export default function EditApplication({
                                     required
                                 >
                                     {input('mother_father_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_grandfather_name"
+                                    label={t('fields.mother_grandfather_name')}
+                                    error={form.errors.mother_grandfather_name}
+                                    required
+                                >
+                                    {input('mother_grandfather_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}

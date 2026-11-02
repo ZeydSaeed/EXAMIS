@@ -41,6 +41,7 @@ class ApplicationFactory extends Factory
             'great_grandfather_name' => 'حسن',
             'mother_first_name' => 'فاطمة',
             'mother_father_name' => 'جاسم',
+            'mother_grandfather_name' => 'كريم',
             'birth_date' => '2006-03-15',
             'birth_place_code' => 'KRB',
             'gender' => Gender::Male,

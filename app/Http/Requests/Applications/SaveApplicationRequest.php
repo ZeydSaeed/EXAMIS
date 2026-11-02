@@ -43,6 +43,7 @@ class SaveApplicationRequest extends FormRequest
             'great_grandfather_name' => $namePart,
             'mother_first_name' => $namePart,
             'mother_father_name' => $namePart,
+            'mother_grandfather_name' => $namePart,
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before:-10 years', 'after:1940-01-01'],
             'birth_place_code' => ['nullable', 'string', Rule::in([
                 ...app(ReferenceData::class)->codes(ReferenceType::Governorate),

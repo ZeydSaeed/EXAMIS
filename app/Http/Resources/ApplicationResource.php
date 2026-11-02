@@ -43,6 +43,7 @@ class ApplicationResource extends JsonResource
                 'great_grandfather_name' => $this->great_grandfather_name,
                 'mother_first_name' => $this->mother_first_name,
                 'mother_father_name' => $this->mother_father_name,
+                'mother_grandfather_name' => $this->mother_grandfather_name,
                 'birth_date' => $this->birth_date?->format('Y-m-d'),
                 'birth_place_code' => $this->birth_place_code,
                 'birth_place_other' => $this->birth_place_other,

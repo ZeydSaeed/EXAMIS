@@ -51,7 +51,11 @@ export function applicationSummarySections(
                 ],
                 [
                     t('fields.mother_name_ar'),
-                    joinName(form.mother_first_name, form.mother_father_name),
+                    joinName(
+                        form.mother_first_name,
+                        form.mother_father_name,
+                        form.mother_grandfather_name,
+                    ),
                 ],
                 [t('fields.birth_date'), form.birth_date],
                 [t('fields.birth_place'), application.labels.birth_place],

@@ -147,6 +147,29 @@ export function HeaderFilter({
     );
 }
 
+/** A labelled date filter in the header bar. */
+export function HeaderDateFilter({
+    label,
+    value,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+}) {
+    return (
+        <label className="flex shrink-0 items-center gap-1.5 text-sm whitespace-nowrap text-white">
+            {label}
+            <input
+                type="date"
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="h-8 cursor-pointer rounded-md border border-white/25 bg-white/10 px-2 text-sm text-white scheme-dark transition-colors outline-none hover:bg-white/15 focus-visible:border-white/60 focus-visible:ring-2 focus-visible:ring-white/30"
+            />
+        </label>
+    );
+}
+
 /** Removable chip for a filter that has no control in the header. */
 export function HeaderFilterChip({
     label,

@@ -42,6 +42,6 @@ Each entry: **symptom → check → action → verify**. Record every incident (
 
 1. Contain: deactivate affected staff accounts (ends sessions immediately); rotate exposed credentials.
 2. Preserve evidence: export the relevant `audit_events` (append-only) and access logs before rotation windows expire.
-3. Assess: which records were viewed (`application.viewed`, `document.viewed`, `report.exported`) and by whom.
+3. Assess: which records were viewed (`application.viewed`, `document.viewed`, `report.exported`, `students.exported`) and by whom.
 4. Notify according to the authority's legal obligations; document the decision.
 5. Post-incident review within 5 working days, with actions tracked to closure.

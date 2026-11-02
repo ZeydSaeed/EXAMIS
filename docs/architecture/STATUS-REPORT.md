@@ -26,7 +26,7 @@ Estimated completion against the full brief is about 78% (was 70% before Postgre
 - Applications: draft start (idempotent), 5-step form with server-side validation (Arabic messages, Arabic-Indic digit normalization), optimistic locking across sessions, eligibility per period, document upload (MIME sniffing, size, structural scan, replacement history), submission (idempotent, per-period numbering with check digit, completeness and eligibility re-check), correction and resubmission, withdrawal.
 - Receipts: A4 Arabic PDF (mPDF) with extractable text, QR to the verification page, audited issuance. Visually verified during development.
 - Review: queue and visibility per role, assignment, start review, request correction (reason), accept/reject (supervisor), reopen (reason), append-only history, notifications after commit.
-- Admin: dashboard, application search and filters, periods with eligibility and document requirements, content pages, staff and roles, reports, CSV export (formula-safe, audited).
+- Admin: dashboard, application search and filters, periods with eligibility and document requirements, content pages, staff and roles, reports, CSV export and student Excel export (formula-safe, audited).
 - Public: home with open periods, managed content pages, status tracking (reference + birth date, rate limited), receipt verification.
 - Security: policies with 404 for foreign records, CSP with nonces, security headers, no-store for private pages, encrypted Inertia history rotated at logout, shared user allow-list, request IDs.
 - PWA: manifest, icons, service worker caching public assets only, offline page, update prompt; verified by E2E (service-worker cache contents, offline navigation).

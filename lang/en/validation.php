@@ -20,6 +20,9 @@ return [
         'mother_father_name' => [
             'regex' => 'The :attribute must be written in Arabic letters.',
         ],
+        'mother_grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
         'username' => [
             'regex' => 'The username may contain only Arabic or English letters, digits and . _ -',
             'not_regex' => 'The username cannot consist of digits only.',
@@ -54,6 +57,7 @@ return [
         'great_grandfather_name' => 'Great-grandfather\'s name',
         'mother_first_name' => 'Mother\'s name',
         'mother_father_name' => 'Mother\'s father\'s name',
+        'mother_grandfather_name' => 'Mother\'s grandfather\'s name',
         'full_name_ar' => 'full name (Arabic)',
         'mother_name_ar' => "mother's name",
         'birth_date' => 'date of birth',

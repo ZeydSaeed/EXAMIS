@@ -41,6 +41,7 @@ return [
         'admin_dashboard' => 'لوحة الإدارة',
         'applications' => 'الطلبات',
         'reports' => 'التقارير',
+        'student_export' => 'تصدير إلى إكسل',
         'periods' => 'دورات التقديم',
         'content' => 'الإعدادات',
         'users' => 'المستخدمون والأدوار',
@@ -295,6 +296,7 @@ return [
         'great_grandfather_name' => 'اسم أب الجد',
         'mother_first_name' => 'اسم الأم',
         'mother_father_name' => 'اسم أب الأم',
+        'mother_grandfather_name' => 'اسم جد الأم',
         'phone_account_hint' => 'رقم الموبايل المسجَّل في حسابك عند إنشائه، ولا يمكن تغييره من الاستمارة.',
         'mother_name_ar' => 'اسم الأم الكامل',
         'birth_date' => 'التولد',
@@ -508,5 +510,15 @@ return [
         'males' => 'ذكور',
         'females' => 'إناث',
         'all' => 'الكل',
+    ],
+
+    'student_export' => [
+        'mobile' => 'رقم الموبايل',
+        'sheet' => 'معلومات الطلاب',
+        'from' => 'من تاريخ',
+        'to' => 'إلى تاريخ',
+        'total' => 'عدد الطلاب: :count',
+        'export_range' => 'تصدير الفترة المحددة',
+        'export_all' => 'تصدير كل البيانات',
     ],
 ];

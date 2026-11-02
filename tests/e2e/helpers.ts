@@ -89,6 +89,7 @@ export async function fillUpToDocuments(page: Page): Promise<void> {
     await page.locator('#great_grandfather_name').fill('كاظم');
     await page.locator('#mother_first_name').fill('زينب');
     await page.locator('#mother_father_name').fill('كاظم');
+    await page.locator('#mother_grandfather_name').fill('جواد');
     await page.locator('#birth_date').fill(BIRTH_DATE);
     await page.locator('select#birth_place_code').selectOption({ index: 1 });
 

@@ -16,6 +16,7 @@ export type ApplicationForm = {
     great_grandfather_name: string | null;
     mother_first_name: string | null;
     mother_father_name: string | null;
+    mother_grandfather_name: string | null;
     birth_date: string | null;
     birth_place_code: string | null;
     birth_place_other: string | null;

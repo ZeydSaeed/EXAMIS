@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
  * @property string|null $mother_name_ar
  * @property string|null $mother_first_name
  * @property string|null $mother_father_name
+ * @property string|null $mother_grandfather_name
  * @property CarbonImmutable|null $birth_date
  * @property string|null $birth_place_code
  * @property string|null $birth_place_other
@@ -95,7 +96,7 @@ class Application extends Model
      */
     public const FORM_FIELDS = [
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
-        'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+        'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code', 'birth_place_other',
         'gender', 'national_id_number',
         'phone', 'district', 'mahalla', 'alley', 'house_number',
         'school_name', 'school_governorate_code', 'school_governorate_other', 'last_grade', 'branch_code', 'category_code', 'other_info',
@@ -106,7 +107,7 @@ class Application extends Model
      */
     public const REQUIRED_FOR_SUBMISSION = [
         'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
-        'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code',
+        'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code',
         'gender',
         'phone', 'district',
         'school_governorate_code', 'branch_code', 'category_code',
@@ -120,7 +121,7 @@ class Application extends Model
     public const STEP_FIELDS = [
         1 => [
             'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
-            'mother_first_name', 'mother_father_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+            'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code', 'birth_place_other',
             'gender',
         ],
         2 => ['phone', 'district'],
@@ -150,7 +151,7 @@ class Application extends Model
      */
     public const NAME_PARTS = ['student_name', 'father_name', 'grandfather_name', 'great_grandfather_name'];
 
-    public const MOTHER_NAME_PARTS = ['mother_first_name', 'mother_father_name'];
+    public const MOTHER_NAME_PARTS = ['mother_first_name', 'mother_father_name', 'mother_grandfather_name'];
 
     /**
      * `birth_place_code` value for a place outside the governorate list;

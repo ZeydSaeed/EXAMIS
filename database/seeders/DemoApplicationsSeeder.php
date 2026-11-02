@@ -204,6 +204,7 @@ class DemoApplicationsSeeder extends Seeder
             'great_grandfather_name' => $family[0],
             'mother_first_name' => self::FEMALE_NAMES[($index * 5) % 12][0],
             'mother_father_name' => self::GRANDFATHER_NAMES[($index + 4) % 10][0],
+            'mother_grandfather_name' => self::GRANDFATHER_NAMES[($index + 7) % 10][0],
             'gender' => $gender,
             'birth_date' => Carbon::create(2000, 1, 1)->addDays(($index * 97) % 2500)->toDateString(),
             'birth_place_code' => 'KRB',

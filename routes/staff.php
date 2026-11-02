@@ -91,6 +91,11 @@ Route::middleware(['auth:staff', 'can:admin.access'])
         Route::middleware('can:reports.view')->group(function () {
             Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');
             Route::get('reports/{period}/export', [Admin\ReportController::class, 'export'])->name('reports.export');
+
+            Route::middleware('can:applications.view_all')->group(function () {
+                Route::get('student-export', [Admin\StudentExportController::class, 'index'])->name('student-export.index');
+                Route::get('student-export/download', [Admin\StudentExportController::class, 'download'])->name('student-export.download');
+            });
         });
     });
 

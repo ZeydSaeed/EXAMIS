@@ -41,6 +41,7 @@ return [
         'admin_dashboard' => 'Admin dashboard',
         'applications' => 'Applications',
         'reports' => 'Reports',
+        'student_export' => 'Export to Excel',
         'periods' => 'Exam periods',
         'content' => 'Settings',
         'users' => 'Users and roles',
@@ -295,6 +296,7 @@ return [
         'great_grandfather_name' => 'Great-grandfather\'s name',
         'mother_first_name' => 'Mother\'s name',
         'mother_father_name' => 'Mother\'s father\'s name',
+        'mother_grandfather_name' => 'Mother\'s grandfather\'s name',
         'phone_account_hint' => 'The mobile number registered with your account; it cannot be changed on the form.',
         'mother_name_ar' => "Mother's full name",
         'birth_date' => 'Date of birth',
@@ -508,5 +510,15 @@ return [
         'males' => 'Male',
         'females' => 'Female',
         'all' => 'All',
+    ],
+
+    'student_export' => [
+        'mobile' => 'Mobile number',
+        'sheet' => 'Student information',
+        'from' => 'From date',
+        'to' => 'To date',
+        'total' => 'Students: :count',
+        'export_range' => 'Export the selected dates',
+        'export_all' => 'Export all data',
     ],
 ];

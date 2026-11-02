@@ -18,7 +18,7 @@
         "laravel/wayfinder": "^0.1.14",
         "mpdf/mpdf": "^8.3",
         "mpdf/qrcode": "^1.2",
-        "openspout/openspout": "*"
+        "openspout/openspout": "^5.13"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",

@@ -86,6 +86,9 @@ return [
         'mother_father_name' => [
             'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
         ],
+        'mother_grandfather_name' => [
+            'regex' => 'يجب كتابة :attribute بالأحرف العربية فقط.',
+        ],
         'username' => [
             'regex' => 'يجب أن يتكون اسم المستخدم من أحرف عربية أو إنكليزية وأرقام والرموز (. _ -) فقط.',
             'not_regex' => 'لا يمكن أن يتكون اسم المستخدم من أرقام فقط.',
@@ -119,6 +122,7 @@ return [
         'great_grandfather_name' => 'اسم أب الجد',
         'mother_first_name' => 'اسم الأم',
         'mother_father_name' => 'اسم أب الأم',
+        'mother_grandfather_name' => 'اسم جد الأم',
         'username' => 'اسم المستخدم',
         'name' => 'الاسم',
         'email' => 'البريد الإلكتروني',

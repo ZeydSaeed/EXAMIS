@@ -3,6 +3,7 @@ import {
     BarChart3,
     CalendarRange,
     ClipboardList,
+    FileSpreadsheet,
     FileText,
     HelpCircle,
     House,
@@ -65,6 +66,15 @@ export function AppSidebar() {
                       title: t('nav.reports'),
                       href: admin.reports.index(),
                       icon: BarChart3,
+                  },
+              ]
+            : []),
+        ...(can('reports.view') && can('applications.view_all')
+            ? [
+                  {
+                      title: t('nav.student_export'),
+                      href: admin.studentExport.index(),
+                      icon: FileSpreadsheet,
                   },
               ]
             : []),
