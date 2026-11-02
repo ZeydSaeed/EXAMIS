@@ -10,7 +10,7 @@ EXAMIS is the external-examination e-application platform: applicants register, 
 | State machine (single source of truth) | `app/Enums/ApplicationStatus.php`                                                                              |
 | Roles → permissions map                | `app/Enums/Role.php`, `app/Enums/Permission.php` (each permission is a Gate ability)                           |
 | Authorization                          | `app/Policies/*`; staff visibility: `Application::scopeVisibleToStaff()` + `isVisibleToStaff()` (keep in sync) |
-| Infrastructure services                | `app/Services/{Audit,Applications,Documents,Receipts,Operations,Staff}`                                            |
+| Infrastructure services                | `app/Services/{Audit,Applications,Documents,Receipts,Operations,Staff}`                                        |
 | Frontend pages                         | `resources/js/pages/{public,applicant,admin,auth,settings}`                                                    |
 | UI strings                             | `lang/{ar,en}/ui.php` (frontend, via `useTrans()`), other `lang/*/*.php` (backend)                             |
 | Architecture decisions                 | `docs/decisions/` (ADRs), overview in `docs/architecture/ARCHITECTURE.md`                                      |

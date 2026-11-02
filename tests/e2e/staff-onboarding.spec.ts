@@ -46,6 +46,13 @@ async function enrol(
     }
 
     await expect(page).toHaveURL(/\/settings\/security/);
+
+    // Until enrolment is done the page says why, and nothing else is offered.
+    await expect(page.getByTestId('two-factor-required')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'لوحة الإدارة' })).toHaveCount(
+        0,
+    );
+
     await page.getByRole('button', { name: 'Enable 2FA' }).click();
 
     await expect(page.locator('svg').first()).toBeVisible();
@@ -59,6 +66,8 @@ async function enrol(
     await page.getByTestId('issue-recovery-codes').click();
     const list = page.getByTestId('recovery-codes').getByRole('listitem');
     await expect(list).toHaveCount(8);
+    await expect(page.getByTestId('two-factor-required')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'لوحة الإدارة' })).toBeVisible();
 
     return { secret, recoveryCodes: await list.allTextContents() };
 }

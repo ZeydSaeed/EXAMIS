@@ -1,11 +1,14 @@
 import { Form, Head } from '@inertiajs/react';
+import { ShieldAlert } from 'lucide-react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-trans';
 import { edit } from '@/routes/security';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
 import ManageTwoFactor from '@/components/manage-two-factor';
@@ -16,6 +19,7 @@ type Props = {
 } & ManageTwoFactorProps;
 
 export default function Security(props: Props) {
+    const { t } = useTrans();
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -24,6 +28,22 @@ export default function Security(props: Props) {
             <Head title="Security settings" />
 
             <h1 className="sr-only">Security settings</h1>
+
+            {props.canManageTwoFactor && !props.twoFactorEnabled && (
+                <Alert data-test="two-factor-required">
+                    <ShieldAlert aria-hidden />
+                    <AlertTitle>{t('users.enrol_title')}</AlertTitle>
+                    <AlertDescription>
+                        <p>{t('users.enrol_text')}</p>
+                        <ol className="list-inside list-decimal">
+                            <li>{t('users.enrol_step_app')}</li>
+                            <li>{t('users.enrol_step_enable')}</li>
+                            <li>{t('users.enrol_step_code')}</li>
+                            <li>{t('users.enrol_step_recovery')}</li>
+                        </ol>
+                    </AlertDescription>
+                </Alert>
+            )}
 
             <div className="space-y-6">
                 <Heading
