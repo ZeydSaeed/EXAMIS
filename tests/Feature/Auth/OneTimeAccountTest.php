@@ -129,7 +129,7 @@ test('the final page is only for a sent application waiting to be printed', func
 
     $this->actingAs($student)->get(route('applications.printed', $draft))->assertForbidden();
 
-    $draft->forceFill(['reference_number' => 'EX2027-123456784', 'status' => ApplicationStatus::RequiresCorrection])->save();
+    $draft->forceFill(['reference_number' => 'EX2027-123456784', 'status' => ApplicationStatus::RequiresCorrection, 'submitted_at' => now(), 'declaration_accepted_at' => now()])->save();
 
     $this->get(route('applications.printed', $draft))->assertRedirect(route('applications.show', $draft));
 });

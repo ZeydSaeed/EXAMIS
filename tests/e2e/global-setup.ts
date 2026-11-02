@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { e2eEnv } from '../../playwright.config';
 
 /**
@@ -17,9 +17,11 @@ export default function globalSetup(): void {
         throw new Error('Built assets missing: run `npm run build` first.');
     }
 
-    const database = e2eEnv.DB_DATABASE;
-    rmSync(database, { force: true });
-    writeFileSync(database, '');
+    if (e2eEnv.DB_DATABASE !== 'examis_testing') {
+        throw new Error(
+            `Refusing to rebuild database [${e2eEnv.DB_DATABASE}]: E2E runs on examis_testing only.`,
+        );
+    }
 
     execFileSync(
         'php',

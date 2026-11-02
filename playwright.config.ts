@@ -3,10 +3,11 @@ import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * End-to-end tests run against an isolated SQLite database
- * (database/e2e.sqlite) served by PHP's built-in server, never against the
- * development or production database. Assets must be built first
- * (`npm run build`). Set E2E_ALL_BROWSERS=1 to add Firefox and WebKit.
+ * End-to-end tests run against the PostgreSQL test database (examis_testing)
+ * served by PHP's built-in server, never against the development or
+ * production database. The host and credentials come from .env. Assets must
+ * be built first (`npm run build`). Set E2E_ALL_BROWSERS=1 to add Firefox and
+ * WebKit.
  */
 export const e2ePort = Number(process.env.E2E_PORT ?? 8765);
 const port = e2ePort;
@@ -22,8 +23,8 @@ export const e2eEnv: Record<string, string> = {
     APP_KEY: appKey,
     APP_URL: baseURL,
     APP_LOCALE: 'ar',
-    DB_CONNECTION: 'sqlite',
-    DB_DATABASE: path.resolve('database/e2e.sqlite'),
+    DB_CONNECTION: 'pgsql',
+    DB_DATABASE: 'examis_testing',
     DB_URL: '',
     SESSION_DRIVER: 'file',
     CACHE_STORE: 'array',
