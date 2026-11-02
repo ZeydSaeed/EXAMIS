@@ -188,7 +188,7 @@ class DemoApplicationsSeeder extends Seeder
         $family = self::FAMILY_NAMES[($index * 7) % count(self::FAMILY_NAMES)];
         $nameAr = "{$first[0]} {$father[0]} {$grandfather[0]} {$family[0]}";
 
-        $applicant = User::factory()->create([
+        $applicant = User::factory()->student()->create([
             'username' => null,
             'phone' => $phone,
             'name' => $nameAr,
