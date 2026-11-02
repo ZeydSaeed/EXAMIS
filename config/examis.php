@@ -42,7 +42,6 @@ return [
     */
 
     'security' => [
-        'require_staff_two_factor' => (bool) env('EXAMIS_REQUIRE_STAFF_2FA', env('APP_ENV') === 'production'),
         'content_security_policy' => (bool) env('EXAMIS_CSP_ENABLED', true),
         'hsts' => (bool) env('EXAMIS_HSTS_ENABLED', env('APP_ENV') === 'production'),
         // Raise only on an isolated load-test environment (k6 runs from one IP).

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\LockStaffTwoFactor;
 use App\Http\Middleware\ThrottleAuthEndpoints;
 use Laravel\Fortify\Features;
 
@@ -102,7 +103,7 @@ return [
     |
     */
 
-    'middleware' => ['web', ThrottleAuthEndpoints::class],
+    'middleware' => ['web', ThrottleAuthEndpoints::class, LockStaffTwoFactor::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -153,6 +154,7 @@ return [
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,
+            'secret-length' => 32,
             // 'window' => 0
         ]),
     ],

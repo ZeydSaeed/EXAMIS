@@ -7,9 +7,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Staff must enrol in two-factor authentication before using the admin area
- * when `examis.security.require_staff_two_factor` is enabled (default in
- * production).
+ * Staff must enrol in two-factor authentication before reaching anything but
+ * the security page. There is no switch to turn this off.
  */
 class EnsureStaffTwoFactor
 {
@@ -17,7 +16,7 @@ class EnsureStaffTwoFactor
     {
         $user = $request->user();
 
-        if (config('examis.security.require_staff_two_factor') && $user !== null && $user->two_factor_confirmed_at === null) {
+        if ($user?->isStaff() && $user->two_factor_confirmed_at === null) {
             return redirect()->route('security.edit')->with('status', __('auth.staff_two_factor_required'));
         }
 

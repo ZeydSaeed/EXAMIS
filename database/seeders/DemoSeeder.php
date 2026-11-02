@@ -62,7 +62,7 @@ class DemoSeeder extends Seeder
                 continue;
             }
 
-            User::factory()->staff(...$roles)->create([
+            User::factory()->staff(...$roles)->withoutTwoFactor()->create([
                 'username' => $username,
                 'name' => $name,
                 'email' => $username.'@examis.test',

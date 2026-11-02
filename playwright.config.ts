@@ -32,7 +32,6 @@ export const e2eEnv: Record<string, string> = {
     MAIL_MAILER: 'log',
     DOCUMENTS_DISK: 'documents',
     DOCUMENTS_ROOT: path.resolve('storage/e2e/documents'),
-    EXAMIS_REQUIRE_STAFF_2FA: 'false',
     LOG_CHANNEL: 'single',
 };
 

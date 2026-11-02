@@ -50,7 +50,6 @@ it('searches the audit log by action prefix or actor username and filters by sub
     AuditEvent::query()->create(['action' => 'period.created', 'subject_type' => 'ExamPeriod', 'subject_id' => 1]);
     AuditEvent::query()->create(['action' => 'staff.created', 'actor_id' => $actor->id, 'subject_type' => 'User', 'subject_id' => 2]);
     AuditEvent::query()->create(['action' => 'content.updated', 'subject_type' => 'ContentPage', 'subject_id' => 3]);
-    config(['examis.security.require_staff_two_factor' => false]);
     $admin = staffWith(Role::Administrator);
 
     $this->actingAs($admin)->get(route('admin.audit.index', ['q' => 'period.']))
@@ -64,7 +63,6 @@ it('searches the audit log by action prefix or actor username and filters by sub
 });
 
 it('treats wildcards in the audit search as literal text', function () {
-    config(['examis.security.require_staff_two_factor' => false]);
     AuditEvent::query()->create(['action' => 'period.created']);
 
     $this->actingAs(staffWith(Role::Administrator))->get(route('admin.audit.index', ['q' => '%']))

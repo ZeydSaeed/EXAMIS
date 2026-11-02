@@ -86,7 +86,7 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'staff.2fa'])->group(function () {
     Route::get('dashboard', Applicant\DashboardController::class)->name('dashboard');
 
     Route::get('apply/specialization', [Applicant\SpecializationController::class, 'show'])->name('apply.specialization');

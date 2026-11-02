@@ -53,11 +53,24 @@ class UserFactory extends Factory
     }
 
     /**
-     * A staff account holding the given roles.
+     * A staff account that has not enrolled in two-factor authentication yet.
+     */
+    public function withoutTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ]);
+    }
+
+    /**
+     * A staff account holding the given roles, enrolled in two-factor
+     * authentication.
      */
     public function staff(Role ...$roles): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->withTwoFactor()->state(fn (array $attributes) => [
             'account_type' => AccountType::Staff,
         ])->afterCreating(function (User $user) use ($roles): void {
             foreach ($roles as $role) {

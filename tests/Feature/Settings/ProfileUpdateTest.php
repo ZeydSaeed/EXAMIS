@@ -32,46 +32,10 @@ test('profile information can be updated', function () {
     expect($user->email)->toBe('test@example.com');
 });
 
-test('staff can delete their account', function () {
-    $user = User::factory()->staff()->create();
+test('nobody can delete their own account', function () {
+    foreach ([User::factory()->staff()->create(), User::factory()->create()] as $user) {
+        $this->actingAs($user)->delete('/settings/profile', ['password' => 'password'])->assertMethodNotAllowed();
 
-    $response = $this
-        ->actingAs($user)
-        ->delete(route('profile.destroy'), [
-            'password' => 'password',
-        ]);
-
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect(route('start'));
-
-    $this->assertGuest();
-    expect($user->fresh())->toBeNull();
-});
-
-test('students cannot delete their account or its records', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)
-        ->delete(route('profile.destroy'), ['password' => 'password'])
-        ->assertRedirect(route('dashboard'));
-
-    expect($user->fresh())->not->toBeNull();
-});
-
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->staff()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from(route('profile.edit'))
-        ->delete(route('profile.destroy'), [
-            'password' => 'wrong-password',
-        ]);
-
-    $response
-        ->assertSessionHasErrors('password')
-        ->assertRedirect(route('profile.edit'));
-
-    expect($user->fresh())->not->toBeNull();
+        expect($user->fresh())->not->toBeNull();
+    }
 });

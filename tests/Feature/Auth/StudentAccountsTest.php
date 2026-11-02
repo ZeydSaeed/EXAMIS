@@ -192,7 +192,7 @@ test('the QR link carries no personal data and leads to the same checks', functi
 });
 
 test('staff still sign in with a password at the staff login', function () {
-    $staff = User::factory()->staff(Role::Administrator)->create();
+    $staff = User::factory()->staff(Role::Administrator)->withoutTwoFactor()->create();
 
     $this->get(route('staff.login'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('auth/staff-login'));
 

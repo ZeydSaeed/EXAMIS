@@ -4,6 +4,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\Role;
 use App\Models\Application;
 use App\Models\AuditEvent;
+use App\Models\User;
 use App\Notifications\ApplicationStatusChanged;
 use Illuminate\Support\Facades\Notification;
 
@@ -138,17 +139,13 @@ it('keeps applicants out of the administration area', function () {
     $this->actingAs(applicant())->get(route('admin.dashboard'))->assertForbidden();
 });
 
-it('requires two-factor authentication for staff when configured', function () {
-    config(['examis.security.require_staff_two_factor' => true]);
-
-    $this->actingAs(staffWith(Role::Supervisor))
+it('requires two-factor authentication for staff', function () {
+    $this->actingAs(User::factory()->staff(Role::Supervisor)->withoutTwoFactor()->create())
         ->get(route('admin.dashboard'))
         ->assertRedirect(route('security.edit'));
 });
 
 it('restricts configuration sections to their permission', function (Role $role, string $route, int $status) {
-    config(['examis.security.require_staff_two_factor' => false]);
-
     $this->actingAs(staffWith($role))->get(route($route))->assertStatus($status);
 })->with([
     'reviewer cannot manage periods' => [Role::Reviewer, 'admin.periods.index', 403],

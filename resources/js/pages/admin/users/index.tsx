@@ -1,4 +1,10 @@
-import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
+import {
+    Head,
+    router,
+    setLayoutProps,
+    useForm,
+    usePage,
+} from '@inertiajs/react';
 import { ShieldCheck, ShieldOff, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -62,6 +68,7 @@ function RoleEditor({
 }) {
     const { t } = useTrans();
     const form = useForm({ roles: user.roles });
+    const isSelf = usePage().props.auth.user?.id === user.id;
 
     return (
         <form
@@ -77,6 +84,7 @@ function RoleEditor({
                 <div key={role.value} className="flex items-center gap-1.5">
                     <Checkbox
                         id={`role-${user.id}-${role.value}`}
+                        disabled={isSelf}
                         checked={form.data.roles.includes(role.value)}
                         onCheckedChange={(checked) =>
                             form.setData(

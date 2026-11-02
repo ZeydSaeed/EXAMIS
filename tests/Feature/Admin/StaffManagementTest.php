@@ -8,10 +8,6 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeEach(function () {
-    config(['examis.security.require_staff_two_factor' => false]);
-});
-
 it('creates staff accounts that set their own password through a reset link', function () {
     Notification::fake();
 

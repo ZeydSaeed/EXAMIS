@@ -56,8 +56,8 @@ class ManageStaffAccess
             throw DomainRuleViolation::assigneeNotEligible();
         }
 
-        if ($user->is($actor) && ! in_array(Role::Administrator, $roles, true)) {
-            throw new DomainRuleViolation(__('admin.errors.cannot_remove_own_admin'), 'roles');
+        if ($user->is($actor)) {
+            throw new DomainRuleViolation(__('admin.errors.cannot_change_own_roles'), 'roles');
         }
 
         DB::transaction(function () use ($user, $roles, $actor): void {
@@ -79,6 +79,10 @@ class ManageStaffAccess
 
     public function setActive(User $user, bool $active, User $actor): void
     {
+        if (! $user->isStaff()) {
+            throw DomainRuleViolation::assigneeNotEligible();
+        }
+
         if ($user->is($actor)) {
             throw new DomainRuleViolation(__('admin.errors.cannot_deactivate_self'), 'user');
         }
