@@ -11,6 +11,7 @@ it('creates a staff account and shows its one-time link once', function () {
         ->post(route('admin.users.store'), [
             'name' => 'مدقق جديد',
             'email' => 'reviewer@example.com',
+            'phone' => '٠٧٧٠ 123 4567',
             'roles' => ['reviewer'],
         ])
         ->assertSessionHasNoErrors()
@@ -23,6 +24,7 @@ it('creates a staff account and shows its one-time link once', function () {
 
     expect($staff->account_type)->toBe(AccountType::Staff)
         ->and($staff->hasRole(Role::Reviewer))->toBeTrue()
+        ->and($staff->phone)->toBe('07701234567')
         ->and(AuditEvent::query()->where('action', 'staff.created')->exists())->toBeTrue();
 });
 
@@ -114,4 +116,47 @@ it('rejects unknown staff filters and page sizes', function () {
     $this->actingAs(staffWith(Role::Administrator))
         ->get(route('admin.users.index', ['role' => 'owner', 'state' => 'gone', 'per_page' => 1000]))
         ->assertSessionHasErrors(['role', 'state', 'per_page']);
+});
+
+it('asks for a mobile number when adding a staff member', function () {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->post(route('admin.users.store'), ['name' => 'موظف جديد', 'email' => 'new@example.com', 'roles' => ['reviewer']])
+        ->assertSessionHasErrors('phone');
+});
+
+it('lets an administrator set a mobile number, their own included, and audits it', function () {
+    $admin = staffWith(Role::Administrator);
+    $staff = staffWith(Role::Reviewer);
+
+    $this->actingAs($admin)->put(route('admin.users.phone', $staff), ['phone' => '07701234567'])->assertSessionHasNoErrors();
+    $this->actingAs($admin)->put(route('admin.users.phone', $admin), ['phone' => '07801234567'])->assertSessionHasNoErrors();
+
+    expect($staff->fresh()->phone)->toBe('07701234567')
+        ->and($admin->fresh()->phone)->toBe('07801234567')
+        ->and(AuditEvent::query()->where('action', 'staff.phone_changed')->count())->toBe(2)
+        ->and(AuditEvent::query()->where('action', 'staff.phone_changed')->first()->metadata)->toBeNull();
+
+    $this->actingAs($admin)->get(route('admin.users.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('staff.data.0.phone', fn (?string $phone): bool => $phone !== null));
+});
+
+it('refuses a malformed mobile number and a student account', function () {
+    $admin = staffWith(Role::Administrator);
+
+    $this->actingAs($admin)->put(route('admin.users.phone', staffWith(Role::Reviewer)), ['phone' => '123'])
+        ->assertSessionHasErrors('phone');
+
+    $student = User::factory()->student()->create();
+
+    $this->actingAs($admin)->put(route('admin.users.phone', $student), ['phone' => '07701234567'])
+        ->assertSessionHasErrors();
+
+    expect($student->fresh()->phone)->not->toBe('07701234567');
+});
+
+it('keeps the mobile number page to those who manage users', function () {
+    $staff = staffWith(Role::Reviewer);
+
+    $this->actingAs(staffWith(Role::Supervisor))->put(route('admin.users.phone', $staff), ['phone' => '07701234567'])->assertForbidden();
+    $this->actingAs($staff)->put(route('admin.users.phone', $staff), ['phone' => '07701234567'])->assertForbidden();
 });

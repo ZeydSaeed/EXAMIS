@@ -53,6 +53,7 @@ test('an administrator activates and invites staff without any shared secret', a
     await page.getByRole('button', { name: 'إضافة موظف' }).click();
     await page.locator('#new-name').fill('مدقق جديد');
     await page.locator('#new-email').fill(reviewerEmail);
+    await page.locator('#new-phone').fill('07701234567');
     await page.locator('#new-role-reviewer').click();
     await page
         .getByRole('dialog')

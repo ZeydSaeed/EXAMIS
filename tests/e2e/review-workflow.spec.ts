@@ -143,4 +143,9 @@ test('the applications list shows the agreed columns and decides in place', asyn
         'href',
         /^https:\/\/wa\.me\/964\d+\?text=/,
     );
+
+    // The student's number, and a prompt as this account has none yet.
+    const numbers = staffPage.getByTestId('message-numbers');
+    await expect(numbers).toContainText('+964');
+    await expect(numbers).toContainText('لا يوجد رقم موبايل لحسابك');
 });

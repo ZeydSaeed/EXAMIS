@@ -81,6 +81,7 @@ Route::middleware(['auth:staff', 'can:admin.access'])
         Route::middleware('can:users.manage')->group(function () {
             Route::get('users', [Admin\StaffUserController::class, 'index'])->name('users.index');
             Route::post('users', [Admin\StaffUserController::class, 'store'])->name('users.store');
+            Route::put('users/{user}/phone', [Admin\StaffUserController::class, 'updatePhone'])->name('users.phone');
             Route::put('users/{user}/roles', [Admin\StaffUserController::class, 'updateRoles'])->name('users.roles');
             Route::put('users/{user}/permissions', [Admin\StaffUserController::class, 'updatePermissions'])->name('users.permissions');
             Route::put('users/{user}/status', [Admin\StaffUserController::class, 'updateStatus'])->name('users.status');

@@ -42,6 +42,7 @@ type StaffRow = {
     username: string;
     name: string;
     email: string;
+    phone: string | null;
     roles: string[];
     overrides: Record<string, 'grant' | 'deny'>;
     is_active: boolean;
@@ -157,6 +158,48 @@ function PermissionExceptions({
     );
 }
 
+function PhoneEditor({ user }: { user: StaffRow }) {
+    const { t } = useTrans();
+    const form = useForm({ phone: user.phone ?? '' });
+
+    return (
+        <form
+            className="flex items-center gap-2"
+            onSubmit={(event) => {
+                event.preventDefault();
+                form.put(admin.users.phone.url(user.id), {
+                    preserveScroll: true,
+                });
+            }}
+        >
+            <div className="grid gap-1">
+                <Input
+                    type="tel"
+                    dir="ltr"
+                    aria-label={`${t('auth.mobile')}: ${user.name}`}
+                    placeholder={t('fields.phone_hint')}
+                    className="h-8 w-36 text-sm"
+                    value={form.data.phone}
+                    onChange={(event) =>
+                        form.setData('phone', event.target.value)
+                    }
+                />
+                <InputError message={form.errors.phone} />
+            </div>
+            {form.isDirty && (
+                <Button
+                    type="submit"
+                    size="sm"
+                    variant="outline"
+                    disabled={form.processing}
+                >
+                    {t('common.save')}
+                </Button>
+            )}
+        </form>
+    );
+}
+
 function RoleEditor({
     user,
     roles,
@@ -231,8 +274,9 @@ function CreateStaffDialog({
     const create = useForm<{
         name: string;
         email: string;
+        phone: string;
         roles: string[];
-    }>({ name: '', email: '', roles: [] });
+    }>({ name: '', email: '', phone: '', roles: [] });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -283,6 +327,23 @@ function CreateStaffDialog({
                             value={create.data.email}
                             onChange={(event) =>
                                 create.setData('email', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-phone"
+                        label={t('auth.mobile')}
+                        error={create.errors.phone}
+                        required
+                    >
+                        <Input
+                            id="new-phone"
+                            type="tel"
+                            dir="ltr"
+                            placeholder={t('fields.phone_hint')}
+                            value={create.data.phone}
+                            onChange={(event) =>
+                                create.setData('phone', event.target.value)
                             }
                         />
                     </Field>
@@ -415,7 +476,7 @@ export default function StaffUsers({
                         />
                     ) : (
                         <DataTableFrame className="examis-data-table--plain max-h-full">
-                            <table className="min-w-[56rem]">
+                            <table className="min-w-272">
                                 <caption className="sr-only">
                                     {t('nav.users')}
                                 </caption>
@@ -430,6 +491,7 @@ export default function StaffUsers({
                                         <th scope="col">
                                             {t('auth.full_name')}
                                         </th>
+                                        <th scope="col">{t('auth.mobile')}</th>
                                         <th scope="col">{t('users.roles')}</th>
                                         <th scope="col">
                                             {t('users.last_login')}
@@ -477,6 +539,12 @@ export default function StaffUsers({
                                                         )}
                                                     </span>
                                                 )}
+                                            </td>
+                                            <td>
+                                                <PhoneEditor
+                                                    key={user.phone}
+                                                    user={user}
+                                                />
                                             </td>
                                             <td>
                                                 <RoleEditor

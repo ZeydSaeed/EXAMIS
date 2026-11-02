@@ -31,10 +31,10 @@ class ManageStaffAccess
      *
      * @param  list<Role>  $roles
      */
-    public function create(string $name, string $email, array $roles, ?User $actor): User
+    public function create(string $name, string $email, array $roles, ?User $actor, ?string $phone = null): User
     {
-        return DB::transaction(function () use ($name, $email, $roles, $actor): User {
-            $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => Str::random(64)]);
+        return DB::transaction(function () use ($name, $email, $roles, $actor, $phone): User {
+            $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => Str::random(64), 'phone' => $phone]);
             $user->account_type = AccountType::Staff;
             $user->save();
 
@@ -146,6 +146,22 @@ class ManageStaffAccess
 
         $user->flushRoles();
         $this->endSessions($user);
+    }
+
+    /**
+     * The mobile number staff message students from. It grants nothing, so
+     * administrators may set their own and no session ends.
+     */
+    public function setPhone(User $user, string $phone, User $actor): void
+    {
+        if (! $user->isStaff()) {
+            throw DomainRuleViolation::assigneeNotEligible();
+        }
+
+        DB::transaction(function () use ($user, $phone, $actor): void {
+            $user->forceFill(['phone' => $phone])->save();
+            $this->audit->record('staff.phone_changed', $user, actor: $actor);
+        }, 3);
     }
 
     public function setActive(User $user, bool $active, User $actor): void

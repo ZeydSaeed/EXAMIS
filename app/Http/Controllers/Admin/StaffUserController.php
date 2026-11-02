@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RoleAssignment;
 use App\Models\StaffPermissionOverride;
 use App\Models\User;
+use App\Services\Students\StudentIdentity;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -55,6 +56,7 @@ class StaffUserController extends Controller
                 'username' => $user->username,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone,
                 'roles' => $user->roleAssignments->map(fn (RoleAssignment $assignment): string => $assignment->role->value)->values(),
                 'overrides' => (object) $user->permissionOverrides
                     ->mapWithKeys(fn (StaffPermissionOverride $override): array => [$override->permission->value => $override->effect->value])
@@ -77,14 +79,17 @@ class StaffUserController extends Controller
 
     public function store(Request $request, ManageStaffAccess $access): Response
     {
+        $this->normalizePhone($request);
+
         $validated = $request->validate([
             'name' => $this->nameRules(),
             'email' => $this->staffEmailRules(),
+            'phone' => $this->phoneRules(),
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => [Rule::enum(Role::class), 'distinct'],
         ]);
 
-        $user = $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user());
+        $user = $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user(), $validated['phone']);
 
         return $this->invitationPage($user, InvitationPurpose::Activate, $request, $access);
     }
@@ -96,6 +101,19 @@ class StaffUserController extends Controller
     public function storeInvitation(Request $request, User $user, ManageStaffAccess $access): Response
     {
         return $this->invitationPage($user, InvitationPurpose::ResetPassword, $request, $access);
+    }
+
+    public function updatePhone(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
+    {
+        $this->normalizePhone($request);
+
+        $validated = $request->validate(['phone' => $this->phoneRules()]);
+
+        $access->setPhone($user, $validated['phone'], $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
+
+        return back();
     }
 
     public function updateRoles(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
@@ -141,6 +159,13 @@ class StaffUserController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return back();
+    }
+
+    private function normalizePhone(Request $request): void
+    {
+        if (is_string($request->input('phone'))) {
+            $request->merge(['phone' => StudentIdentity::normalizePhone($request->input('phone'))]);
+        }
     }
 
     /**
