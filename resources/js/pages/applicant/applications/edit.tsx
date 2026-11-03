@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
+import { DatePartsInput } from '@/components/examis/date-parts-input';
 import { DocumentUploader } from '@/components/examis/document-uploader';
 import { describedBy, Field, selectClassName } from '@/components/examis/field';
 import { PageContainer } from '@/components/examis/page-header';
@@ -83,7 +84,7 @@ const FIELD_ORDER: Record<(typeof STEPS)[number], TextField[]> = {
         'gender',
     ],
     contact: ['district'],
-    education: ['school_governorate_code'],
+    education: ['school_name', 'school_governorate_code'],
     documents: [],
     review: [],
 };
@@ -154,11 +155,7 @@ export default function EditApplication({
 
     // Start on the next field to fill.
     useEffect(() => {
-        // The school comes first on its page, though it is optional.
-        const next =
-            currentStep === 'education' && !form.data.school_name
-                ? 'school_name'
-                : sequence.find(isEmpty);
+        const next = sequence.find(isEmpty);
 
         if (next) {
             document.getElementById(next)?.focus();
@@ -340,11 +337,6 @@ export default function EditApplication({
         </select>
     );
 
-    const folderColorKey = `fields.folder_colors.${form.data.branch_code}`;
-    const folderColorHint =
-        form.data.branch_code && t(folderColorKey) !== folderColorKey
-            ? t('fields.folder_color', { color: t(folderColorKey) })
-            : undefined;
     const documentsByType = Object.fromEntries(
         (application.documents ?? []).map((document) => [
             document.document_type,
@@ -510,7 +502,23 @@ export default function EditApplication({
                                     error={form.errors.birth_date}
                                     required
                                 >
-                                    {input('birth_date', { type: 'date' })}
+                                    {/* Years as the server allows: over 10, born after 1940. */}
+                                    <DatePartsInput
+                                        id="birth_date"
+                                        value={form.data.birth_date ?? null}
+                                        onChange={(value) =>
+                                            form.setData('birth_date', value)
+                                        }
+                                        fromYear={new Date().getFullYear() - 10}
+                                        toYear={1941}
+                                        disabled={isLocked('birth_date')}
+                                        invalid={!!form.errors.birth_date}
+                                        describedBy={describedBy(
+                                            'birth_date',
+                                            undefined,
+                                            form.errors.birth_date,
+                                        )}
+                                    />
                                 </Field>
                                 <Field
                                     id="birth_place_code"
@@ -632,6 +640,8 @@ export default function EditApplication({
                                     {input('mahalla', {
                                         dir: 'ltr',
                                         inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
                                     })}
                                 </Field>
                                 <Field
@@ -642,6 +652,8 @@ export default function EditApplication({
                                     {input('alley', {
                                         dir: 'ltr',
                                         inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
                                     })}
                                 </Field>
                                 <Field
@@ -652,6 +664,8 @@ export default function EditApplication({
                                     {input('house_number', {
                                         dir: 'ltr',
                                         inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
                                     })}
                                 </Field>
                                 <Field
@@ -682,8 +696,12 @@ export default function EditApplication({
                                     id="school_name"
                                     label={t('fields.school_name')}
                                     error={form.errors.school_name}
+                                    required
                                 >
-                                    {input('school_name', { disabled: false })}
+                                    {/* Kept on record only; the printed form leaves it to be written in. */}
+                                    {input('school_name', {
+                                        placeholder: t('common.required'),
+                                    })}
                                 </Field>
                                 <Field
                                     id="school_governorate_code"
@@ -722,41 +740,6 @@ export default function EditApplication({
                                         })}
                                     </Field>
                                 )}
-                                {/* Chosen on the branch page after registration; read-only here. */}
-                                <Field
-                                    id="branch_readonly"
-                                    label={t('fields.branch')}
-                                    hint={folderColorHint}
-                                >
-                                    <Input
-                                        id="branch_readonly"
-                                        value={application.labels.branch ?? '—'}
-                                        readOnly
-                                        aria-readonly
-                                        aria-describedby={
-                                            folderColorHint
-                                                ? 'branch_readonly-hint'
-                                                : undefined
-                                        }
-                                        className="bg-muted"
-                                        data-test="branch-readonly"
-                                    />
-                                </Field>
-                                <Field
-                                    id="category_readonly"
-                                    label={t('fields.category')}
-                                >
-                                    <Input
-                                        id="category_readonly"
-                                        value={
-                                            application.labels.category ?? '—'
-                                        }
-                                        readOnly
-                                        aria-readonly
-                                        className="bg-muted"
-                                        data-test="category-readonly"
-                                    />
-                                </Field>
                                 {!form.data.branch_code && (
                                     <p className="text-sm sm:col-span-2">
                                         {t('fields.branch_not_chosen')}{' '}

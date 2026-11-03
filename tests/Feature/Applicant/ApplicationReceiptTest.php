@@ -88,17 +88,18 @@ it('names the form after the student and their student number', function () {
         ->toBe('علي حسن كاظم جاسم_12345');
 });
 
-it('follows the form with the request letter, the information form and the required documents', function () {
+it('follows the form with the request letter, the information form, the required documents and the pledge', function () {
     $application = Application::factory()->submitted()->create(['branch_code' => 'COM', 'category_code' => 'COM_ACC']);
 
     $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
     $user = $application->user->refresh();
 
     $text = extractPdfText($pdf);
-    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(4)
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
         ->and($text)->toContain(visualOrder('بواسطة السيد مدير قسم'))
         ->and($text)->toContain(visualOrder('استمارة معلومات الطالب الخاصة بالتقديم'))
         ->and($text)->toContain(visualOrder('المستمسكات المطلوبة'))
+        ->and($text)->toContain(visualOrder('وثيقة الدراسة المتوسطة'))
         ->and($text)->not->toContain(visualOrder('استمارة اختبار'))
         ->and($text)->not->toContain(visualOrder('بطاقة الطالب'))
         ->and($user->student_number)->not->toBeNull()
@@ -111,7 +112,7 @@ it('adds the test form with the centre of the specialization', function (string 
     $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
 
     $text = extractPdfText($pdf);
-    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(6)
         ->and($text)->toContain(visualOrder('استمارة اختبار'))
         ->and($text)->toContain(visualOrder($centre));
 })->with([

@@ -95,7 +95,7 @@ export default function PrintedApplication({
 
     return (
         <>
-            <Head title={t('applicant.printed_title')} />
+            <Head title={t('applicant.printed_tab')} />
             <PageContainer>
                 <section
                     className="space-y-3 rounded-xl border bg-card p-4 sm:p-6"

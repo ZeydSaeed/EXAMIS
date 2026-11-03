@@ -90,7 +90,10 @@ export async function fillUpToDocuments(page: Page): Promise<void> {
     await page.locator('#mother_first_name').fill('زينب');
     await page.locator('#mother_father_name').fill('كاظم');
     await page.locator('#mother_grandfather_name').fill('جواد');
-    await page.locator('#birth_date').fill(BIRTH_DATE);
+    const [year, month, day] = BIRTH_DATE.split('-');
+    await page.locator('#birth_date').selectOption(day);
+    await page.locator('#birth_date_month').selectOption(month);
+    await page.locator('#birth_date_year').selectOption(year);
     await page.locator('select#birth_place_code').selectOption({ index: 1 });
 
     // Some specializations fix the gender, which then shows but cannot change.

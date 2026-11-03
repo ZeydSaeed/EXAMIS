@@ -15,6 +15,10 @@
         table.form-date { margin-top: 1mm; }
         table.form-date td { width: 124mm; height: 7mm; border: 0.8px solid #000000; text-align: center; vertical-align: middle; font-size: 11pt; }
         .form-note { font-size: 10.5pt; line-height: 1.6; margin-top: 1.5mm; padding: 1.5mm 2mm; border: 0.8px solid #000000; }
+        {{-- The label stands apart so the note's later lines align under its first. --}}
+        table.form-note-body { width: 100%; }
+        table.form-note-body td { vertical-align: top; padding: 0; }
+        table.form-note-body td.form-note-label { width: {{ $direction === 'rtl' ? '13mm' : '11mm' }}; padding-{{ $direction === 'rtl' ? 'left' : 'right' }}: 1.5mm; }
         .title { text-align: center; font-size: 13.5pt; margin-top: 1.5mm; }
         table.form { width: 100%; margin-top: 2mm; }
         table.form td { border: 0.8px solid #000000; padding: 1mm 1.6mm; height: 7.6mm; vertical-align: middle; }
@@ -46,6 +50,8 @@
         .letter { font-size: 14pt; line-height: 2.4; margin: 10mm 8mm 0; }
         table.letter-signature td { font-size: 14pt; padding: 1.5mm 0; text-align: center; }
         table.roomy td { font-size: 13pt; height: 13mm; }
+        {{-- Shorter rows, so the documents page fits under the page head. --}}
+        table.folders td { font-size: 13pt; height: 9mm; }
         {{-- One size across the whole student information page. --}}
         .info { font-size: 13pt; }
         .info-centred { font-size: 13pt; text-align: center; margin-top: 3mm; }
@@ -56,37 +62,13 @@
     </style>
 </head>
 <body>
-    {{-- Committee on the right, vocational logo in the middle, photo on the left. --}}
-    <table class="head" style="width: 100%;">
-        <tr>
-            <td class="committee" style="width: 72mm;">
-                {{ __('receipt.committee') }}<br>
-                {{ __('receipt.preliminary_exams') }}<br>
-                {{ __('receipt.department') }}
-            </td>
-            <td style="width: 42mm; text-align: center;">
-                @if ($logo)
-                    <img src="{{ $logo }}" style="height: 26mm;">
-                @endif
-            </td>
-            <td style="width: 40mm;">&nbsp;</td>
-            <td class="photo">
-                @if ($hasPhoto)
-                    <img src="var:photo" style="width: 28mm; height: 36mm;">
-                @else
-                    {{ __('receipt.photo') }}
-                @endif
-            </td>
-            <td style="width: 4mm;">&nbsp;</td>
-        </tr>
-    </table>
-
-    @include('pdf.receipt.student-ids')
+    @include('pdf.receipt.page-head', ['rule' => false])
     <table class="form-date" align="center">
         <tr>
             <td>{{ __('receipt.created_at') }} <bdo dir="ltr">{{ ($application->submitted_at ?? now())->timezone(config('app.display_timezone', 'Asia/Baghdad'))->format('d/m/Y h:i:s A') }}</bdo></td>
         </tr>
     </table>
+    @include('pdf.receipt.page-rule')
 
     <div class="title">
         {{ __('receipt.title') }} {{ __('receipt.academic_year') }} <bdo dir="ltr">{{ $academicYear }}</bdo><br>
@@ -225,7 +207,14 @@
 
     <div class="note">{{ __('receipt.stamp_note') }}</div>
 
-    <div class="form-note">{{ __('receipt.form_note') }}</div>
+    <div class="form-note">
+        <table class="form-note-body">
+            <tr>
+                <td class="form-note-label">{{ __('receipt.form_note_label') }}</td>
+                <td>{{ __('receipt.form_note') }}</td>
+            </tr>
+        </table>
+    </div>
 
     <pagebreak />
     @include('pdf.receipt.request-letter')
@@ -240,5 +229,8 @@
         <pagebreak />
         @include('pdf.receipt.test-form')
     @endif
+
+    <pagebreak />
+    @include('pdf.receipt.pledge')
 </body>
 </html>

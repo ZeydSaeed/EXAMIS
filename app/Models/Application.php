@@ -110,7 +110,7 @@ class Application extends Model
         'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code',
         'gender',
         'phone', 'district',
-        'school_governorate_code', 'branch_code', 'category_code',
+        'school_name', 'school_governorate_code', 'branch_code', 'category_code',
     ];
 
     /**
@@ -125,7 +125,7 @@ class Application extends Model
             'gender',
         ],
         2 => ['phone', 'district'],
-        3 => ['school_governorate_code', 'school_governorate_other', 'branch_code', 'category_code'],
+        3 => ['school_name', 'school_governorate_code', 'school_governorate_other', 'branch_code', 'category_code'],
     ];
 
     public const STEP_DOCUMENTS = 4;

@@ -1,5 +1,5 @@
 {{-- Page 3: the student information form for the external examinations. --}}
-@include('pdf.receipt.student-ids')
+@include('pdf.receipt.page-head')
 
 <table style="width: 100%; margin-top: 5mm;">
     <tr>
@@ -17,7 +17,7 @@
     </tr>
 </table>
 
-<table class="form roomy" style="margin-top: 14mm;">
+<table class="form roomy" style="margin-top: 8mm;">
     <tr>
         @foreach (['first_name', 'father_name', 'grandfather_name', 'great_grandfather_name'] as $part)
             <td class="label" style="width: 25%; text-align: center;">{{ __('receipt.info.'.$part) }}</td>
@@ -30,7 +30,7 @@
     </tr>
 </table>
 
-<table class="form roomy" style="margin-top: 14mm;">
+<table class="form roomy" style="margin-top: 8mm;">
     <tr>
         <td class="label" style="width: 50%;">{{ __('receipt.birth_date') }}</td>
         <td style="text-align: center;"><bdo dir="ltr">{!! $value($application->birth_date?->format('d/m/Y')) !!}</bdo></td>
@@ -41,7 +41,7 @@
     </tr>
 </table>
 
-<table class="form roomy" style="margin-top: 14mm;">
+<table class="form roomy" style="margin-top: 8mm;">
     <tr>
         <td class="label" style="width: 50%;">{{ __('receipt.info.mother_name') }}</td>
         <td style="text-align: center;">{!! $value($motherName) !!}</td>
@@ -52,12 +52,14 @@
     </tr>
 </table>
 
-{{-- The committee's signatures, low on the page; laid out in columns, drawn as plain text. --}}
+{{-- Low on the page: the admissions committee's approval at the start of the line,
+     then its signatures. --}}
 <div style="position: absolute; bottom: 42mm; left: 12mm; right: 12mm;">
-    <table class="info-signatures" style="width: 100%;">
+    <div class="info">{{ __('receipt.info.acceptance') }}</div>
+    <table class="info-signatures" style="width: 100%; margin-top: 14mm;">
         <tr>
-            @foreach (['member', 'member', 'member', 'chair'] as $role)
-                <td style="width: 25%;">{{ __('receipt.info.'.$role) }}</td>
+            @foreach (['member', 'member', 'chair'] as $role)
+                <td style="width: 33%;">{{ __('receipt.info.'.$role) }}</td>
             @endforeach
         </tr>
     </table>

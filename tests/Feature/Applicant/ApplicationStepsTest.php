@@ -110,10 +110,16 @@ test('the mahalla, alley and house number can stay empty', function () {
         ->toBe(['mahalla' => null, 'alley' => null, 'house_number' => null]);
 });
 
-test('the last school is optional', function () {
-    $application = Application::factory()->complete()->create(['school_name' => null]);
+test('the last school is required', function () {
+    $student = User::factory()->student()->create();
+    $application = Application::factory()->for($student)->complete()->create(['school_name' => null]);
 
-    expect($application->missingFields())->toBe([]);
+    expect($application->missingFields())->toBe(['school_name']);
+
+    $this->actingAs($student)->put(route('applications.update', $application), [
+        'lock_version' => $application->lock_version,
+        'step' => 3,
+    ])->assertSessionHasErrors('school_name');
 });
 
 test('a governorate outside the list must be written before continuing', function () {
@@ -121,6 +127,7 @@ test('a governorate outside the list must be written before continuing', functio
     $application = Application::factory()->for($student)->complete()->create();
     $save = fn (array $data) => $this->actingAs($student)->put(route('applications.update', $application), [
         'lock_version' => $application->fresh()->lock_version,
+        'school_name' => 'إعدادية النجاح للبنين',
         'school_governorate_code' => Application::SCHOOL_GOVERNORATE_OTHER,
         'step' => 3,
         ...$data,

@@ -1,5 +1,7 @@
 {{-- Page 4: the required documents, the folder colour of each branch and the stages of applying. --}}
-<div class="section-title" style="padding-top: 12mm;">{{ __('receipt.documents_page.title') }}</div>
+@include('pdf.receipt.page-head')
+
+<div class="section-title" style="margin-top: 5mm;">{{ __('receipt.documents_page.title') }}</div>
 
 <div class="documents">
     @foreach (__('receipt.documents_page.items') as $index => $item)
@@ -7,10 +9,11 @@
     @endforeach
 </div>
 
-<table class="form roomy" style="width: 75%; margin-top: 6mm;" align="center">
+<table class="form folders" style="width: 75%; margin-top: 6mm;" align="center">
     <tr>
-        <td class="label" style="width: 60%; text-align: center;">{{ __('receipt.documents_page.branch') }}</td>
-        <td class="label" style="width: 40%; text-align: center;">{{ __('receipt.documents_page.folder_colour') }}</td>
+        {{-- Grey, whatever the student's branch: the rows below carry the colours. --}}
+        <td style="width: 60%; text-align: center; background-color: #d9d9d9;">{{ __('receipt.documents_page.branch') }}</td>
+        <td style="width: 40%; text-align: center; background-color: #d9d9d9;">{{ __('receipt.documents_page.folder_colour') }}</td>
     </tr>
     @foreach (__('receipt.documents_page.branches') as $code => [$name, $colour])
         <tr>

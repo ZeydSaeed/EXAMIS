@@ -45,7 +45,8 @@ return [
     'principal_signature' => 'Principal signature:',
     'stamp_note' => 'To be stamped by the last school, whose principal vouches for the information, and handed to the vocational education department.',
     'created_at' => 'Form created on',
-    'form_note' => 'Note 1: No scratching, crossing out or correcting of any electronically printed information on the form is allowed. If any details are wrong, the form must be downloaded again from the website; otherwise the applicant and the school principal bear responsibility for the application being rejected.',
+    'form_note_label' => 'Note:',
+    'form_note' => 'No scratching, crossing out or correcting of any electronically printed information on the form is allowed. If any details are wrong, the form must be downloaded again from the website; otherwise the applicant and the school principal bear responsibility for the application being rejected.',
 
     // Request letter to the Director General of Education (page 2).
     'letter' => [
@@ -76,6 +77,7 @@ return [
         'mother_name' => "Mother's full name",
         'member' => 'Member',
         'chair' => 'Committee chair',
+        'acceptance' => 'Approval of the admissions committee',
     ],
 
     // Required documents and the folder colour of each branch (last page).
@@ -94,12 +96,9 @@ return [
         'stages_title' => 'Stages of applying for the general vocational (external) examinations:',
         'stages' => [
             'Download the application form from the online portal.',
-            'Hand the form to the school administration to complete and certify it.',
-            'Submit the certified form to the responsible committee.',
-            'The responsible committee reviews the form.',
-            'Pay the participation fee against an official receipt.',
-            'The application is approved or rejected in the online system.',
-            'The student is told the result (accepted or rejected) by a WhatsApp message.',
+            'Hand the form to the administration of the last school the student attended, to complete and certify it.',
+            'Hand the form, certified by the school, to the Vocational Education Department in Karbala Governorate.',
+            'Follow WhatsApp on the registered phone number until a message with the result (accepted or rejected) arrives.',
         ],
         'branch' => 'Branch',
         'folder_colour' => 'Folder colour',
@@ -114,6 +113,11 @@ return [
     ],
 
     // Test form for computer assembly and maintenance applicants, completed by the test committees.
+    'pledge' => [
+        'title' => 'Pledge',
+        'text' => 'I, the undersigned, pledge to submit my intermediate-school certificate after passing the preliminary examinations, and I bear all legal consequences of failing to do so.',
+    ],
+
     'test_form' => [
         'centre' => 'Test centre',
         'centres' => [

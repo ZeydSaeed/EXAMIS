@@ -1,20 +1,7 @@
 {{-- Page 5, for specializations with a test centre: the test form; the decision is filled in by the committees. --}}
-<div style="padding-top: 20mm;"></div>
-<table class="head" style="width: 100%;">
-    <tr>
-        <td style="font-size: 14pt; vertical-align: middle;">
-            {{ __('receipt.test_form.centre') }}: {{ $testCentre }}
-        </td>
-        <td class="photo">
-            @if ($hasPhoto)
-                <img src="var:photo" style="width: 28mm; height: 36mm;">
-            @else
-                {{ __('receipt.photo') }}
-            @endif
-        </td>
-        <td style="width: 4mm;">&nbsp;</td>
-    </tr>
-</table>
+@include('pdf.receipt.page-head')
+
+<div style="font-size: 14pt; margin-top: 5mm;">{{ __('receipt.test_form.centre') }}: {{ $testCentre }}</div>
 
 <div class="page-heading">{{ __('receipt.test_form.title') }}</div>
 
