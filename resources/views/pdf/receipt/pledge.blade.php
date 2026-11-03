@@ -1,12 +1,15 @@
 {{-- Last page: the student's pledge to bring the intermediate-school certificate. --}}
+@php($pledge = $texts[\App\Services\Receipts\ReceiptTexts::PLEDGE])
 @include('pdf.receipt.page-head')
 
-<div class="page-heading" style="margin-top: 30mm;">{{ __('receipt.pledge.title') }}</div>
+<div class="page-heading" style="margin-top: 30mm;">{{ $pledge['title'] }}</div>
 
 {{-- One empty line between the title and the pledge. --}}
 <div class="letter" style="margin-top: 0; text-align: justify;">
     <br>
-    {{ __('receipt.pledge.text') }}
+    @foreach ($pledge['paragraphs'] as $paragraph)
+        <div>{{ $paragraph }}</div>
+    @endforeach
 </div>
 
 {{-- Name and date low on the left, placed from the page's foot like the request letter. --}}

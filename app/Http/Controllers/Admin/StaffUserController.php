@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Staff\ManageStaffAccess;
+use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Enums\InvitationPurpose;
 use App\Enums\OverrideEffect;
 use App\Enums\Permission;
 use App\Enums\Role;
@@ -18,12 +18,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StaffUserController extends Controller
 {
-    use ProfileValidationRules;
+    use PasswordValidationRules, ProfileValidationRules;
 
     /**
      * The search term matches part of the name, username or email.
@@ -74,10 +75,14 @@ class StaffUserController extends Controller
                 ->filter(fn (Permission $permission): bool => $permission->isOverridable())
                 ->map(fn (Permission $permission): array => ['value' => $permission->value, 'label' => $permission->label()])
                 ->values(),
+            // What each role grants, so the page can tick a staff member's permissions.
+            'rolePermissions' => collect(Role::cases())->mapWithKeys(fn (Role $role): array => [
+                $role->value => array_map(fn (Permission $permission): string => $permission->value, $role->permissions()),
+            ]),
         ]);
     }
 
-    public function store(Request $request, ManageStaffAccess $access): Response
+    public function store(Request $request, ManageStaffAccess $access): RedirectResponse
     {
         $this->normalizePhone($request);
 
@@ -85,22 +90,35 @@ class StaffUserController extends Controller
             'name' => $this->nameRules(),
             'email' => $this->staffEmailRules(),
             'phone' => $this->phoneRules(),
+            'password' => $this->passwordRules(),
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => [Rule::enum(Role::class), 'distinct'],
         ]);
 
-        $user = $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user(), $validated['phone']);
+        $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user(), $validated['phone'], $validated['password']);
 
-        return $this->invitationPage($user, InvitationPurpose::Activate, $request, $access);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
+
+        return to_route('admin.users.index');
     }
 
     /**
-     * A new one-time link replaces any open one, for a staff member who lost
-     * theirs or forgot their password.
+     * Only an administrator changes a staff member's name, sign-in email or
+     * password; the password is left as it is when the field is empty.
      */
-    public function storeInvitation(Request $request, User $user, ManageStaffAccess $access): Response
+    public function updateAccount(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
     {
-        return $this->invitationPage($user, InvitationPurpose::ResetPassword, $request, $access);
+        $validated = $request->validate([
+            'name' => $this->nameRules(),
+            'email' => $this->staffEmailRules(except: $user),
+            'password' => ['nullable', 'string', Password::default(), 'confirmed'],
+        ]);
+
+        $access->updateAccount($user, $validated['name'], $validated['email'], $validated['password'] ?? null, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
+
+        return back();
     }
 
     public function updatePhone(Request $request, User $user, ManageStaffAccess $access): RedirectResponse
@@ -166,21 +184,6 @@ class StaffUserController extends Controller
         if (is_string($request->input('phone'))) {
             $request->merge(['phone' => StudentIdentity::normalizePhone($request->input('phone'))]);
         }
-    }
-
-    /**
-     * The link is rendered straight into this response and not flashed: a
-     * flash would write it to the session table.
-     */
-    private function invitationPage(User $user, InvitationPurpose $purpose, Request $request, ManageStaffAccess $access): Response
-    {
-        $url = $access->issueInvitation($user, $purpose, $request->user());
-
-        return Inertia::render('admin/users/invitation', [
-            'invitee' => ['name' => $user->name, 'email' => $user->email],
-            'invitationUrl' => $url,
-            'expiresAt' => now()->addHours((int) config('examis.staff.invitation_hours'))->toIso8601String(),
-        ]);
     }
 
     /**

@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { HeaderSlotsProvider } from '@/components/header-slots';
 import { NetworkStatus } from '@/components/network-status';
+import { useBarcodeScanner } from '@/hooks/use-barcode-scanner';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
 import type { AppLayoutProps } from '@/types';
 
@@ -12,6 +13,7 @@ export default function AppSidebarLayout({
     breadcrumbs = [],
 }: AppLayoutProps) {
     useDocumentLocale();
+    useBarcodeScanner();
 
     return (
         <AppShell variant="sidebar">

@@ -26,15 +26,16 @@ class ManageStaffAccess
     public function __construct(private AuditLogger $audit) {}
 
     /**
-     * The new staff member sets their own password through a one-time link
-     * (see issueInvitation); no administrator ever knows it.
+     * Staff accounts are made by an administrator, who sets the password and
+     * hands it over. Without one (the console command) the account gets a
+     * random password and is activated through a one-time link instead.
      *
      * @param  list<Role>  $roles
      */
-    public function create(string $name, string $email, array $roles, ?User $actor, ?string $phone = null): User
+    public function create(string $name, string $email, array $roles, ?User $actor, ?string $phone = null, ?string $password = null): User
     {
-        return DB::transaction(function () use ($name, $email, $roles, $actor, $phone): User {
-            $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => Str::random(64), 'phone' => $phone]);
+        return DB::transaction(function () use ($name, $email, $roles, $actor, $phone, $password): User {
+            $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => $password ?? Str::random(64), 'phone' => $phone]);
             $user->account_type = AccountType::Staff;
             $user->save();
 
@@ -146,6 +147,43 @@ class ManageStaffAccess
 
         $user->flushRoles();
         $this->endSessions($user);
+    }
+
+    /**
+     * Name, sign-in email and, when given, a new password, set by an
+     * administrator for someone else. A new password or email ends the
+     * staff member's sessions and any open link.
+     */
+    public function updateAccount(User $user, string $name, string $email, ?string $password, User $actor): void
+    {
+        $this->ensureManageable($user, $actor);
+
+        $email = Str::lower($email);
+        $signInChanged = $password !== null || $email !== $user->email;
+
+        DB::transaction(function () use ($user, $name, $email, $password, $actor): void {
+            $changed = array_keys(array_filter([
+                'name' => $name !== $user->name,
+                'email' => $email !== $user->email,
+                'password' => $password !== null,
+            ]));
+
+            $user->forceFill(['name' => $name, 'email' => $email]);
+
+            if ($password !== null) {
+                $user->forceFill(['password' => $password, 'remember_token' => Str::random(60)]);
+                $this->revokeInvitations($user);
+            }
+
+            $user->save();
+
+            // Which details changed, never their values.
+            $this->audit->record('staff.account_changed', $user, ['changed' => $changed], $actor);
+        }, 3);
+
+        if ($signInChanged) {
+            $this->endSessions($user);
+        }
     }
 
     /**

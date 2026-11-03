@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
 /*
@@ -122,4 +123,30 @@ function pngBytes(int $width = 40, int $height = 40): string
 function uploadedPdf(string $name = 'id-card.pdf', ?string $body = null): UploadedFile
 {
     return UploadedFile::fake()->createWithContent($name, pdfBytes($body ?? 'BT (ok) Tj ET'));
+}
+
+/**
+ * Text as a reader would extract it: Arabic presentation forms normalised
+ * back to base letters and whitespace collapsed. Times New Roman maps some
+ * joined forms to their Persian code points (ی, ھ, ک), folded back here.
+ */
+function extractPdfText(string $pdf): string
+{
+    $text = (new Parser)->parseContent($pdf)->getText();
+    $text = Normalizer::normalize($text, Normalizer::FORM_KC) ?: $text;
+    $text = strtr($text, ['ی' => 'ي', 'ھ' => 'ه', 'ک' => 'ك']);
+
+    return (string) preg_replace('/\s+/u', ' ', $text);
+}
+
+/**
+ * PDF stores right-to-left runs in visual order; viewers reorder them for
+ * display and selection. Reverse an expected phrase to find it in raw text.
+ */
+function visualOrder(string $logical): string
+{
+    // The lam-alef ligature is one glyph, so it comes out of the PDF in logical order.
+    preg_match_all('/ل[اأإآ]|./us', $logical, $glyphs);
+
+    return implode('', array_reverse($glyphs[0]));
 }

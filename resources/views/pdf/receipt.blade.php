@@ -24,7 +24,7 @@
         table.form td { border: 0.8px solid #000000; padding: 1mm 1.6mm; height: 7.6mm; vertical-align: middle; }
         td.label { background-color: {{ $shades[0] }}; }
         td.small { font-size: 10pt; }
-        td.choice { width: 14mm; height: 12mm; border: 1px solid #000000; background-color: {{ $shades[1] }}; }
+        td.choice { width: 9mm; height: 9mm; border: 1px solid #000000; background-color: {{ $shades[1] }}; }
         table.form td.nested { padding: 1mm; }
         table.address { width: 100%; }
         table.form table.address td { border: 0.5px solid #808080; padding: 0.6mm 1mm; height: 5mm; text-align: center; }

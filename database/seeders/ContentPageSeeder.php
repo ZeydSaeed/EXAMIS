@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ContentPage;
+use App\Services\Receipts\ReceiptTexts;
 use Illuminate\Database\Seeder;
 
 /**
@@ -163,6 +164,26 @@ class ContentPageSeeder extends Seeder
                 'body_en' => $bodyEn,
             ]);
             $page->is_published ??= true;
+            $page->save();
+        }
+
+        self::seedReceiptTexts();
+    }
+
+    /**
+     * The printed form's editable texts, never published as pages. Created
+     * when missing; edits are kept like the portal pages'.
+     */
+    public static function seedReceiptTexts(): void
+    {
+        foreach (ReceiptTexts::SLUGS as $slug) {
+            $page = ContentPage::query()->firstOrNew(['slug' => $slug]);
+
+            if ($page->exists && $page->updated_by !== null) {
+                continue;
+            }
+
+            $page->fill([...ReceiptTexts::defaults($slug), 'is_published' => false]);
             $page->save();
         }
     }

@@ -4,28 +4,107 @@ use App\Enums\AccountType;
 use App\Enums\Role;
 use App\Models\AuditEvent;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('creates a staff account and shows its one-time link once', function () {
+it('creates a staff account with the email and password the administrator enters', function () {
     $this->actingAs(staffWith(Role::Administrator))
         ->post(route('admin.users.store'), [
             'name' => 'مدقق جديد',
-            'email' => 'reviewer@example.com',
+            'email' => 'Reviewer@example.com',
             'phone' => '٠٧٧٠ 123 4567',
+            'password' => 'Staff-Password-123!',
+            'password_confirmation' => 'Staff-Password-123!',
             'roles' => ['reviewer'],
         ])
         ->assertSessionHasNoErrors()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('admin/users/invitation')
-            ->where('invitee.email', 'reviewer@example.com')
-            ->where('invitationUrl', fn (string $url): bool => str_contains($url, '/staff/invitation#')));
+        ->assertRedirect(route('admin.users.index'));
 
     $staff = User::query()->where('email', 'reviewer@example.com')->sole();
 
     expect($staff->account_type)->toBe(AccountType::Staff)
         ->and($staff->hasRole(Role::Reviewer))->toBeTrue()
         ->and($staff->phone)->toBe('07701234567')
-        ->and(AuditEvent::query()->where('action', 'staff.created')->exists())->toBeTrue();
+        ->and(Hash::check('Staff-Password-123!', $staff->password))->toBeTrue()
+        ->and($staff->invitations()->count())->toBe(0)
+        ->and(AuditEvent::query()->where('action', 'staff.created')->exists())->toBeTrue()
+        ->and(AuditEvent::query()->get()->toJson())->not->toContain('Staff-Password-123!');
+});
+
+it('asks for a confirmed password when adding a staff member', function () {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->post(route('admin.users.store'), [
+            'name' => 'موظف جديد',
+            'email' => 'new@example.com',
+            'phone' => '07701234567',
+            'password' => 'Staff-Password-123!',
+            'password_confirmation' => 'Another-Password-1!',
+            'roles' => ['reviewer'],
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect(User::query()->where('email', 'new@example.com')->exists())->toBeFalse();
+});
+
+it('lets an administrator change a staff member\'s name, email and password', function () {
+    config(['session.driver' => 'database']);
+    $staff = staffWith(Role::Reviewer);
+    DB::table('staff_sessions')->insert(['id' => 'their-device', 'user_id' => $staff->id, 'payload' => '', 'last_activity' => time()]);
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->put(route('admin.users.account', $staff), [
+            'name' => 'اسم معدل',
+            'email' => 'Renamed@example.com',
+            'password' => 'Changed-Password-1!',
+            'password_confirmation' => 'Changed-Password-1!',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $staff->refresh();
+
+    expect($staff->name)->toBe('اسم معدل')
+        ->and($staff->email)->toBe('renamed@example.com')
+        ->and(Hash::check('Changed-Password-1!', $staff->password))->toBeTrue()
+        ->and(DB::table('staff_sessions')->where('id', 'their-device')->exists())->toBeFalse()
+        ->and(AuditEvent::query()->where('action', 'staff.account_changed')->sole()->metadata['changed'] ?? null)->toBe(['name', 'email', 'password'])
+        ->and(AuditEvent::query()->get()->toJson())->not->toContain('Changed-Password-1!');
+});
+
+it('keeps the password when its field is left empty', function () {
+    $staff = staffWith(Role::Reviewer);
+    $hash = $staff->password;
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->put(route('admin.users.account', $staff), ['name' => $staff->name, 'email' => $staff->email, 'password' => ''])
+        ->assertSessionHasNoErrors();
+
+    expect($staff->fresh()->password)->toBe($hash);
+});
+
+it('refuses another staff member\'s email, your own account and non-administrators', function () {
+    $admin = staffWith(Role::Administrator);
+    $staff = staffWith(Role::Reviewer);
+    $other = staffWith(Role::Reviewer);
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.account', $staff), ['name' => $staff->name, 'email' => strtoupper($other->email)])
+        ->assertSessionHasErrors('email');
+
+    $this->put(route('admin.users.account', $admin), ['name' => $admin->name, 'email' => $admin->email, 'password' => 'Changed-Password-1!', 'password_confirmation' => 'Changed-Password-1!'])
+        ->assertSessionHasErrors();
+
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->put(route('admin.users.account', $staff), ['name' => 'x x x', 'email' => $staff->email])
+        ->assertForbidden();
+});
+
+it('shares what each role grants, for the permission ticks', function () {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->get(route('admin.users.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('rolePermissions.reviewer', fn ($permissions) => collect($permissions)->contains('applications.review'))
+            ->where('rolePermissions.reviewer', fn ($permissions) => ! collect($permissions)->contains('reports.view')));
 });
 
 it('refuses a staff email already in use, in any letter case', function () {

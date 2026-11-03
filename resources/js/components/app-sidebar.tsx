@@ -110,14 +110,17 @@ export function AppSidebar() {
     const isStaff = auth.user.account_type === 'staff';
     const homeHref = isStaff ? admin.home() : dashboard();
 
+    // Administrators set staff passwords; only they change their own.
     const footerItems: NavItem[] = isStaff
-        ? [
-              {
-                  title: t('nav.security'),
-                  href: '/settings/security',
-                  icon: ShieldCheck,
-              },
-          ]
+        ? can('users.manage')
+            ? [
+                  {
+                      title: t('nav.security'),
+                      href: '/settings/security',
+                      icon: ShieldCheck,
+                  },
+              ]
+            : []
         : [
               {
                   title: t('nav.help'),

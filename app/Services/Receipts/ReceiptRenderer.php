@@ -197,6 +197,7 @@ class ReceiptRenderer
             'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),
             'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
             'generatedAt' => now(),
+            'texts' => ReceiptTexts::current(),
         ])->render());
 
         $this->drawFrame($mpdf);

@@ -15,7 +15,7 @@ function audited(string $action): bool
 }
 
 it('records a password change and ends the other sessions', function () {
-    $staff = staffWith(Role::Reviewer);
+    $staff = staffWith(Role::Administrator);
 
     DB::table('staff_sessions')->insert(['id' => 'other-device', 'user_id' => $staff->id, 'payload' => '', 'last_activity' => time()]);
 

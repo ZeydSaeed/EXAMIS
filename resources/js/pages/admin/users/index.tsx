@@ -60,32 +60,66 @@ type Props = {
     };
     roles: { value: string; label: string }[];
     permissions: { value: string; label: string }[];
+    /** Role => the permissions it grants. */
+    rolePermissions: Record<string, string[]>;
 };
 
-function PermissionExceptions({
+/**
+ * One tick per permission: ticked means the staff member has it. The roles
+ * decide what is ticked to begin with; a tick that differs from the roles is
+ * saved as a grant or a withdrawal.
+ */
+function PermissionGrants({
     user,
     permissions,
+    rolePermissions,
 }: {
     user: StaffRow;
     permissions: Props['permissions'];
+    rolePermissions: Props['rolePermissions'];
 }) {
     const { t } = useTrans();
     const [open, setOpen] = useState(false);
+    const fromRoles = new Set(
+        user.roles.flatMap((role) => rolePermissions[role] ?? []),
+    );
+    const holds = (permission: string) =>
+        user.overrides[permission] === 'grant' ||
+        (fromRoles.has(permission) && user.overrides[permission] !== 'deny');
+    const [granted, setGranted] = useState(() =>
+        permissions
+            .map((permission) => permission.value)
+            .filter((permission) => holds(permission)),
+    );
     const form = useForm({ overrides: user.overrides });
+
+    form.transform(() => ({
+        overrides: Object.fromEntries(
+            permissions.flatMap(({ value }) => {
+                const ticked = granted.includes(value);
+
+                if (ticked === fromRoles.has(value)) {
+                    return [];
+                }
+
+                return [[value, ticked ? 'grant' : 'deny']];
+            }),
+        ),
+    }));
 
     return (
         <>
             <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-                {t('users.permission_exceptions')}
+                {t('users.permission_grants')}
             </Button>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader className="text-start">
                         <DialogTitle>
-                            {t('users.permission_exceptions')}
+                            {t('users.permission_grants')}: {user.name}
                         </DialogTitle>
                         <DialogDescription>
-                            {t('users.permission_exceptions_text')}
+                            {t('users.permission_grants_text')}
                         </DialogDescription>
                     </DialogHeader>
                     <form
@@ -101,53 +135,160 @@ function PermissionExceptions({
                         {permissions.map((permission) => (
                             <div
                                 key={permission.value}
-                                className="flex items-center justify-between gap-3"
+                                className="flex items-center gap-2"
                             >
-                                <Label htmlFor={`override-${permission.value}`}>
+                                <Checkbox
+                                    id={`grant-${user.id}-${permission.value}`}
+                                    checked={granted.includes(permission.value)}
+                                    onCheckedChange={(checked) =>
+                                        setGranted((current) =>
+                                            checked === true
+                                                ? [...current, permission.value]
+                                                : current.filter(
+                                                      (value) =>
+                                                          value !==
+                                                          permission.value,
+                                                  ),
+                                        )
+                                    }
+                                />
+                                <Label
+                                    htmlFor={`grant-${user.id}-${permission.value}`}
+                                    className="font-normal"
+                                >
                                     {permission.label}
                                 </Label>
-                                <select
-                                    id={`override-${permission.value}`}
-                                    className="h-8 rounded-md border bg-background px-2 text-sm"
-                                    value={
-                                        form.data.overrides[permission.value] ??
-                                        ''
-                                    }
-                                    onChange={(event) => {
-                                        const {
-                                            [permission.value]: _,
-                                            ...rest
-                                        } = form.data.overrides;
-                                        const effect = event.target.value as
-                                            | 'grant'
-                                            | 'deny'
-                                            | '';
-
-                                        form.setData(
-                                            'overrides',
-                                            effect === ''
-                                                ? rest
-                                                : {
-                                                      ...rest,
-                                                      [permission.value]:
-                                                          effect,
-                                                  },
-                                        );
-                                    }}
-                                >
-                                    <option value="">
-                                        {t('users.by_role')}
-                                    </option>
-                                    <option value="grant">
-                                        {t('users.grant')}
-                                    </option>
-                                    <option value="deny">
-                                        {t('users.deny')}
-                                    </option>
-                                </select>
                             </div>
                         ))}
                         <InputError message={form.errors.overrides} />
+                        <Button type="submit" disabled={form.processing}>
+                            {t('common.save')}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+/**
+ * Name, sign-in email and password, set by the administrator. The password
+ * stays as it is while its field is empty.
+ */
+function AccountEditor({ user }: { user: StaffRow }) {
+    const { t } = useTrans();
+    const [open, setOpen] = useState(false);
+    const form = useForm({
+        name: user.name,
+        email: user.email,
+        password: '',
+        password_confirmation: '',
+    });
+
+    return (
+        <>
+            <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+                {t('users.edit_account')}
+            </Button>
+            <Dialog
+                open={open}
+                onOpenChange={(next) => {
+                    setOpen(next);
+
+                    if (!next) {
+                        form.reset();
+                        form.clearErrors();
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader className="text-start">
+                        <DialogTitle>{t('users.edit_account')}</DialogTitle>
+                        <DialogDescription>
+                            {t('users.edit_account_text')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="grid gap-4"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.put(admin.users.account.url(user.id), {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    setOpen(false);
+                                    form.reset(
+                                        'password',
+                                        'password_confirmation',
+                                    );
+                                },
+                            });
+                        }}
+                    >
+                        <Field
+                            id={`account-name-${user.id}`}
+                            label={t('auth.full_name')}
+                            error={form.errors.name}
+                            required
+                        >
+                            <Input
+                                id={`account-name-${user.id}`}
+                                value={form.data.name}
+                                onChange={(event) =>
+                                    form.setData('name', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-email-${user.id}`}
+                            label={t('auth.email')}
+                            error={form.errors.email}
+                            required
+                        >
+                            <Input
+                                id={`account-email-${user.id}`}
+                                type="email"
+                                dir="ltr"
+                                value={form.data.email}
+                                onChange={(event) =>
+                                    form.setData('email', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-password-${user.id}`}
+                            label={t('users.new_password')}
+                            hint={t('users.new_password_hint')}
+                            error={form.errors.password}
+                        >
+                            <Input
+                                id={`account-password-${user.id}`}
+                                type="password"
+                                dir="ltr"
+                                autoComplete="new-password"
+                                value={form.data.password}
+                                onChange={(event) =>
+                                    form.setData('password', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-password-confirmation-${user.id}`}
+                            label={t('users.password_confirmation')}
+                        >
+                            <Input
+                                id={`account-password-confirmation-${user.id}`}
+                                type="password"
+                                dir="ltr"
+                                autoComplete="new-password"
+                                value={form.data.password_confirmation}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'password_confirmation',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </Field>
                         <Button type="submit" disabled={form.processing}>
                             {t('common.save')}
                         </Button>
@@ -177,7 +318,7 @@ function PhoneEditor({ user }: { user: StaffRow }) {
                     type="tel"
                     dir="ltr"
                     aria-label={`${t('auth.mobile')}: ${user.name}`}
-                    placeholder={t('fields.phone_hint')}
+                    autoComplete="off"
                     className="h-8 w-36 text-sm"
                     value={form.data.phone}
                     onChange={(event) =>
@@ -275,8 +416,17 @@ function CreateStaffDialog({
         name: string;
         email: string;
         phone: string;
+        password: string;
+        password_confirmation: string;
         roles: string[];
-    }>({ name: '', email: '', phone: '', roles: [] });
+    }>({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        password_confirmation: '',
+        roles: [],
+    });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -286,6 +436,7 @@ function CreateStaffDialog({
                 create.reset();
                 onOpenChange(false);
             },
+            onError: () => create.reset('password', 'password_confirmation'),
         });
     };
 
@@ -295,7 +446,7 @@ function CreateStaffDialog({
                 <DialogHeader className="text-start">
                     <DialogTitle>{t('users.create')}</DialogTitle>
                     <DialogDescription>
-                        {t('users.password_link_hint')}
+                        {t('users.create_hint')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -340,10 +491,46 @@ function CreateStaffDialog({
                             id="new-phone"
                             type="tel"
                             dir="ltr"
-                            placeholder={t('fields.phone_hint')}
+                            autoComplete="off"
                             value={create.data.phone}
                             onChange={(event) =>
                                 create.setData('phone', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-password"
+                        label={t('auth.password')}
+                        error={create.errors.password}
+                        required
+                    >
+                        <Input
+                            id="new-password"
+                            type="password"
+                            dir="ltr"
+                            autoComplete="new-password"
+                            value={create.data.password}
+                            onChange={(event) =>
+                                create.setData('password', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-password-confirmation"
+                        label={t('users.password_confirmation')}
+                        required
+                    >
+                        <Input
+                            id="new-password-confirmation"
+                            type="password"
+                            dir="ltr"
+                            autoComplete="new-password"
+                            value={create.data.password_confirmation}
+                            onChange={(event) =>
+                                create.setData(
+                                    'password_confirmation',
+                                    event.target.value,
+                                )
                             }
                         />
                     </Field>
@@ -407,6 +594,7 @@ export default function StaffUsers({
     filters,
     roles,
     permissions,
+    rolePermissions,
 }: Props) {
     const { t, locale } = useTrans();
     const currentUserId = usePage().props.auth.user?.id;
@@ -564,47 +752,25 @@ export default function StaffUsers({
                                                     !user.roles.includes(
                                                         'administrator',
                                                     ) && (
-                                                        <PermissionExceptions
-                                                            key={JSON.stringify(
+                                                        <PermissionGrants
+                                                            key={`${user.roles.join()}|${JSON.stringify(
                                                                 user.overrides,
-                                                            )}
+                                                            )}`}
                                                             user={user}
                                                             permissions={
                                                                 permissions
+                                                            }
+                                                            rolePermissions={
+                                                                rolePermissions
                                                             }
                                                         />
                                                     )}
                                                 {user.id !== currentUserId &&
                                                     user.is_active && (
-                                                        <>
-                                                            <ConfirmDialog
-                                                                title={t(
-                                                                    'users.new_link',
-                                                                )}
-                                                                description={t(
-                                                                    'users.new_link_text',
-                                                                )}
-                                                                confirmLabel={t(
-                                                                    'users.new_link',
-                                                                )}
-                                                                onConfirm={() =>
-                                                                    router.post(
-                                                                        admin.users.invitation.url(
-                                                                            user.id,
-                                                                        ),
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                >
-                                                                    {t(
-                                                                        'users.new_link',
-                                                                    )}
-                                                                </Button>
-                                                            </ConfirmDialog>
-                                                        </>
+                                                        <AccountEditor
+                                                            key={`${user.name}|${user.email}`}
+                                                            user={user}
+                                                        />
                                                     )}
                                                 <ConfirmDialog
                                                     title={

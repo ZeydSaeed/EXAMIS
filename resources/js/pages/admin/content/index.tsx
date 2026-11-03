@@ -18,6 +18,12 @@ type Props = {
         is_published: boolean;
         updated_at: string | null;
     }[];
+    /** The printed form's texts, in the order of the form. */
+    receiptPages: {
+        slug: string;
+        title: string;
+        updated_at: string | null;
+    }[];
     templates: MessageTemplate[];
     decisionStatuses: { value: string; label: string }[];
     placeholders: string[];
@@ -29,6 +35,7 @@ type Props = {
  */
 export default function ContentIndex({
     pages,
+    receiptPages,
     templates,
     decisionStatuses,
     placeholders,
@@ -77,6 +84,69 @@ export default function ContentIndex({
                     statuses={decisionStatuses}
                     placeholders={placeholders}
                 />
+
+                <section
+                    aria-labelledby="receipt-texts"
+                    className="grid gap-3"
+                    data-test="receipt-texts"
+                >
+                    <div>
+                        <h2 id="receipt-texts" className="font-semibold">
+                            {t('content.receipt_texts')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {t('content.receipt_texts_hint')}
+                        </p>
+                    </div>
+                    <DataTableFrame className="examis-data-table--plain">
+                        <table className="min-w-[30rem] [&_td]:whitespace-nowrap">
+                            <caption className="sr-only">
+                                {t('content.receipt_texts')}
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th
+                                        scope="col"
+                                        className="w-12 text-center!"
+                                    >
+                                        #
+                                    </th>
+                                    <th scope="col">
+                                        {t('content.page_title')}
+                                    </th>
+                                    <th scope="col">
+                                        {t('content.updated_at')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {receiptPages.map((page, index) => (
+                                    <tr key={page.slug}>
+                                        <td className="text-center! text-muted-foreground tabular-nums">
+                                            {index + 1}
+                                        </td>
+                                        <td>
+                                            <Link
+                                                href={admin.content.edit(
+                                                    page.slug,
+                                                )}
+                                                className="hover:underline"
+                                            >
+                                                {page.title}
+                                            </Link>
+                                        </td>
+                                        <td className="text-muted-foreground">
+                                            {formatDateTime(
+                                                page.updated_at,
+                                                locale,
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </DataTableFrame>
+                </section>
 
                 <section aria-labelledby="portal-pages" className="grid gap-3">
                     <h2 id="portal-pages" className="font-semibold">

@@ -126,22 +126,10 @@ it('ends existing sessions when the password changes', function () {
     expect(DB::table('staff_sessions')->where('user_id', $staff->id)->count())->toBe(0);
 });
 
-it('lets an administrator issue a new link for someone else', function () {
-    $this->actingAs(staffWith(Role::Administrator))->post(route('admin.users.invitation', staffWith(Role::Reviewer)))
-        ->assertInertia(fn (Assert $page) => $page->component('admin/users/invitation'));
-});
-
-it('refuses a link for your own account', function () {
-    $admin = staffWith(Role::Administrator);
-
-    $this->actingAs($admin)->post(route('admin.users.invitation', $admin))->assertSessionHasErrors();
-
-    expect($admin->invitations()->count())->toBe(0);
-});
-
-it('keeps links from everyone but administrators, and from students', function () {
-    $this->actingAs(staffWith(Role::Supervisor))->post(route('admin.users.invitation', staffWith(Role::Reviewer)))->assertForbidden();
-    $this->actingAs(staffWith(Role::Administrator))->post(route('admin.users.invitation', applicant()))->assertSessionHasErrors();
+it('no longer issues sign-in links from the users page', function () {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->post('http://staff.examis.test/admin/users/'.staffWith(Role::Reviewer)->id.'/invitation')
+        ->assertNotFound();
 });
 
 it('removes the old sign-in reset endpoints', function (string $method, string $url) {

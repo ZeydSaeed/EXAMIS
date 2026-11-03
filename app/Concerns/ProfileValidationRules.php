@@ -48,10 +48,10 @@ trait ProfileValidationRules
      *
      * @return array<int, ValidationRule|Closure|array<mixed>|string>
      */
-    protected function staffEmailRules(): array
+    protected function staffEmailRules(?User $except = null): array
     {
-        return ['required', 'string', 'email:rfc', 'max:255', function (string $attribute, mixed $value, Closure $fail): void {
-            if (User::query()->staff()->whereRaw('lower(email) = ?', [Str::lower((string) $value)])->exists()) {
+        return ['required', 'string', 'email:rfc', 'max:255', function (string $attribute, mixed $value, Closure $fail) use ($except): void {
+            if (User::query()->staff()->whereRaw('lower(email) = ?', [Str::lower((string) $value)])->when($except, fn ($query) => $query->whereKeyNot($except->id))->exists()) {
                 $fail(__('validation.unique', ['attribute' => $attribute]));
             }
         }];

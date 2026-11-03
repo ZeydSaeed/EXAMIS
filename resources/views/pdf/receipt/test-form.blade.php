@@ -14,11 +14,11 @@
 
 <table style="margin-top: 8mm;" align="center">
     <tr>
-        <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.yes') }}</td>
         <td class="choice" style="background-color: {{ $testShades[1] }};">&nbsp;</td>
+        <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.accepted') }}</td>
         <td style="width: 40mm;">&nbsp;</td>
-        <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.no') }}</td>
         <td class="choice" style="background-color: {{ $testShades[1] }};">&nbsp;</td>
+        <td style="font-size: 14pt; padding: 0 3mm;">{{ __('receipt.test_form.rejected') }}</td>
     </tr>
 </table>
 

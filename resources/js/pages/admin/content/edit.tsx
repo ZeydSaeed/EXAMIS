@@ -19,9 +19,14 @@ type Props = {
         body_en: string;
         is_published: boolean;
     };
+    /** Set for the printed form's texts, which are never published. */
+    receipt: {
+        kind: 'list' | 'text' | 'letter';
+        placeholders: string[];
+    } | null;
 };
 
-export default function ContentEdit({ page }: Props) {
+export default function ContentEdit({ page, receipt }: Props) {
     const { t } = useTrans();
     const form = useForm({
         title_ar: page.title_ar,
@@ -49,8 +54,27 @@ export default function ContentEdit({ page }: Props) {
             <PageContainer className="max-w-5xl">
                 <PageHeader
                     title={t('content.edit')}
-                    description={t('content.plain_text_hint')}
+                    description={
+                        receipt
+                            ? t(`content.receipt_${receipt.kind}_hint`)
+                            : t('content.plain_text_hint')
+                    }
                 />
+                {receipt && receipt.placeholders.length > 0 && (
+                    <p
+                        className="flex flex-wrap gap-2 text-sm"
+                        data-test="receipt-placeholders"
+                    >
+                        {receipt.placeholders.map((placeholder) => (
+                            <code
+                                key={placeholder}
+                                className="rounded bg-muted px-1.5 py-0.5"
+                            >
+                                {`{${placeholder}}`}
+                            </code>
+                        ))}
+                    </p>
+                )}
                 <form onSubmit={submit} className="space-y-6">
                     <div className="grid gap-6 lg:grid-cols-2">
                         <section
@@ -139,21 +163,26 @@ export default function ContentEdit({ page }: Props) {
                         </section>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="is_published"
-                                checked={form.data.is_published}
-                                onCheckedChange={(checked) =>
-                                    form.setData(
-                                        'is_published',
-                                        checked === true,
-                                    )
-                                }
-                            />
-                            <Label htmlFor="is_published">
-                                {t('content.published')}
-                            </Label>
-                        </div>
+                        {/* The printed form's texts are never published. */}
+                        {receipt ? (
+                            <span />
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="is_published"
+                                    checked={form.data.is_published}
+                                    onCheckedChange={(checked) =>
+                                        form.setData(
+                                            'is_published',
+                                            checked === true,
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="is_published">
+                                    {t('content.published')}
+                                </Label>
+                            </div>
+                        )}
                         <Button type="submit" disabled={form.processing}>
                             {form.processing && <Spinner />}
                             {t('common.save')}

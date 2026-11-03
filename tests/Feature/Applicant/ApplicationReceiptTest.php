@@ -13,29 +13,6 @@ beforeEach(function () {
     seedReferenceData();
 });
 
-/**
- * Text as a reader would extract it: Arabic presentation forms normalised
- * back to base letters and whitespace collapsed. Times New Roman maps some
- * joined forms to their Persian code points (ی, ھ, ک), folded back here.
- */
-function extractPdfText(string $pdf): string
-{
-    $text = (new Parser)->parseContent($pdf)->getText();
-    $text = Normalizer::normalize($text, Normalizer::FORM_KC) ?: $text;
-    $text = strtr($text, ['ی' => 'ي', 'ھ' => 'ه', 'ک' => 'ك']);
-
-    return (string) preg_replace('/\s+/u', ' ', $text);
-}
-
-/**
- * PDF stores right-to-left runs in visual order; viewers reorder them for
- * display and selection. Reverse an expected phrase to find it in raw text.
- */
-function visualOrder(string $logical): string
-{
-    return implode('', array_reverse(mb_str_split($logical)));
-}
-
 it('renders an A4 receipt whose Arabic text can be extracted', function () {
     $application = Application::factory()->submitted()->create([
         'student_name' => 'عبد الرحمن',
@@ -123,7 +100,7 @@ it('adds the test form with the centre of the specialization', function (string 
     ['IND', 'IND_HVAC', 'إعدادية التحرير المهنية'],
     ['IND', 'IND_ECT', 'إعدادية ابن البيطار المهنية'],
     ['IND', 'IND_PET', 'إعدادية ابن البيطار المهنية'],
-    ['TOU', 'TOU_HSK', 'إعدادية السياحة والفندقة'],
+    ['TOU', 'TOU_HSK', 'إعدادية كربلاء للسياحة والفندقة'],
 ]);
 
 it('prints the verified personal photo in the photo box', function () {

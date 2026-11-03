@@ -48,30 +48,29 @@ test('an administrator activates and invites staff without any shared secret', a
     await expect(page).toHaveURL(/\/admin\/home/);
     await expect(page.getByRole('link', { name: 'لوحة الإدارة' })).toBeVisible();
 
-    // The administrator adds a staff member, name, email and role, and gets a link once.
+    // The administrator adds a staff member and sets their email and password.
     await page.goto(`${staffURL}/admin/users`);
     await page.getByRole('button', { name: 'إضافة موظف' }).click();
     await page.locator('#new-name').fill('مدقق جديد');
     await page.locator('#new-email').fill(reviewerEmail);
     await page.locator('#new-phone').fill('07701234567');
+    await page.locator('#new-password').fill(PASSWORD);
+    await page.locator('#new-password-confirmation').fill(PASSWORD);
     await page.locator('#new-role-reviewer').click();
     await page
         .getByRole('dialog')
         .getByRole('button', { name: 'إضافة موظف' })
         .click();
+    await expect(page.getByText(reviewerEmail)).toBeVisible();
 
-    const reviewerLink = await page.getByTestId('invitation-url').inputValue();
-    expect(reviewerLink).toContain('/staff/invitation#');
-
-    await page.goto(`${staffURL}/admin/users`);
-    await expect(page.getByText('بانتظار التفعيل')).toBeVisible();
-
-    // The new staff member does their part in their own browser, and their
-    // role decides what opens.
+    // The new staff member signs in with what they were handed, and their
+    // role decides what opens; they cannot change their own password.
     const reviewerPage = await (await browser.newContext()).newPage();
-    await acceptInvitation(reviewerPage, reviewerLink, reviewerEmail);
     await staffPassword(reviewerPage, reviewerEmail, PASSWORD);
     await expect(reviewerPage).toHaveURL(/\/admin\/home/);
+    expect(
+        (await reviewerPage.goto(`${staffURL}/settings/security`))?.status(),
+    ).toBe(403);
     expect((await reviewerPage.goto(`${staffURL}/admin/users`))?.status()).toBe(
         403,
     );

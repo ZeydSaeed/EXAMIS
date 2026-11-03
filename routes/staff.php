@@ -85,7 +85,7 @@ Route::middleware(['auth:staff', 'can:admin.access'])
             Route::put('users/{user}/roles', [Admin\StaffUserController::class, 'updateRoles'])->name('users.roles');
             Route::put('users/{user}/permissions', [Admin\StaffUserController::class, 'updatePermissions'])->name('users.permissions');
             Route::put('users/{user}/status', [Admin\StaffUserController::class, 'updateStatus'])->name('users.status');
-            Route::post('users/{user}/invitation', [Admin\StaffUserController::class, 'storeInvitation'])->middleware('can:staff.credentials')->name('users.invitation');
+            Route::put('users/{user}/account', [Admin\StaffUserController::class, 'updateAccount'])->middleware('can:staff.credentials')->name('users.account');
             Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
 
@@ -112,12 +112,13 @@ Route::middleware('auth:staff')->group(function () {
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+    // Administrators set everyone else's password; only they change their own.
     Route::get('settings/security', [SecurityController::class, 'edit'])
-        ->middleware(RequirePassword::class)
+        ->middleware([RequirePassword::class, 'can:users.manage'])
         ->name('security.edit');
 
     Route::put('settings/password', [SecurityController::class, 'update'])
-        ->middleware('throttle:6,1')
+        ->middleware(['throttle:6,1', 'can:users.manage'])
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');

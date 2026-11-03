@@ -4,25 +4,29 @@
     $filled = fn ($text) => filled($text) ? e((string) $text) : $blank;
     // Left empty for the student to write in by hand.
     $space = fn (int $characters) => str_repeat('&nbsp;', $characters);
+    $letter = $texts[\App\Services\Receipts\ReceiptTexts::LETTER];
+    $values = [
+        'العام_الدراسي' => '<bdo dir="ltr">'.e($academicYear).'</bdo>',
+        'الفرع' => $filled($branch),
+        'الاختصاص' => $filled($specialization),
+        'فراغ_الصف' => $space(30),
+        'فراغ_المدرسة' => $space(46),
+        'سنة_الميلاد' => $filled($application->birth_date?->format('Y')),
+    ];
 @endphp
 <div class="letter-head">
     {{ __('receipt.letter.directorate') }}.<br>
     {{ __('receipt.letter.through') }}
 </div>
-<div class="letter-subject">{{ __('receipt.letter.subject') }}</div>
+<div class="letter-subject">{{ $letter['title'] }}</div>
 
 <div class="letter">
     <div class="letter-greeting">{{ __('receipt.letter.greeting') }}</div>
-    {{-- One paragraph at one size, wrapping only where a line is full. A word stays
-         joined to the brackets after it, so no line starts with an empty pair. --}}
-    <div style="text-align: justify;">
-        {{ __('receipt.letter.request') }} <bdo dir="ltr">{{ $academicYear }}</bdo>،
-        {{ __('receipt.letter.branch') }}&nbsp;({!! $filled($branch) !!})
-        {{ __('receipt.letter.specialization') }}&nbsp;({!! $filled($specialization) !!})،
-        {{ __('receipt.letter.last_grade') }}&nbsp;({!! $space(30) !!})
-        {{ __('receipt.letter.school') }}&nbsp;({!! $space(46) !!})
-        {{ __('receipt.letter.birth_year') }}&nbsp;({!! $filled($application->birth_date?->format('Y')) !!}).
-    </div>
+    {{-- Each paragraph at one size, wrapping only where a line is full; the
+         student's details fill the placeholders. --}}
+    @foreach ($letter['paragraphs'] as $paragraph)
+        <div style="text-align: justify;">{!! \App\Services\Receipts\ReceiptTexts::fillLetter($paragraph, $values) !!}</div>
+    @endforeach
 </div>
 
 {{-- Signature block low on the left, placed from the page's foot so the letter above never moves it. --}}
