@@ -7,6 +7,7 @@ use App\Enums\Permission;
 use App\Models\User;
 use App\Services\Documents\DocumentScanner;
 use App\Services\Documents\StructuralDocumentScanner;
+use App\Services\ReferenceData;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->scoped(ReferenceData::class);
+
         $this->app->bind(DocumentScanner::class, function (): DocumentScanner {
             return match (config('examis.documents.scanner')) {
                 'structural' => new StructuralDocumentScanner((int) config('examis.documents.max_image_pixels')),
