@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Tells the applicant their application changed status. Contains only the
@@ -54,5 +56,18 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
             'status' => $this->status->value,
             'reason' => $this->reason,
         ];
+    }
+
+    /**
+     * Every try failed: the applicant still sees the status on their
+     * application page, but the missing notice must reach the logs.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('Application status notification failed after every retry.', [
+            'application' => $this->application->uuid,
+            'status' => $this->status->value,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }
