@@ -9,7 +9,6 @@ use App\Models\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Inertia\Inertia;
 
 class ApplicationWithdrawalController extends Controller
 {
@@ -23,8 +22,6 @@ class ApplicationWithdrawalController extends Controller
         ]);
 
         $transition->handle($application, ApplicationStatus::Withdrawn, $request->user(), $validated['reason'] ?? null);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.withdrawn')]);
 
         return to_route('applications.show', $application);
     }

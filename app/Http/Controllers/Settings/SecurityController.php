@@ -41,8 +41,6 @@ class SecurityController extends Controller
 
         $audit->record('auth.password_changed', $user, actor: $user);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
-
         return back();
     }
 }

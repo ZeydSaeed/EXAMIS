@@ -97,8 +97,6 @@ class StaffUserController extends Controller
 
         $access->create($validated['name'], $validated['email'], $this->roles($validated['roles']), $request->user(), $validated['phone'], $validated['password']);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
-
         return to_route('admin.users.index');
     }
 
@@ -116,8 +114,6 @@ class StaffUserController extends Controller
 
         $access->updateAccount($user, $validated['name'], $validated['email'], $validated['password'] ?? null, $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
-
         return back();
     }
 
@@ -128,8 +124,6 @@ class StaffUserController extends Controller
         $validated = $request->validate(['phone' => $this->phoneRules()]);
 
         $access->setPhone($user, $validated['phone'], $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return back();
     }
@@ -142,8 +136,6 @@ class StaffUserController extends Controller
         ]);
 
         $access->syncRoles($user, $this->roles($validated['roles']), $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.users.index');
     }
@@ -163,8 +155,6 @@ class StaffUserController extends Controller
 
         $access->syncOverrides($user, array_map(fn (string $effect): OverrideEffect => OverrideEffect::from($effect), $validated['overrides']), $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
-
         return to_route('admin.users.index');
     }
 
@@ -173,8 +163,6 @@ class StaffUserController extends Controller
         $validated = $request->validate(['active' => ['required', 'boolean']]);
 
         $access->setActive($user, (bool) $validated['active'], $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return back();
     }

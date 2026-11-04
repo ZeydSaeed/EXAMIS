@@ -11,7 +11,6 @@ use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class MessageTemplateController extends Controller
 {
@@ -69,8 +68,6 @@ class MessageTemplateController extends Controller
 
     private function saved(): RedirectResponse
     {
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
-
         return to_route('admin.content.index');
     }
 }

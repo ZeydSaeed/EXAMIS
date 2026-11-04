@@ -57,6 +57,6 @@ class StaffInvitationController extends Controller
 
         $access->acceptInvitation($validated['token'], $validated['password']);
 
-        return to_route('staff.login')->with('status', __('auth.invitation_accepted'));
+        return to_route('staff.login');
     }
 }

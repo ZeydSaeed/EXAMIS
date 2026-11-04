@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class ApplicationDecisionController extends Controller
 {
@@ -25,8 +24,6 @@ class ApplicationDecisionController extends Controller
         ], ['reason.not_regex' => __('admin.errors.fill_gaps')]);
 
         $decide->handle($application, ApplicationStatus::from($validated['target']), $request->user(), $validated['reason'] ?? null);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.transitioned')]);
 
         return back();
     }

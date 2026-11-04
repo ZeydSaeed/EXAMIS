@@ -8,13 +8,6 @@ export type AppLayoutProps = {
 
 export type AppVariant = 'header' | 'sidebar';
 
-export type FlashToast = {
-    type: 'success' | 'info' | 'warning' | 'error';
-    message: string;
-    /** Milliseconds on screen; Sonner's default when omitted. */
-    duration?: number;
-};
-
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;

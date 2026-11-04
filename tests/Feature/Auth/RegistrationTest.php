@@ -45,13 +45,13 @@ test('the registration form ignores a submitted username', function () {
     expect(User::query()->where('phone', '07701234567')->sole()->username)->toBeNull();
 });
 
-test('registration tells the student their number and keeps the access code in plain text', function () {
+test('registration shows no confirmation message and keeps the access code in plain text', function () {
     $response = $this->post(route('register.store'), [
         'phone' => '07701234567',
     ]);
 
     $user = User::query()->where('phone', '07701234567')->sole();
-    $response->assertInertiaFlash('toast.message', __('auth.registered', ['number' => $user->student_number]));
+    $response->assertRedirect(route('apply.specialization'))->assertInertiaFlashMissing('toast');
 
     expect($user->getRawOriginal('access_code'))->toMatch('/^[A-Z2-9]{5}-[A-Z2-9]{5}$/');
 });

@@ -77,7 +77,6 @@ class ExamPeriodController extends Controller
         });
 
         $audit->record('period.created', $period, ['code' => $period->code]);
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.periods.index');
     }
@@ -111,7 +110,6 @@ class ExamPeriodController extends Controller
         });
 
         $audit->record('period.updated', $period, ['changed' => array_keys($period->getChanges())]);
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.periods.index');
     }

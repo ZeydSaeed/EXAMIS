@@ -6,7 +6,6 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 /**
  * Sends a new student to choose their branch and specialization, then on
@@ -23,12 +22,6 @@ class RegisterResponse implements Responsable
         if ($request->wantsJson()) {
             return new JsonResponse('', 201);
         }
-
-        Inertia::flash('toast', [
-            'type' => 'success',
-            'message' => __('auth.registered', ['number' => $request->user()?->student_number]),
-            'duration' => 15000,
-        ]);
 
         return to_route('apply.specialization');
     }

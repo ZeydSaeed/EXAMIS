@@ -85,8 +85,6 @@ class ApplicationController extends Controller
 
         $saveDraft->handle($application, $validated, (int) $validated['lock_version'], $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.saved')]);
-
         return $step === null ? back() : to_route('applications.edit', [$application, 'step' => (int) $step + 1]);
     }
 

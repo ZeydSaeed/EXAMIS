@@ -94,7 +94,6 @@ class ContentPageController extends Controller
         $contentPage->save();
 
         $audit->record('content.updated', $contentPage, ['slug' => $contentPage->slug]);
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.content.index');
     }
