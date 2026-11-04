@@ -12,13 +12,14 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            // Preload only the body weight: preloading every weight forced
+            // about 300 KB onto each first visit before anything rendered.
+            // The other weights load when a page uses them.
             fonts: [
                 fontsource('IBM Plex Sans Arabic', {
                     weights: [400, 500, 600, 700],
                     subsets: ['arabic', 'latin'],
-                }),
-                fontsource('Instrument Sans', {
-                    weights: [400, 500, 600],
+                    preload: [{ weight: 400, style: 'normal' }],
                 }),
             ],
         }),
