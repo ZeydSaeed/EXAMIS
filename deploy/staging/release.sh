@@ -60,7 +60,13 @@ log "Migrations as the schema owner"
     set +a
     php artisan migrate --force
     if [[ "$SEED" == "--seed" ]]; then
-        php artisan db:seed --force
+        # Seeding twice would add a second set of demo applications.
+        users="$(php artisan tinker --execute 'echo App\Models\User::query()->count();' | tail -n 1)"
+        if [[ "$users" == "0" ]]; then
+            php artisan db:seed --force
+        else
+            log "Skipping seeding: the database already has $users users"
+        fi
     fi
 )
 
@@ -82,8 +88,11 @@ sudo /usr/bin/systemctl restart examis-queue-fallback.service
 
 log "Health check"
 sleep 2
-curl -fsS -o /dev/null -w 'GET /up -> %{http_code}\n' \
-    -H "Host: $(grep '^EXAMIS_STUDENTS_HOST=' "$SHARED/.env" | cut -d= -f2)" http://127.0.0.1/up \
+# Over HTTPS on this server: /up needs no password from 127.0.0.1. The origin
+# certificate is signed by Cloudflare's own CA, so curl cannot verify it here.
+HOST="$(grep '^EXAMIS_STUDENTS_HOST=' "$SHARED/.env" | cut -d= -f2)"
+curl -fsSk -o /dev/null -w 'GET /up -> %{http_code}\n' \
+    --resolve "${HOST}:443:127.0.0.1" "https://${HOST}/up" \
     || fail "health check failed; previous releases are in $APP_ROOT/releases"
 
 log "Keeping the last $KEEP releases"

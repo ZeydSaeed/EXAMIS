@@ -1,0 +1,8 @@
+[Unit]
+Description=Refresh Cloudflare address ranges (Nginx real IP, firewall)
+After=network-online.target nginx.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/examis-cloudflare-ips
