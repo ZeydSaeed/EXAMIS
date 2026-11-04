@@ -53,8 +53,8 @@ test('transitions map to the permission that authorizes them', function (S $from
     'reopen' => [S::Accepted, S::UnderReview, Permission::ApplicationsReopen],
 ]);
 
-test('applicants edit drafts, correction requests and submissions not yet under review', function () {
+test('applicants edit only drafts and applications sent back for correction', function () {
     $editable = array_values(array_filter(S::cases(), fn (S $status) => $status->isEditableByApplicant()));
 
-    expect($editable)->toEqualCanonicalizing([S::Draft, S::Submitted, S::RequiresCorrection, S::Resubmitted]);
+    expect($editable)->toEqualCanonicalizing([S::Draft, S::RequiresCorrection]);
 });

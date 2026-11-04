@@ -185,7 +185,7 @@ test('the specialization page is closed once the form has started', function () 
         ->assertRedirect(route('applications.edit', $application));
 });
 
-test('a submitted application opens at the first step to edit', function () {
+test('a submitted application no longer opens the form', function () {
     $this->withoutMiddleware(EnsureAccountIsActive::class);
 
     $student = User::factory()->student()->create();
@@ -195,5 +195,5 @@ test('a submitted application opens at the first step to edit', function () {
 
     $this->actingAs($student)
         ->get(route('applications.edit', $application))
-        ->assertInertia(fn (Assert $page) => $page->where('step', 1));
+        ->assertRedirect(route('applications.show', $application));
 });

@@ -201,9 +201,6 @@ return [
     ],
 
     'applicant' => [
-        'edit_application' => 'تعديل',
-        'submitted_edit_note' => 'طلبك مُرسل. تُحفظ تعديلاتك مباشرةً عند الحفظ، ويمكنك التعديل حتى تبدأ مراجعة الطلب.',
-        'back_to_application' => 'العودة إلى الطلب',
         'dashboard_title' => 'طلباتي',
         'dashboard_description' => 'ابدأ طلباً جديداً أو تابع طلباتك السابقة.',
         'start_application' => 'بدء طلب جديد',

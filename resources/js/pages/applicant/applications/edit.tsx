@@ -1,7 +1,6 @@
 import { Head, Link, router, useForm, usePoll } from '@inertiajs/react';
 import {
     AlertTriangle,
-    CheckCircle2,
     Pencil,
     Printer,
     RefreshCw,
@@ -164,9 +163,6 @@ export default function EditApplication({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     const isCorrection = application.status === 'requires_correction';
-    const awaitingReview =
-        application.status === 'submitted' ||
-        application.status === 'resubmitted';
 
     // Each step replaces the last in the history: the form has no way back.
     const handleNext = (event: FormEvent) => {
@@ -914,108 +910,78 @@ export default function EditApplication({
                             </Alert>
                         )}
 
-                        {awaitingReview ? (
-                            // Already submitted: edits are saved as made; nothing to send again.
-                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-                                <p
-                                    className="flex items-start gap-2 text-sm leading-relaxed"
-                                    data-test="submitted-edit-note"
+                        <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    id="declaration"
+                                    checked={submission.data.declaration}
+                                    onCheckedChange={(checked) =>
+                                        submission.setData(
+                                            'declaration',
+                                            checked === true,
+                                        )
+                                    }
+                                    disabled={!isReady}
+                                    aria-describedby={
+                                        submission.errors.declaration
+                                            ? 'declaration-error'
+                                            : undefined
+                                    }
+                                />
+                                <Label
+                                    htmlFor="declaration"
+                                    className="leading-relaxed font-normal"
                                 >
-                                    <CheckCircle2
-                                        className="mt-0.5 size-4 shrink-0 text-success"
-                                        aria-hidden
-                                    />
-                                    {t('applicant.submitted_edit_note')}
+                                    {t('applicant.declaration')}
+                                </Label>
+                            </div>
+                            {submission.errors.declaration && (
+                                <p
+                                    id="declaration-error"
+                                    className="text-sm text-destructive"
+                                >
+                                    {submission.errors.declaration}
                                 </p>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                                    <Button size="lg" asChild>
-                                        <Link
-                                            href={applications.show(
-                                                application.uuid,
-                                            )}
-                                            data-test="back-to-application"
-                                        >
-                                            {t('applicant.back_to_application')}
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-                                <div className="flex items-start gap-3">
-                                    <Checkbox
-                                        id="declaration"
-                                        checked={submission.data.declaration}
-                                        onCheckedChange={(checked) =>
-                                            submission.setData(
-                                                'declaration',
-                                                checked === true,
-                                            )
+                            )}
+                            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                                <ConfirmDialog
+                                    title={t('applicant.print_title')}
+                                    description={t('applicant.print_text')}
+                                    body={
+                                        <p className="text-sm text-muted-foreground">
+                                            {t('applicant.print_back_text')}
+                                        </p>
+                                    }
+                                    confirmLabel={t('applicant.print_accept')}
+                                    cancelLabel={t('applicant.print_back')}
+                                    open={confirmingPrint}
+                                    onOpenChange={setConfirmingPrint}
+                                    processing={submission.processing}
+                                    onConfirm={submit}
+                                >
+                                    <Button
+                                        type="button"
+                                        size="lg"
+                                        disabled={
+                                            !isReady ||
+                                            !submission.data.declaration ||
+                                            submission.processing
                                         }
-                                        disabled={!isReady}
-                                        aria-describedby={
-                                            submission.errors.declaration
-                                                ? 'declaration-error'
-                                                : undefined
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="declaration"
-                                        className="leading-relaxed font-normal"
+                                        data-test="submit-application"
                                     >
-                                        {t('applicant.declaration')}
-                                    </Label>
-                                </div>
-                                {submission.errors.declaration && (
-                                    <p
-                                        id="declaration-error"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {submission.errors.declaration}
-                                    </p>
-                                )}
-                                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                                    <ConfirmDialog
-                                        title={t('applicant.print_title')}
-                                        description={t('applicant.print_text')}
-                                        body={
-                                            <p className="text-sm text-muted-foreground">
-                                                {t('applicant.print_back_text')}
-                                            </p>
-                                        }
-                                        confirmLabel={t(
-                                            'applicant.print_accept',
+                                        {submission.processing ? (
+                                            <Spinner />
+                                        ) : (
+                                            <Printer
+                                                className="size-4"
+                                                aria-hidden
+                                            />
                                         )}
-                                        cancelLabel={t('applicant.print_back')}
-                                        open={confirmingPrint}
-                                        onOpenChange={setConfirmingPrint}
-                                        processing={submission.processing}
-                                        onConfirm={submit}
-                                    >
-                                        <Button
-                                            type="button"
-                                            size="lg"
-                                            disabled={
-                                                !isReady ||
-                                                !submission.data.declaration ||
-                                                submission.processing
-                                            }
-                                            data-test="submit-application"
-                                        >
-                                            {submission.processing ? (
-                                                <Spinner />
-                                            ) : (
-                                                <Printer
-                                                    className="size-4"
-                                                    aria-hidden
-                                                />
-                                            )}
-                                            {t('applicant.print_form')}
-                                        </Button>
-                                    </ConfirmDialog>
-                                </div>
+                                        {t('applicant.print_form')}
+                                    </Button>
+                                </ConfirmDialog>
                             </div>
-                        )}
+                        </div>
                     </section>
                 )}
 

@@ -22,7 +22,6 @@ import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
-import apply from '@/routes/apply';
 import type {
     Application,
     DocumentRequirement,
@@ -59,9 +58,6 @@ export default function ShowApplication({
     const submitted = (
         flash as { submitted?: { reference_number: string | null } }
     ).submitted;
-    const awaitingReview =
-        application.status === 'submitted' ||
-        application.status === 'resubmitted';
     const nextStep = (
         ['submitted', 'resubmitted', 'under_review'] as string[]
     ).includes(application.status)
@@ -114,23 +110,7 @@ export default function ShowApplication({
                                 label={application.status_label}
                                 className="text-sm"
                             />
-                            {can.edit &&
-                                awaitingReview && (
-                                    // Submitted, not yet under review: edit from the branch choice on.
-                                    <Button asChild>
-                                        <Link
-                                            href={apply.specialization()}
-                                            data-test="edit-submitted"
-                                        >
-                                            <Pencil
-                                                className="size-4"
-                                                aria-hidden
-                                            />
-                                            {t('applicant.edit_application')}
-                                        </Link>
-                                    </Button>
-                                )}
-                            {can.edit && !awaitingReview && (
+                            {can.edit && (
                                 <Button asChild>
                                     <Link
                                         href={applications.edit(

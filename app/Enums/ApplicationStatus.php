@@ -85,23 +85,13 @@ enum ApplicationStatus: string
     }
 
     /**
-     * Statuses in which the applicant may edit form data and documents.
-     */
-    /**
-     * The applicant may change the form: a draft, an application sent back
-     * for correction, and a submitted one until staff start reviewing it.
+     * The applicant may change the form only in a draft or when staff sent it
+     * back for correction (ADR-0004). Once submitted it is locked, so
+     * reviewers always judge what was sent.
      */
     public function isEditableByApplicant(): bool
     {
-        return $this === self::Draft || $this === self::RequiresCorrection || $this->isAwaitingReview();
-    }
-
-    /**
-     * Submitted (or resubmitted) and not yet picked up by a reviewer.
-     */
-    public function isAwaitingReview(): bool
-    {
-        return $this === self::Submitted || $this === self::Resubmitted;
+        return $this === self::Draft || $this === self::RequiresCorrection;
     }
 
     public function isDecided(): bool

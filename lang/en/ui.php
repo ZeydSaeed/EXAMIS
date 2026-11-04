@@ -201,9 +201,6 @@ return [
     ],
 
     'applicant' => [
-        'edit_application' => 'Edit',
-        'submitted_edit_note' => 'Your application has been submitted. Your changes are saved as soon as you save them, and you can edit until the review starts.',
-        'back_to_application' => 'Back to the application',
         'dashboard_title' => 'My applications',
         'dashboard_description' => 'Start a new application or follow your existing ones.',
         'start_application' => 'Start a new application',

@@ -217,58 +217,23 @@ describe('saving a draft', function () {
             ->assertForbidden();
     });
 
-    it('lets the applicant edit a submitted application before review and records the change', function () {
+    it('refuses edits once the application is submitted (ADR-0004)', function (ApplicationStatus $status) {
         $this->withoutMiddleware(EnsureAccountIsActive::class);
 
         $student = User::factory()->student()->create();
-        $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
+        $application = Application::factory()->inStatus($status)->for($student)->create(['phone' => $student->phone]);
+        $name = $application->student_name;
 
         $this->actingAs($student)
             ->put(route('applications.update', $application), [
-                ...$application->only(Application::FORM_FIELDS),
-                'birth_date' => '2006-03-15',
-                'gender' => 'male',
                 'lock_version' => $application->lock_version,
                 'student_name' => 'معدّل',
             ])
-            ->assertSessionHasNoErrors();
+            ->assertForbidden();
 
-        $application->refresh();
-        expect($application->student_name)->toBe('معدّل')
-            ->and($application->status)->toBe(ApplicationStatus::Submitted)
-            ->and($application->events()->where('type', 'data_corrected')->exists())->toBeTrue();
-    });
-
-    it('keeps a submitted application complete while it is edited', function () {
-        $this->withoutMiddleware(EnsureAccountIsActive::class);
-
-        $student = User::factory()->student()->create();
-        $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
-
-        $this->actingAs($student)
-            ->put(route('applications.update', $application), [
-                'lock_version' => $application->lock_version,
-                'student_name' => null,
-            ])
-            ->assertSessionHasErrors(['application' => __('applications.errors.required_after_submission')]);
-
-        expect($application->fresh()->student_name)->not->toBeNull();
-    });
-
-    it('stops edits to a submitted application once the period closes', function () {
-        $this->withoutMiddleware(EnsureAccountIsActive::class);
-
-        $student = User::factory()->student()->create();
-        $application = Application::factory()->submitted()->for($student)->create(['phone' => $student->phone]);
-        $application->examPeriod->update(['closes_at' => now()->subMinute()]);
-
-        $this->actingAs($student)
-            ->put(route('applications.update', $application), [
-                'lock_version' => $application->lock_version,
-                'student_name' => 'متأخر',
-            ])
-            ->assertSessionHasErrors(['exam_period' => __('applications.errors.period_closed')]);
-    });
+        expect($application->fresh()->student_name)->toBe($name)
+            ->and($application->events()->where('type', 'data_corrected')->exists())->toBeFalse();
+    })->with([ApplicationStatus::Submitted, ApplicationStatus::Resubmitted, ApplicationStatus::UnderReview]);
 
     it('ignores attempts to mass-assign protected attributes', function () {
         $application = Application::factory()->create();
