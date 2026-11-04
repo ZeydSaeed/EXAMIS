@@ -241,7 +241,7 @@ describe('personal photo', function () {
         $this->actingAs($application->user)
             ->post(route('applications.documents.store', $application), [
                 'document_type' => $type->code,
-                'file' => realUpload('me.png', pngBytes(2400, 1800)),
+                'file' => realUpload('me.png', pngBytes(1600, 1200)),
             ])
             ->assertSessionHasNoErrors();
 
