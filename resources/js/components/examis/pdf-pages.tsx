@@ -4,8 +4,16 @@ import { createPortal } from 'react-dom';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
-/** About 216 dpi: one drawing, for the screen and for paper. */
-const RENDER_SCALE = 3;
+/**
+ * About 216 dpi: one drawing, for the screen and for paper. Phones that
+ * report 2 GB of memory or less get about 144 dpi: an A4 page at 3× needs
+ * about 18 MB of canvas and can stall them, and the barcode still reads.
+ */
+const RENDER_SCALE =
+    ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <=
+    2
+        ? 2
+        : 3;
 
 /**
  * Draws every page of a PDF at the full width of the page, one under the
