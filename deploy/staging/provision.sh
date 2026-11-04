@@ -29,6 +29,8 @@ fail() { printf '[provision] ERROR: %s\n' "$*" >&2; exit 1; }
 # Hex only: safe in SQL, sed and .env without quoting, and no pipeline that
 # SIGPIPE could break under pipefail.
 secret() { openssl rand -hex 24; }
+# grep -q in a pipe can exit before the writer finishes; under pipefail the
+# writer's SIGPIPE then fails the check, so pipes use grep >/dev/null instead.
 
 # Reads a saved secret, or creates and saves it on first run.
 keep_secret() {
@@ -55,7 +57,7 @@ cert_key="$(openssl x509 -noout -pubkey -in "$TLS_DIR/origin.pem" | sha256sum)"
 key_key="$(openssl pkey -pubout -in "$TLS_DIR/origin.key" | sha256sum)"
 [[ "$cert_key" == "$key_key" ]] || fail "origin.key does not belong to origin.pem"
 for host in "$STUDENTS_HOST" "$STAFF_HOST"; do
-    openssl x509 -noout -checkhost "$host" -in "$TLS_DIR/origin.pem" | grep -q 'does match' \
+    openssl x509 -noout -checkhost "$host" -in "$TLS_DIR/origin.pem" | grep 'does match' >/dev/null \
         || fail "the origin certificate does not cover $host"
 done
 chown -R root:root "$TLS_DIR"
@@ -87,7 +89,7 @@ if ! command -v composer >/dev/null; then
 fi
 
 log "Swap (2 GB)"
-if ! swapon --show | grep -q /swapfile; then
+if ! swapon --show | grep /swapfile >/dev/null; then
     fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
     grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
@@ -107,7 +109,7 @@ PermitRootLogin prohibit-password
 EOF
 sshd -t
 systemctl try-reload-or-restart ssh
-sshd -T | grep -qx 'passwordauthentication no' || fail "SSH password sign-in is still enabled"
+sshd -T | grep -x 'passwordauthentication no' >/dev/null || fail "SSH password sign-in is still enabled"
 systemctl enable --now fail2ban unattended-upgrades >/dev/null
 
 log "Application user and folders"
@@ -152,7 +154,7 @@ ALTER ROLE examis_app SET lock_timeout = '5s';
 ALTER ROLE examis_app SET statement_timeout = '30s';
 ALTER ROLE examis_app SET idle_in_transaction_session_timeout = '60s';
 SQL
-if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1; then
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep 1 >/dev/null; then
     sudo -u postgres createdb -O examis_owner "$DB_NAME"
 fi
 sudo -u postgres psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" <<SQL
