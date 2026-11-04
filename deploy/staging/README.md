@@ -41,12 +41,13 @@ Cloudflare's free certificate covers one level below the domain
 - **Client IP:** Nginx takes `CF-Connecting-IP` from Cloudflare connections
   only, so Laravel's rate limits and audit rows see the student, not
   Cloudflare.
-- **Access:** the students portal opens without a password, as it will in
-  production, so students go straight from the start page to the terms and
-  registration by mobile number. The staff portal asks for the staging
-  password (user `staging`), and so does `/up` from outside on both hosts;
-  `/up` is open only to the server itself. Demo staff accounts use the
-  password `password` and stay behind it.
+- **Access:** both portals open without a staging password, as they will in
+  production: students go straight from the start page to the terms and
+  registration by mobile number, and staff sign in with their email and
+  password only. `/up` asks for the staging password (user `staging`) from
+  outside on both hosts and is open only to the server itself. Demo staff
+  accounts are seeded with the password `password`, so change them from the
+  staff accounts page before sharing the staff address.
 - **SSH:** keys only (`00-examis.conf`, checked with `sshd -T`).
 - **Secrets:** generated on the server into
   `/root/examis-staging-secrets.txt` (root, 600). None are in the repo or
