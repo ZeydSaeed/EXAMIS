@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { formatFileSize } from '@/lib/format';
+import { shrinkPhoto } from '@/lib/shrink-photo';
 import applications from '@/routes/applications';
 import type { ApplicationDocument, DocumentRequirement } from '@/types';
 
@@ -34,6 +35,7 @@ export function DocumentUploader({
     const inputId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
     const [clientError, setClientError] = useState<string | null>(null);
+    const [preparing, setPreparing] = useState(false);
     const form = useForm<{ document_type: string; file: File | null }>({
         document_type: requirement.code,
         file: null,
@@ -46,13 +48,23 @@ export function DocumentUploader({
         .filter(Boolean)
         .join(',');
 
-    const upload = (file: File) => {
+    const upload = async (selected: File) => {
         setClientError(null);
 
-        if (mimeTypes.length > 0 && !mimeTypes.includes(file.type)) {
+        if (mimeTypes.length > 0 && !mimeTypes.includes(selected.type)) {
             setClientError(t('documents.wrong_type'));
 
             return;
+        }
+
+        // Phone photos are shrunk first, so they pass the size limit and
+        // upload quickly; the server re-encodes them either way.
+        let file = selected;
+
+        if (requirement.is_photo) {
+            setPreparing(true);
+            file = await shrinkPhoto(selected);
+            setPreparing(false);
         }
 
         if (maxBytes > 0 && file.size > maxBytes) {
@@ -77,6 +89,7 @@ export function DocumentUploader({
         });
     };
 
+    const busy = preparing || form.processing;
     const status = current?.status;
 
     return (
@@ -136,12 +149,12 @@ export function DocumentUploader({
                         type="file"
                         className="sr-only"
                         accept={accept}
-                        disabled={disabled || form.processing}
+                        disabled={disabled || busy}
                         onChange={(event) => {
                             const file = event.target.files?.[0];
 
                             if (file) {
-                                upload(file);
+                                void upload(file);
                             }
                         }}
                         data-test={`file-${requirement.code}`}
@@ -150,7 +163,7 @@ export function DocumentUploader({
                         asChild
                         variant={current ? 'outline' : 'default'}
                         size="sm"
-                        disabled={disabled || form.processing}
+                        disabled={disabled || busy}
                     >
                         <label
                             htmlFor={inputId}
@@ -160,7 +173,7 @@ export function DocumentUploader({
                                     : 'cursor-pointer'
                             }
                         >
-                            {form.processing ? (
+                            {busy ? (
                                 <Spinner />
                             ) : (
                                 <FileUp className="size-4" aria-hidden />

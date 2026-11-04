@@ -10,6 +10,7 @@ use App\Models\ApplicationDocument;
 use App\Models\DocumentType;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Documents\PhotoNormalizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -25,18 +26,29 @@ use Throwable;
  */
 class StoreApplicationDocument
 {
-    public function __construct(private AuditLogger $audit) {}
+    public function __construct(
+        private AuditLogger $audit,
+        private PhotoNormalizer $photos,
+    ) {}
 
     public function handle(Application $application, DocumentType $type, UploadedFile $file, User $actor): ApplicationDocument
     {
         $disk = (string) config('examis.documents.disk');
         $path = $application->uuid.'/'.Str::random(48);
         $contents = (string) file_get_contents((string) $file->getRealPath());
+        $mimeType = (string) $file->getMimeType();
+
+        // Photos are stored re-encoded: small, upright, with nothing but pixels.
+        $normalized = $type->is_photo ? $this->photos->normalize($contents) : null;
+
+        if ($normalized !== null) {
+            [$contents, $mimeType] = [$normalized, 'image/jpeg'];
+        }
 
         Storage::disk($disk)->put($path, $contents);
 
         try {
-            $document = DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents): ApplicationDocument {
+            $document = DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents, $mimeType): ApplicationDocument {
                 $locked = Application::query()->whereKey($application->id)->lockForUpdate()->firstOrFail();
 
                 if (! $locked->status->isEditableByApplicant()) {
@@ -70,7 +82,7 @@ class StoreApplicationDocument
                     'disk' => $disk,
                     'path' => $path,
                     'original_name' => Str::limit($this->safeOriginalName($file), 200, ''),
-                    'mime_type' => (string) $file->getMimeType(),
+                    'mime_type' => $mimeType,
                     'size_bytes' => strlen($contents),
                     'sha256' => hash('sha256', $contents),
                 ])->save();

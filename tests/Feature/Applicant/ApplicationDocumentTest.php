@@ -6,7 +6,10 @@ use App\Enums\Role;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\AuditEvent;
+use App\Models\DocumentType;
+use App\Models\ExamPeriod;
 use App\Services\Documents\DocumentScanner;
+use App\Services\Documents\PhotoNormalizer;
 use App\Services\Documents\ScanResult;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -220,5 +223,53 @@ describe('downloading', function () {
         $document = ApplicationDocument::factory()->verified()->create();
 
         $this->get(route('documents.show', $document))->assertRedirect(route('apply.terms'));
+    });
+});
+
+describe('personal photo', function () {
+    function photoDraft(): array
+    {
+        $type = DocumentType::factory()->photo()->create();
+        $period = ExamPeriod::factory()->requiring($type)->create();
+
+        return [Application::factory()->create(['exam_period_id' => $period->id]), $type];
+    }
+
+    it('stores the photo re-encoded as a JPEG no larger than the print needs', function () {
+        [$application, $type] = photoDraft();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), [
+                'document_type' => $type->code,
+                'file' => realUpload('me.png', pngBytes(2400, 1800)),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $document = ApplicationDocument::query()->sole();
+        $stored = (string) Storage::disk('documents')->get($document->path);
+        [$width, $height, $kind] = getimagesizefromstring($stored);
+
+        expect($document->status)->toBe(DocumentStatus::Verified)
+            ->and($document->mime_type)->toBe('image/jpeg')
+            ->and($kind)->toBe(IMAGETYPE_JPEG)
+            ->and([$width, $height])->toBe([PhotoNormalizer::MAX_SIDE, 900])
+            ->and($document->size_bytes)->toBe(strlen($stored))
+            ->and($document->sha256)->toBe(hash('sha256', $stored));
+    });
+
+    it('drops anything appended after the image data', function () {
+        [$application, $type] = photoDraft();
+        $payload = "<?php system('id'); ?>";
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), [
+                'document_type' => $type->code,
+                'file' => realUpload('me.png', pngBytes(300, 400).$payload),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $stored = (string) Storage::disk('documents')->get(ApplicationDocument::query()->sole()->path);
+
+        expect($stored)->not->toContain($payload);
     });
 });
