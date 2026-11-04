@@ -1,0 +1,9 @@
+[Unit]
+Description=EXAMIS scheduler tick
+
+[Service]
+Type=oneshot
+User=examis
+Group=examis
+WorkingDirectory=/srv/examis/current
+ExecStart=/usr/bin/php /srv/examis/current/artisan schedule:run

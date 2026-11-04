@@ -1,0 +1,14 @@
+[Unit]
+Description=EXAMIS queue worker (Redis)
+After=network.target redis-server.service postgresql.service
+
+[Service]
+User=examis
+Group=examis
+WorkingDirectory=/srv/examis/current
+ExecStart=/usr/bin/php /srv/examis/current/artisan queue:work redis --queue=documents,default --tries=3 --max-time=3600 --memory=256 --sleep=3
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

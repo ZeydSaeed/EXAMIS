@@ -1,0 +1,15 @@
+[Unit]
+Description=EXAMIS queue worker (database fallback while Redis is down)
+After=network.target postgresql.service
+
+[Service]
+User=examis
+Group=examis
+WorkingDirectory=/srv/examis/current
+# QUEUE_CONNECTION=failover pushes here only when Redis refuses a job.
+ExecStart=/usr/bin/php /srv/examis/current/artisan queue:work database --queue=documents,default --tries=3 --max-time=3600 --memory=128 --sleep=10
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

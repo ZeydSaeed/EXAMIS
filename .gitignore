@@ -43,5 +43,6 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 /storage/e2e
+/storage/releases
 /playwright-report
 /test-results
