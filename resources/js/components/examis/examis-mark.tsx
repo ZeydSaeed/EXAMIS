@@ -13,8 +13,8 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'> & {
 
 /**
  * EXAMIS mark: the round Ishtar Tech badge over the "EXAMIS" wordmark. Two
- * transparent PNGs:
- * `examis-mark.png` (original colours) and `examis-mark-on-dark.png`. A new
+ * transparent WebP images (280 px tall, enough for the largest use at 2.5×):
+ * `examis-mark.webp` (original colours) and `examis-mark-on-dark.webp`. A new
  * mark needs new file names: browsers keep these images for days.
  */
 export function ExamisMark({
@@ -34,7 +34,7 @@ export function ExamisMark({
     if (surface === 'dark') {
         return (
             <img
-                src="/images/examis-mark-on-dark.png"
+                src="/images/examis-mark-on-dark.webp"
                 className={`object-contain ${className}`}
                 {...shared}
             />
@@ -44,12 +44,12 @@ export function ExamisMark({
     return (
         <>
             <img
-                src="/images/examis-mark.png"
+                src="/images/examis-mark.webp"
                 className={`object-contain dark:hidden ${className}`}
                 {...shared}
             />
             <img
-                src="/images/examis-mark-on-dark.png"
+                src="/images/examis-mark-on-dark.webp"
                 className={`hidden object-contain dark:block ${className}`}
                 {...shared}
                 alt=""

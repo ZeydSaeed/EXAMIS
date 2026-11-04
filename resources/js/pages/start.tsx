@@ -35,7 +35,7 @@ export default function Start() {
                         className="flex w-full items-center justify-between gap-3 px-4 pt-[2svh] motion-safe:animate-[start-rise_0.7s_ease-out_both] sm:px-10"
                     >
                         <img
-                            src="/images/moe-iraq-logo.png"
+                            src="/images/moe-iraq-logo.webp"
                             alt={t('start.moe_logo')}
                             className="size-[clamp(3rem,min(12svh,19vw),7rem)] shrink-0 object-contain drop-shadow-md"
                             decoding="async"
@@ -56,7 +56,7 @@ export default function Start() {
                             </p>
                         </div>
                         <img
-                            src="/images/vocational-education-logo.png"
+                            src="/images/vocational-education-logo.webp"
                             alt={t('start.vocational_logo')}
                             className="size-[clamp(3rem,min(12svh,19vw),7rem)] shrink-0 object-contain drop-shadow-md"
                             decoding="async"

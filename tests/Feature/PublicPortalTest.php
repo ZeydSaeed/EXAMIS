@@ -152,6 +152,6 @@ it('opens on the standalone start page with both logos, and keeps the portal hom
             ->component('start'));
 
     expect(route('home', absolute: false))->toBe('/portal')
-        ->and(public_path('images/moe-iraq-logo.png'))->toBeFile()
-        ->and(public_path('images/vocational-education-logo.png'))->toBeFile();
+        ->and(public_path('images/moe-iraq-logo.webp'))->toBeFile()
+        ->and(public_path('images/vocational-education-logo.webp'))->toBeFile();
 });
