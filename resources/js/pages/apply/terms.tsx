@@ -82,7 +82,7 @@ export default function ApplicationTerms({ title, terms, status }: Props) {
                                                     : 'en',
                                             )}
                                         </span>
-                                        <p className="pt-1 text-[0.95rem] leading-8 text-pretty">
+                                        <p className="min-w-0 flex-1 pt-1 text-justify text-[0.95rem] leading-8">
                                             {term}
                                         </p>
                                     </li>

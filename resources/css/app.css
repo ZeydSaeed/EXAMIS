@@ -170,6 +170,17 @@
     }
 
     /*
+     * Running text is justified, flush with both edges; the last line of a
+     * paragraph stays at the start. Text inside a centred or end-aligned
+     * container keeps that alignment, and alignment utilities still win.
+     */
+    :where(p, li, dd, blockquote, figcaption):not(
+            :where([class*='text-center'], [class*='text-end']) *
+        ) {
+        text-align: justify;
+    }
+
+    /*
      * Very thin scrollbars in the sidebar colour. Chromium ignores the
      * ::-webkit-scrollbar rules once scrollbar-width is set, so the standard
      * properties apply only where those pseudo-elements are unsupported.
