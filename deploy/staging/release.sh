@@ -41,11 +41,19 @@ ln -s "$SHARED/storage" "$RELEASE/storage"
 ln -s "$SHARED/.env" "$RELEASE/.env"
 
 cd "$RELEASE"
-log "Composer (no dev packages)"
-composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative --no-progress
+# The demo seeders build rows with factories, which need Faker, a dev
+# package. Seeding installs dev packages for that step only; the site always
+# runs without them, as production will.
+if [[ "$SEED" == "--seed" ]]; then
+    log "Composer with dev packages, for seeding only"
+    composer install --no-interaction --prefer-dist --no-progress
+else
+    log "Composer (no dev packages)"
+    composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative --no-progress
+fi
 
 log "Migrations as the schema owner"
-# Real environment variables win over .env, so only this command uses the owner.
+# Real environment variables win over .env, so only these commands use the owner.
 (
     set -a
     . "$SHARED/.db-owner"
@@ -55,6 +63,11 @@ log "Migrations as the schema owner"
         php artisan db:seed --force
     fi
 )
+
+if [[ "$SEED" == "--seed" ]]; then
+    log "Composer: removing the dev packages again"
+    composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative --no-progress
+fi
 
 log "Caches"
 php artisan optimize
