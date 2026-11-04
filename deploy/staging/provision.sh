@@ -120,7 +120,11 @@ fi
 install -d -m 700 -o "$APP_USER" -g "$APP_USER" "/home/${APP_USER}/.ssh"
 install -m 600 -o "$APP_USER" -g "$APP_USER" /root/.ssh/authorized_keys "/home/${APP_USER}/.ssh/authorized_keys"
 install -d -m 750 -o "$APP_USER" -g www-data "$APP_ROOT" "$APP_ROOT/releases" "$APP_ROOT/shared" "$APP_ROOT/shared/fonts"
-for dir in app/private/documents app/public framework/cache/data framework/sessions framework/views logs; do
+# Parents are listed too: install -d leaves the ones it creates owned by root,
+# and the app makes its own folders in them (storage/app/mpdf for the PDF
+# library, receipts under storage/app/private).
+for dir in . app app/private app/private/documents app/public framework framework/cache \
+    framework/cache/data framework/sessions framework/views logs; do
     install -d -m 770 -o "$APP_USER" -g www-data "$APP_ROOT/shared/storage/$dir"
 done
 cat > /etc/sudoers.d/examis <<EOF
