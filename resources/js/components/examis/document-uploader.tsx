@@ -43,8 +43,12 @@ export function DocumentUploader({
 
     const mimeTypes = requirement.mime_types ?? [];
     const maxBytes = (requirement.max_size_kb ?? 0) * 1024;
-    const accept = mimeTypes
-        .map((mime) => extensionsFor[mime] ?? '')
+    // The MIME types make phones offer the camera next to the gallery; the
+    // extensions keep desktop file dialogs filtered.
+    const accept = [
+        ...mimeTypes,
+        ...mimeTypes.map((mime) => extensionsFor[mime] ?? ''),
+    ]
         .filter(Boolean)
         .join(',');
 
