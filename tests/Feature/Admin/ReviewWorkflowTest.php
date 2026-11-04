@@ -1,9 +1,12 @@
 <?php
 
+use App\Actions\Applications\AssignApplication;
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Exceptions\DomainRuleViolation;
 use App\Models\Application;
 use App\Models\AuditEvent;
+use App\Models\User;
 use App\Notifications\ApplicationStatusChanged;
 use Illuminate\Support\Facades\Notification;
 
@@ -146,3 +149,17 @@ it('restricts configuration sections to their permission', function (Role $role,
     'auditor cannot manage content' => [Role::Auditor, 'admin.content.index', 403],
     'administrator can open reports' => [Role::Administrator, 'admin.reports.index', 200],
 ]);
+
+it('re-checks the assignee on the locked row, so a deactivation that lands first wins', function () {
+    $application = Application::factory()->submitted()->create();
+    $supervisor = staffWith(Role::Supervisor);
+    $reviewer = staffWith(Role::Reviewer);
+
+    // The caller still holds the reviewer as loaded before the deactivation.
+    User::query()->whereKey($reviewer->id)->update(['deactivated_at' => now()]);
+
+    expect(fn () => app(AssignApplication::class)->handle($application, $reviewer, $supervisor))
+        ->toThrow(DomainRuleViolation::class);
+
+    expect($application->fresh()->assigned_to)->toBeNull();
+});

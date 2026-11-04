@@ -1,11 +1,13 @@
 <?php
 
+use App\Actions\Students\CloseStudentAccount;
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
 use App\Http\Controllers\Public\ApplicationTermsController;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -229,4 +231,21 @@ test('a student who comes back registers again on the same number with a new id'
         ->and($second->public_id)->not->toBe($student->public_id)
         ->and($second->isActive())->toBeTrue()
         ->and(auth()->id())->toBe($second->id);
+});
+
+test('closing the account is all or nothing', function () {
+    [$student, $application] = printedStudent();
+
+    $this->mock(AuditLogger::class)
+        ->shouldReceive('record')
+        ->andThrow(new RuntimeException('audit store down'));
+
+    expect(fn () => app(CloseStudentAccount::class)->handle($student, $application))
+        ->toThrow(RuntimeException::class);
+
+    $student->refresh();
+
+    expect($student->closed_at)->toBeNull()
+        ->and($student->access_code)->not->toBeNull()
+        ->and($student->trustedDevices()->whereNull('revoked_at')->count())->toBe(1);
 });

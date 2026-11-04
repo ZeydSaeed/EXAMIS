@@ -37,6 +37,16 @@ class AssignApplication
                 throw DomainRuleViolation::invalidTransition();
             }
 
+            // Re-check on the locked row: a deactivation or role change that
+            // committed after the check above must not slip through.
+            if ($assignee !== null) {
+                $current = User::query()->whereKey($assignee->id)->lockForUpdate()->firstOrFail();
+
+                if (! $current->canBeAssignedApplications()) {
+                    throw DomainRuleViolation::assigneeNotEligible();
+                }
+            }
+
             if ($locked->assigned_to === $assignee?->id) {
                 return $locked;
             }

@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Students\TrustedDevices;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Ends a one-time student account once the student confirms the form was
@@ -26,13 +27,25 @@ class CloseStudentAccount
             return;
         }
 
-        $student->forceFill([
-            'closed_at' => now(),
-            'access_code' => null,
-        ])->save();
+        // One unit: a crash between the writes must not leave a closed
+        // account whose remembered devices still sign in, or no audit row.
+        DB::transaction(function () use ($student, $application): void {
+            $locked = User::query()->whereKey($student->id)->lockForUpdate()->firstOrFail();
 
-        $this->devices->revokeAll($student);
+            if ($locked->isClosed()) {
+                return;
+            }
 
-        $this->audit->record('student.account_closed', $student, ['reference' => $application->reference_number], $student);
+            $locked->forceFill([
+                'closed_at' => now(),
+                'access_code' => null,
+            ])->save();
+
+            $this->devices->revokeAll($locked);
+
+            $this->audit->record('student.account_closed', $locked, ['reference' => $application->reference_number], $locked);
+        }, 3);
+
+        $student->refresh();
     }
 }
