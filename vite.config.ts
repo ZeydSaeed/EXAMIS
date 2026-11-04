@@ -6,6 +6,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { fontsource } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import { cssTarget, staticCssColors } from './resources/vite/static-css-colors';
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -29,10 +30,14 @@ export default defineConfig({
             presets: [reactCompilerPreset()],
         }),
         tailwindcss(),
+        staticCssColors(),
         wayfinder({
             formVariants: true,
         }),
     ]),
+    build: {
+        cssTarget,
+    },
     server: {
         watch: {
             ignored: [

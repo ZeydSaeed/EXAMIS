@@ -2,6 +2,8 @@
 
 @import 'tw-animate-css';
 
+@import './palette-srgb.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -151,45 +153,6 @@
     --sidebar-accent: var(--examis-green);
     --sidebar-accent-foreground: var(--examis-pearl);
     --sidebar-border: color-mix(in srgb, var(--examis-navy) 75%, #000000);
-    --sidebar-ring: var(--examis-gold);
-}
-
-.dark {
-    --examis-surface: color-mix(in srgb, var(--examis-navy) 92%, #000000);
-    --examis-card: color-mix(in srgb, var(--examis-navy) 82%, #000000);
-    --background: var(--examis-surface);
-    --foreground: var(--examis-pearl);
-    --card: var(--examis-card);
-    --card-foreground: var(--examis-pearl);
-    --popover: var(--examis-card);
-    --popover-foreground: var(--examis-pearl);
-    --primary: var(--examis-gold);
-    --primary-foreground: var(--examis-navy);
-    --secondary: var(--examis-green);
-    --secondary-foreground: var(--examis-pearl);
-    --muted: color-mix(in srgb, var(--examis-navy) 70%, #000000);
-    --muted-foreground: color-mix(
-        in srgb,
-        var(--examis-pearl) 75%,
-        transparent
-    );
-    --accent: var(--examis-green);
-    --accent-foreground: var(--examis-pearl);
-    --destructive: #e07a7a;
-    --destructive-foreground: #1a1010;
-    --border: color-mix(in srgb, var(--examis-pearl) 22%, transparent);
-    --input: color-mix(in srgb, var(--examis-navy) 70%, #000000);
-    --ring: var(--examis-gold);
-    --success: #3d9a4a;
-    --warning: var(--examis-gold);
-    --info: color-mix(in srgb, var(--examis-gold) 40%, var(--examis-pearl));
-    --sidebar: color-mix(in srgb, var(--examis-navy) 95%, #000000);
-    --sidebar-foreground: var(--examis-pearl);
-    --sidebar-primary: var(--examis-gold);
-    --sidebar-primary-foreground: var(--examis-navy);
-    --sidebar-accent: var(--examis-green);
-    --sidebar-accent-foreground: var(--examis-pearl);
-    --sidebar-border: color-mix(in srgb, var(--examis-pearl) 18%, transparent);
     --sidebar-ring: var(--examis-gold);
 }
 
@@ -354,15 +317,6 @@
     background: color-mix(in srgb, var(--examis-gold) 45%, transparent);
     color: inherit;
     padding-inline: 0.1rem;
-}
-
-.dark .examis-data-table thead th {
-    background: var(--examis-green);
-    color: var(--examis-pearl);
-}
-
-.dark .examis-data-table {
-    --examis-table-line-color: var(--examis-gold);
 }
 
 @page print-sheet {
