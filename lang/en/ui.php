@@ -348,6 +348,7 @@ return [
         'missing' => 'Not uploaded',
         'none' => 'No documents.',
         'wrong_type' => 'This file type is not allowed for this document.',
+        'camera_photo' => 'This photo was just taken with the phone camera and is not accepted. Please choose an official personal photo from your phone gallery.',
         'too_large' => 'The file is larger than allowed (:size).',
         'status' => [
             'pending' => 'Being checked',

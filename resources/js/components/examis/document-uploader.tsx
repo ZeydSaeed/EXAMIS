@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { formatFileSize } from '@/lib/format';
+import { photoTakenAt } from '@/lib/photo-taken-at';
 import { shrinkPhoto } from '@/lib/shrink-photo';
 import applications from '@/routes/applications';
 import type { ApplicationDocument, DocumentRequirement } from '@/types';
@@ -15,6 +16,9 @@ const extensionsFor: Record<string, string> = {
     'image/png': '.png',
     'application/pdf': '.pdf',
 };
+
+/** A personal photo taken this recently counts as a camera shot. */
+const freshShotMs = 15 * 60 * 1000;
 
 /**
  * One upload slot per required document type. The browser checks type and
@@ -57,6 +61,26 @@ export function DocumentUploader({
             setClientError(t('documents.wrong_type'));
 
             return;
+        }
+
+        // Phones offer the camera whatever the page asks for, so a photo
+        // taken in the last few minutes is refused: it must come from the
+        // gallery.
+        if (requirement.is_photo) {
+            const takenAt = await photoTakenAt(selected);
+
+            if (
+                takenAt &&
+                Math.abs(Date.now() - takenAt.getTime()) < freshShotMs
+            ) {
+                setClientError(t('documents.camera_photo'));
+
+                if (inputRef.current) {
+                    inputRef.current.value = '';
+                }
+
+                return;
+            }
         }
 
         // Phone photos are shrunk first, so they pass the size limit and
