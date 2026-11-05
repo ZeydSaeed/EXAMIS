@@ -26,8 +26,9 @@ type Props = {
 
 /**
  * Right after registration: the student picks the branch and the
- * specialization they apply for, from lists, with every branch and its
- * specializations laid out below. Styled like the application terms page.
+ * specialization they apply for, from the two lists only. Every branch and
+ * its specializations are laid out below for reading, with the current
+ * choice marked. Styled like the application terms page.
  */
 export default function Specialization({
     period,
@@ -217,25 +218,16 @@ export default function Specialization({
                                                                         spec.code
                                                                     }
                                                                 >
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={
-                                                                            !canChoose
-                                                                        }
-                                                                        aria-pressed={
-                                                                            isChosen
-                                                                        }
-                                                                        onClick={() =>
-                                                                            choose(
-                                                                                item.code,
-                                                                                spec.code,
-                                                                            )
+                                                                    <span
+                                                                        aria-current={
+                                                                            isChosen ||
+                                                                            undefined
                                                                         }
                                                                         className={cn(
-                                                                            'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:cursor-default',
+                                                                            'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm select-none',
                                                                             isChosen
                                                                                 ? 'border-[var(--examis-navy)] bg-[var(--examis-navy)] text-white dark:border-[var(--examis-gold)] dark:bg-[var(--examis-gold)] dark:text-[var(--examis-navy)]'
-                                                                                : 'border-[var(--examis-navy)]/15 bg-white/70 hover:border-[var(--examis-navy)]/40 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/40',
+                                                                                : 'border-[var(--examis-navy)]/15 bg-white/70 dark:border-white/15 dark:bg-white/5',
                                                                         )}
                                                                     >
                                                                         {isChosen && (
@@ -247,7 +239,7 @@ export default function Specialization({
                                                                         {
                                                                             spec.name
                                                                         }
-                                                                    </button>
+                                                                    </span>
                                                                 </li>
                                                             );
                                                         },
