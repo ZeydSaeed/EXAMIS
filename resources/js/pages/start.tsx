@@ -115,6 +115,24 @@ export default function Start() {
                                 </Button>
                             )}
                         </div>
+
+                        <a
+                            href="https://t.me/MEHANYKARBALA"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-[2svh] flex flex-col items-center gap-[0.6svh] motion-safe:animate-[start-rise_0.7s_0.45s_ease-out_both]"
+                        >
+                            <img
+                                src="/images/telegram-channel-qr.png"
+                                alt={t('start.telegram_qr')}
+                                className="size-[clamp(4.5rem,14svh,8rem)] rounded-lg bg-white shadow-md"
+                                decoding="async"
+                                draggable={false}
+                            />
+                            <span className="max-w-xs text-[clamp(0.6875rem,1.8svh,0.875rem)] leading-snug font-semibold text-pretty">
+                                {t('start.telegram_channel')}
+                            </span>
+                        </a>
                     </main>
 
                     <footer className="px-4 pb-[1.5svh] text-center text-[clamp(0.625rem,1.6svh,0.75rem)] text-[var(--examis-navy)]/60 dark:text-white/50">

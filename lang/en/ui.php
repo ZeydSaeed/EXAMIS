@@ -169,6 +169,8 @@ return [
         'credits_support' => 'Technical and administrative support: Mr. Mohammed Abdulbari',
         'moe_logo' => 'Ministry of Education logo',
         'vocational_logo' => 'General Directorate of Vocational Education logo',
+        'telegram_channel' => 'Official Telegram media channel of the Vocational Education Department in Holy Karbala',
+        'telegram_qr' => 'QR code for the Telegram media channel of the Vocational Education Department in Karbala',
         'footer' => 'Ministry of Education-General Directorate of Vocational Education-Vocational Education in Karbala © 2026-2027',
     ],
 
