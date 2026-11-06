@@ -1,0 +1,14 @@
+[Unit]
+Description=EXAMIS perf PHP-FPM (pool examis-perf)
+After=network.target postgresql@16-perf.service examis-perf-redis.service
+PartOf=examis-perf.target
+
+[Service]
+Type=notify
+RuntimeDirectory=examis-perf
+ExecStartPre=/usr/sbin/php-fpm8.4 -t --fpm-config /etc/examis-perf/php-fpm.conf
+ExecStart=/usr/sbin/php-fpm8.4 --nodaemonize --fpm-config /etc/examis-perf/php-fpm.conf
+ExecReload=/bin/kill -USR2 $MAINPID
+
+[Install]
+WantedBy=examis-perf.target
