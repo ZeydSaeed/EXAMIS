@@ -1,6 +1,7 @@
 {{-- Page 4: the required documents, the folder colour of each branch and the stages of applying.
      No page head: the list starts at the top of the page. --}}
-<div class="section-title" style="margin-top: 0;">{{ $texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['title'] }}</div>
+{{-- Padding, not margin: mPDF drops the top margin of the first block on a page. --}}
+<div class="section-title" style="margin-top: 0; padding-top: 15mm;">{{ $texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['title'] }}</div>
 
 <div class="documents">
     @foreach ($texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['paragraphs'] as $index => $item)
@@ -22,7 +23,8 @@
     @endforeach
 </table>
 
-<div class="section-title" style="margin-top: 7mm;">{{ $texts[\App\Services\Receipts\ReceiptTexts::STAGES]['title'] }}:</div>
+{{-- Shaded grey, the same grey as the folder table's head. --}}
+<div class="section-title" style="margin-top: 12mm; padding: 1.5mm 2mm; background-color: #d9d9d9;">{{ $texts[\App\Services\Receipts\ReceiptTexts::STAGES]['title'] }}:</div>
 
 <div class="documents">
     @foreach ($texts[\App\Services\Receipts\ReceiptTexts::STAGES]['paragraphs'] as $index => $stage)
