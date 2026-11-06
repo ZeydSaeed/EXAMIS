@@ -35,7 +35,8 @@ id examisperf >/dev/null 2>&1 || useradd --system --home-dir "$PERF" --no-create
 id qe >/dev/null 2>&1 || useradd --system --home-dir "$PERF/qe" --no-create-home --shell /usr/sbin/nologin qe
 
 log "Directories"
-install -d -m 750 -o examisperf -g www-data "$PERF"
+# 751: "qe" passes through to $PERF/qe; app, .env and storage stay closed to it.
+install -d -m 751 -o examisperf -g www-data "$PERF"
 install -d -m 770 -o examisperf -g www-data "$PERF/storage" "$PERF/storage/logs" "$PERF/storage/app" \
     "$PERF/storage/app/private" "$PERF/storage/app/public" "$PERF/storage/framework" \
     "$PERF/storage/framework/cache" "$PERF/storage/framework/sessions" "$PERF/storage/framework/views"
@@ -44,7 +45,8 @@ install -d -m 750 -o examisperf -g www-data "$PERF/fonts"
 cp -n /srv/examis/shared/fonts/* "$PERF/fonts/" 2>/dev/null || true
 chown examisperf:www-data "$PERF"/fonts/* 2>/dev/null || true
 install -d -m 750 -o qe -g qe "$PERF/qe" "$PERF/qe/results"
-install -d -m 750 -o root -g root "$ETC"
+# 711: Redis reads its config here; the secrets and TLS key stay 600.
+install -d -m 711 -o root -g root "$ETC"
 
 log "Secrets (generated once, root only, never printed)"
 if [[ ! -f "$ETC/secrets" ]]; then

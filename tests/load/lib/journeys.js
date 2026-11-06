@@ -7,6 +7,7 @@ import {
     STAFF,
     STUDENTS,
     evaluatePage,
+    freshDevice,
     get,
     journeyComplete,
     record,
@@ -44,6 +45,7 @@ export function browsePublicPages() {
 
 /** One account from QR link to printed form. racing: submit twice at the same moment. */
 export function submissionJourney(n, { racing = false } = {}) {
+    freshDevice();
     let state = student.signIn(n);
     state = state && student.ensureDraft(state);
     state = state && student.fillForm(state);
@@ -110,6 +112,7 @@ export function fillingStudent(n) {
 
 /** A supervisor working the queue: list, search, open, take one into review. */
 export function supervisorJourney(i, { review = true } = {}) {
+    freshDevice();
     if (!staff.signIn(staff.staffEmail('supervisor', i))) {
         journeyComplete.add(false, { journey: 'staff' });
 
@@ -134,6 +137,7 @@ export function supervisorJourney(i, { review = true } = {}) {
 
 /** Refusals that must hold: signed out, IDOR, staff portal, reviewer limits. */
 export function securityProbes(n, otherN) {
+    freshDevice();
     let first = student.signIn(n);
     first = first && student.ensureDraft(first);
     let ok = !!first && student.signOut();
@@ -143,6 +147,8 @@ export function securityProbes(n, otherN) {
     ok = student.probeStaffPortal(STAFF) && ok;
     ok = student.probeSignedOut() && ok;
 
+    // The reviewer is someone else, on their own device.
+    freshDevice();
     ok =
         staff.signIn(staff.staffEmail('reviewer', 1)) &&
         staff.probeReviewerLimits() &&

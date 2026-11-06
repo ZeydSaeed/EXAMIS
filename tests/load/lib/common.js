@@ -229,6 +229,18 @@ export function clientIp(vu) {
     return `10.77.${Math.floor(vu / 250)}.${(vu % 250) + 1}`;
 }
 
+/**
+ * A new person on their own device: no cookies from an earlier journey of
+ * this VU. Without it, a student still on the printed page (who can reach
+ * nothing else, ADR-0010) or a remembered staff redirect would leak into
+ * the next journey and fail it for the wrong reason.
+ */
+export function freshDevice() {
+    const jar = http.cookieJar();
+    jar.clear(STUDENTS);
+    jar.clear(STAFF);
+}
+
 function baseHeaders() {
     return { Accept: 'text/html', 'X-QE-Client-IP': clientIp(__VU) };
 }
