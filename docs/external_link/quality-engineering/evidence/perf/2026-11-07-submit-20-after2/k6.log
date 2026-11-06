@@ -1,0 +1,93 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /srv/examis-perf/qe/load/submission-flow.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 20 max VUs, 15m30s max duration (incl. graceful stop):
+              * submit: 1 iterations for each of 20 VUs (maxDuration: 15m0s, gracefulStop: 30s)
+
+
+running (00m01.0s), 20/20 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 20 VUs  00m00.8s/15m0s  00/20 iters, 1 per VU
+
+running (00m02.0s), 20/20 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 20 VUs  00m01.8s/15m0s  00/20 iters, 1 per VU
+
+running (00m03.0s), 20/20 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 20 VUs  00m02.8s/15m0s  00/20 iters, 1 per VU
+
+running (00m04.0s), 20/20 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 20 VUs  00m03.8s/15m0s  00/20 iters, 1 per VU
+
+running (00m05.0s), 19/20 VUs, 1 complete and 0 interrupted iterations
+submit   [   5% ] 20 VUs  00m04.8s/15m0s  01/20 iters, 1 per VU
+
+running (00m06.0s), 19/20 VUs, 1 complete and 0 interrupted iterations
+submit   [   5% ] 20 VUs  00m05.8s/15m0s  01/20 iters, 1 per VU
+
+running (00m07.0s), 03/20 VUs, 17 complete and 0 interrupted iterations
+submit   [  85% ] 20 VUs  00m06.8s/15m0s  17/20 iters, 1 per VU
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate==1' rate=100.00%
+
+    http_req_failed
+    ✓ 'rate==0' rate=0.00%
+
+    qe_step_ok
+    ✓ 'rate==1' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 220     29.652469/s
+    checks_succeeded...: 100.00% 220 out of 220
+    checks_failed......: 0.00%   0 out of 220
+
+    ✓ student: QR opens the code page
+    ✓ student: access code signs in
+    ✓ student: specialization starts a draft
+    ✓ student: step 1 saved
+    ✓ student: step 2 saved
+    ✓ student: step 3 saved
+    ✓ student: photo uploaded and verified
+    ✓ student: racing submit 1 answered
+    ✓ student: racing submit 2 answered
+    ✓ student: retry after submit is harmless
+    ✓ student: form PDF downloaded
+
+    CUSTOM
+    qe_journey_complete............: 100.00% 20 out of 20
+    qe_step_ok.....................: 100.00% 220 out of 220
+
+    HTTP
+    http_req_duration..............: avg=316.65ms min=36.85ms med=190.2ms p(90)=296.77ms p(95)=444.13ms p(99)=3.19s max=3.35s
+      { expected_response:true }...: avg=316.65ms min=36.85ms med=190.2ms p(90)=296.77ms p(95)=444.13ms p(99)=3.19s max=3.35s
+    http_req_failed................: 0.00%   0 out of 442
+    http_reqs......................: 442     59.574505/s
+
+    EXECUTION
+    iteration_duration.............: avg=6.62s    min=4.49s   med=6.7s    p(90)=7.13s    p(95)=7.15s    p(99)=7.21s max=7.23s
+    iterations.....................: 20      2.695679/s
+    vus............................: 3       min=3          max=20
+    vus_max........................: 20      min=20         max=20
+
+    NETWORK
+    data_received..................: 24 MB   3.2 MB/s
+    data_sent......................: 471 kB  64 kB/s
+
+
+
+
+running (00m07.4s), 00/20 VUs, 20 complete and 0 interrupted iterations
+submit ✓ [ 100% ] 20 VUs  00m07.2s/15m0s  20/20 iters, 1 per VU

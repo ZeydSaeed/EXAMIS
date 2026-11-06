@@ -1,0 +1,4 @@
+time,load1,cpu_user_pct,cpu_system_pct,cpu_iowait_pct,cpu_steal_pct,mem_available_mb,swap_used_mb,perf_fpm_active,k6_cpu_ms,k6_mem_mb,perf_fpm_cpu_ms,perf_fpm_mem_mb,perf_pg_cpu_ms,perf_pg_mem_mb,perf_redis_cpu_ms,perf_redis_mem_mb,perf_queue_cpu_ms,perf_queue_mem_mb,nginx_cpu_ms,nginx_mem_mb,staging_fpm_cpu_ms,staging_fpm_mem_mb,staging_pg_cpu_ms,staging_pg_mem_mb,staging_redis_cpu_ms,staging_redis_mem_mb,staging_queue_cpu_ms,staging_queue_mem_mb
+2026-11-06T21:34:43+00:00,1.00,0.4,0.3,0.1,0.0,6842,0,1,,,403,47,884,45,66,3,209,33,37768,12,142504,125,154745,140,446644,3,443,33
+2026-11-06T21:34:48+00:00,2.20,66.0,12.6,0.1,0.0,6536,0,,2294,35,18598,320,3485,94,284,3,927,61,38031,12,142505,125,154747,140,446657,3,448,33
+2026-11-06T21:34:55+00:00,2.02,41.8,3.2,0.2,0.0,6394,0,1,,,22391,302,3657,94,336,3,1211,61,38055,12,142505,125,154757,140,446668,3,451,33

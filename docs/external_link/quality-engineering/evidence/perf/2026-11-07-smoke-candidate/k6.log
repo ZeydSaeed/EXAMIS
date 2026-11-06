@@ -1,0 +1,120 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /srv/examis-perf/qe/load/smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 5m30s max duration (incl. graceful stop):
+              * smoke: 1 iterations for each of 1 VUs (maxDuration: 5m0s, gracefulStop: 30s)
+
+
+running (0m01.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m00.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m02.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m01.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m03.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m02.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m04.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m03.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m05.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m04.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m06.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m05.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m07.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m06.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m08.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m07.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m09.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m08.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m10.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m09.9s/5m0s  0/1 iters, 1 per VU
+
+running (0m11.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m10.9s/5m0s  0/1 iters, 1 per VU
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate==1' rate=100.00%
+
+    http_req_failed
+    ✓ 'rate==0' rate=0.00%
+
+    qe_step_ok
+    ✓ 'rate==1' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 34      2.94601/s
+    checks_succeeded...: 100.00% 34 out of 34
+    checks_failed......: 0.00%   0 out of 34
+
+    ✓ public: /
+    ✓ public: /apply/terms
+    ✓ public: /portal
+    ✓ public: /track
+    ✓ student: QR opens the code page
+    ✓ student: access code signs in
+    ✓ student: specialization starts a draft
+    ✓ student: step 1 saved
+    ✓ student: step 2 saved
+    ✓ student: step 3 saved
+    ✓ student: photo uploaded and verified
+    ✓ student: submitted
+    ✓ student: retry after submit is harmless
+    ✓ student: form PDF downloaded
+    ✓ student: signed out
+    ✓ student: another student's application is 404
+    ✓ student: staff portal stays closed
+    ✓ student: signed-out visitor is sent to the terms
+    ✓ staff: sign-in page
+    ✓ staff: signed in
+    ✓ staff: reviewer cannot manage staff
+    ✓ staff: signed out
+    ✓ staff: queue listed
+    ✓ staff: search answered
+    ✓ staff: application opened
+    ✓ staff: review started
+
+    CUSTOM
+    qe_journey_complete............: 100.00% 4 out of 4
+    qe_step_ok.....................: 100.00% 34 out of 34
+
+    HTTP
+    http_req_duration..............: avg=45.58ms min=12.92ms med=27.69ms p(90)=56.26ms p(95)=63.88ms p(99)=375.76ms max=498.58ms
+      { expected_response:true }...: avg=45.58ms min=12.92ms med=27.69ms p(90)=56.26ms p(95)=63.88ms p(99)=375.76ms max=498.58ms
+    http_req_failed................: 0.00%   0 out of 63
+    http_reqs......................: 63      5.458784/s
+
+    EXECUTION
+    iteration_duration.............: avg=11.46s  min=11.46s  med=11.46s  p(90)=11.46s  p(95)=11.46s  p(99)=11.46s   max=11.46s  
+    iterations.....................: 1       0.086647/s
+    vus............................: 1       min=1        max=1
+    vus_max........................: 1       min=1        max=1
+
+    NETWORK
+    data_received..................: 3.3 MB  290 kB/s
+    data_sent......................: 59 kB   5.1 kB/s
+
+
+
+
+running (0m11.5s), 0/1 VUs, 1 complete and 0 interrupted iterations
+smoke ✓ [ 100% ] 1 VUs  0m11.5s/5m0s  1/1 iters, 1 per VU
