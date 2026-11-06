@@ -4,10 +4,10 @@
 | --- | --- | --- | --- | --- |
 | Pest, full (`php artisan test`, SQLite in memory) | 537 tests | 2026-11-06 18:07, workstation | 528 passed, 9 skipped (PostgreSQL-only), 0 failed | VERIFIED: `evidence/pest-full-suite.txt` |
 | Pest `tests/Feature/QualityEngineering` (new) | 34 tests, 355 assertions | same | 34 passed | VERIFIED: `evidence/pest-quality-engineering.txt` |
-| Pest on PostgreSQL (`composer test:pgsql`) | same suite + concurrency | not run in this phase | — | EXISTS BUT NOT VERIFIED (needs `examis_testing`; the new QE tests skip there until the database carries the synthetic marker) |
-| `tests/Concurrency` (real PostgreSQL connections) | `StaffRaceTest` | not run | — | EXISTS BUT NOT VERIFIED |
+| Pest on PostgreSQL (`composer test:pgsql`) | 537 tests incl. concurrency and the QE self-target test | 2026-11-06 21:50, workstation, PostgreSQL `examis_testing` (marked synthetic, D4) | 537 passed, 2,293 assertions, 0 skipped (≈ 133 s) | VERIFIED: `evidence/pest-full-suite-pgsql.txt` |
+| `tests/Concurrency` (real PostgreSQL connections) | `StaffRaceTest` (4 tests) | 2026-11-06 21:55, PostgreSQL `examis_testing` | 4 passed, 7 assertions | VERIFIED: `evidence/pest-concurrency-pgsql.txt` |
 | Playwright `tests/e2e` | 8 specs, about 30 tests (Chromium, mobile Chromium) | not run in this phase | — | EXISTS BUT NOT VERIFIED; uses PostgreSQL `examis_testing` |
-| CI (`.github/workflows/tests.yml`) | quality, Pest on PG18, Playwright, gitleaks | history not readable (`gh` not signed in) | — | UNKNOWN; the `e2e` job lacks PostgreSQL (see `01-…` table) |
+| CI (`.github/workflows/tests.yml`) | quality, Pest on PG18, Playwright, gitleaks | history not readable (`gh` not signed in) | — | UNKNOWN; the `e2e` job now gets a PostgreSQL 18 service like the `pgsql` job (2026-11-06), not yet run in CI |
 | k6 self-test (new, offline) | 51 checks, 0 HTTP | 2026-11-06 | 51/51 | VERIFIED: `evidence/k6-selftest.txt` |
 | k6 guard (new) | 7 scripts × refused / allowed / heavy approval | 2026-11-06 | as expected | VERIFIED: `evidence/k6-guard-inspect.txt` |
 | k6 scripts over HTTP | 7 scripts | never on `0f0de40` | — | not run: needs an approved environment |

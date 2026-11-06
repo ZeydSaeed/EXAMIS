@@ -1,0 +1,6 @@
+2026-11-06 21:50:25 +0300
+
+ INFO Configuration cache cleared successfully. 
+
+{"tool":"pest","result":"passed","tests":537,"passed":537,"assertions":2293,"duration_ms":133088}
+exit=0

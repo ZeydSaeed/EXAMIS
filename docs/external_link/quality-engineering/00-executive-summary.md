@@ -22,12 +22,12 @@ Status labels used in this folder: **VERIFIED** (checked, evidence named), **EXI
 | Guard | Central allow-list guard for data (`SyntheticTarget`) and for k6 targets (`lib/guard.js`); all 7 scripts refuse production and staging hosts before any request | `evidence/k6-guard-inspect.txt`, `evidence/pest-quality-engineering.txt` |
 | Synthetic data | `PerfSeeder` (100 to 50,000 students, staff) matching the current auth model | `07-synthetic-data-strategy.md` |
 | Contract test | The k6 journey replayed through Laravel with the same accounts and answers: 34/34 PASS | `evidence/pest-quality-engineering.txt` |
-| Regression | Full Pest suite 537 tests: 528 PASS, 9 skipped (PostgreSQL-only), 0 failed | `evidence/pest-full-suite.txt` |
+| Regression | Full Pest suite 537 tests on SQLite: 528 PASS, 9 skipped (PostgreSQL-only), 0 failed; on PostgreSQL `examis_testing` (marked synthetic): 537/537 PASS, 2,293 assertions | `evidence/pest-full-suite.txt`, `evidence/pest-full-suite-pgsql.txt` |
 
 ## What was not done (and why)
 
-- No k6 run over the network, no load, no server access, no tool installed, no database created: each needs a separate approval (`15-implementation-roadmap.md`).
-- Server resources are **UNKNOWN** today; the last measurement is from 2026-11-04 (`08-single-server-architecture.md`).
+- No k6 run over the network, no load, no tool installed, no database created on the server: each needs a separate approval (`15-implementation-roadmap.md`).
+- Server resources were measured read-only at gate G1 (2026-11-06 21:49): 4 vCPU idle, 6.9 GB RAM and 67 GB disk free, 17 of 50 PostgreSQL connections in use, no QE tools installed, no `sis` database (`08-single-server-architecture.md`, `evidence/g1-server-inspection.txt`).
 - Playwright, ZAP, Semgrep, monitoring: designed, not run.
 
 ## Answer in one line
@@ -36,4 +36,4 @@ The suite can now prove what it claims, cannot reach a forbidden target, and has
 
 ## Next gate
 
-Gate G1 (approval): read-only inspection of the server, then G2: build the isolated `perf` environment on it. See `15-implementation-roadmap.md`.
+G1 is done (owner approved 2026-11-06). Next: G2, which builds the isolated `perf` environment on the server. See `15-implementation-roadmap.md`.

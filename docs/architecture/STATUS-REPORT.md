@@ -1,5 +1,7 @@
 # EXAMIS — Status report (2026-10-14)
 
+> **Historical snapshot.** Sign-in, accounts, the staff portal and the load tests changed after this date (ADR-0009 to ADR-0012). For the current state see `docs/external_link/quality-engineering/01-approved-version-baseline.md` and `04-test-inventory.md`.
+
 Legend: **Implemented** = in the code · **Tested** = automated test executed and passing · **Verified** = tested and evidence reviewed (incl. manual or visual) · **Blocked** = waits for a resource, decision or permission · **Not tested** = no execution evidence yet.
 
 **Production readiness: NOT production ready.** Security (antivirus), operations (backups, restore drill on PostgreSQL), performance (k6 evidence) and regulatory decisions are still open (§4).

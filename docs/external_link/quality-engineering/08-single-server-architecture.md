@@ -1,19 +1,29 @@
 # Single-server architecture
 
-## The server (from the deployment log, 2026-11-04; current values UNKNOWN until gate G1)
+## The server (measured at gate G1, 2026-11-06 21:49 +0300, read-only; evidence `evidence/g1-server-inspection.txt`)
 
 | Resource | Value | Status |
 | --- | --- | --- |
-| Machine | Hetzner CAX21, `examis-staging-1`, Falkenstein | VERIFIED (log) |
-| CPU | 4 vCPU ARM64, **shared** (other tenants: CPU steal) | VERIFIED (log) |
-| RAM / swap | 7.5 GiB / 2 GB swap file from `provision.sh` | VERIFIED (log, file) |
-| Disk | 75 GB | VERIFIED (log); free space UNKNOWN |
-| OS | Ubuntu 24.04.4 LTS aarch64 | VERIFIED (log) |
-| PHP-FPM | static pool, 16 workers, 256 MB limit, OPcache 192 MB | VERIFIED (file) |
-| PostgreSQL 16 | `max_connections 50`, `shared_buffers 1GB`, slow log 250 ms, `log_lock_waits on` | VERIFIED (file) |
-| Redis | 256 MB, password, local | VERIFIED (file) |
-| Installed QE tools | none known | UNKNOWN |
-| One measurement | 50 VUs on public pages through Cloudflare, 4 min: 4,304 requests, 0% failed, p95 read 613 ms, load 0.24, 735 MB used | VERIFIED (log, 2026-11-04) |
+| Machine | Hetzner CAX21, `examis-staging-1`, Falkenstein; up 2 days | VERIFIED (G1) |
+| CPU | 4 vCPU ARM64 Neoverse-N1, **shared**; idle at inspection (100% idle, steal 0) | VERIFIED (G1) |
+| RAM / swap | 7,729 MB total, 754 MB used, 6,975 MB available; 2 GB swap file, 0 used | VERIFIED (G1) |
+| Disk | 75 GB, 5.2 GB used, 67 GB free | VERIFIED (G1) |
+| OS | Ubuntu 24.04.5 LTS aarch64, cgroup v2 (systemd CPU/memory caps available) | VERIFIED (G1) |
+| Application | `/srv/examis/current` → `releases/20261106142707` (= `0f0de40`); 5 releases, 845 MB | VERIFIED (G1) |
+| PHP-FPM | static pool `examis`, 16 workers (17 processes, 971 MB RSS), `memory_limit` 256M, OPcache 192 MB | VERIFIED (G1) |
+| PostgreSQL 16.15 | `max_connections 50` (17 in use by `examis_staging`), `shared_buffers` 1.25 GB, `work_mem` 8 MB, slow log 250 ms; 23 processes, 650 MB RSS | VERIFIED (G1) |
+| Databases | `examis_staging` (11 MB), `postgres`. **No `sis` database on this server.** | VERIFIED (G1, names and sizes only) |
+| `pg_stat_statements` | available, **not** in `shared_preload_libraries` (enabling needs a restart → approval) | VERIFIED (G1) |
+| Redis 7.0.15 | bound to loopback, 13 MB RSS | VERIFIED (G1) |
+| Services | nginx, php8.4-fpm, postgresql, redis, examis-queue (+ fallback), scheduler timer, fail2ban, ufw: active | VERIFIED (G1) |
+| Installed QE tools | none (no k6, Docker, Prometheus, exporters, Grafana, Semgrep, ZAP, Java); `python3` present | VERIFIED (G1) |
+| Traffic | 250 lines in today's Nginx access log | VERIFIED (G1) |
+| One earlier measurement | 50 VUs on public pages through Cloudflare, 4 min: 4,304 requests, 0% failed, p95 read 613 ms, load 0.24, 735 MB used | VERIFIED (log, 2026-11-04) |
+
+Consequences for G2:
+- **Connections.** A perf FPM pool plus a perf queue worker must fit in the 33 free PostgreSQL connections. Cap the pool at 16 workers, which leaves a margin, so `max_connections` and a restart can wait.
+- **Memory.** About 6.9 GB is available. The perf stack (about 1 GB for 16 workers) plus k6 (capped at 1.5 GB) plus monitoring (about 0.5 GB) leaves more than 3.5 GB of headroom.
+- **Caps.** cgroup v2 is present, so `systemd-run` with `CPUQuota` and `MemoryMax` caps work for every tool.
 
 ## Layout on one host
 

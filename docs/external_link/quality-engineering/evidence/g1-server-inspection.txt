@@ -1,0 +1,143 @@
+# G1 read-only inspection of examis-staging-1, 2026-11-06 18:49 UTC (21:49 +0300), script: scratchpad g1-inspect.sh (read-only: no writes, no restarts, no application-database connection)
+﻿
+## time
+2026-11-06T18:49:35+00:00
+
+## system
+examis-staging-1
+aarch64
+Ubuntu 24.04.5 LTS
+ 18:49:35 up 2 days, 29 min,  1 user,  load average: 0.04, 0.01, 0.00
+
+## cpu
+4
+CPU(s):                                  4
+Model name:                              Neoverse-N1
+BIOS Model name:                         NotSpecified  CPU @ 2.0GHz
+Thread(s) per core:                      1
+Core(s) per socket:                      4
+
+## memory
+               total        used        free      shared  buff/cache   available
+Mem:            7729         754        4116         104        3165        6975
+Swap:           2047           0        2047
+NAME      TYPE SIZE USED PRIO
+/swapfile file   2G   0B   -2
+
+## disk
+/dev/sda1        75G  5.2G   67G   8% /
+Filesystem      Size  Used Avail Use% Mounted on
+
+## vmstat-5s
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 1  0      0 4214296 191468 3049592    0    0     2    64  171    0  0  0 100  0  0  0
+ 0  0      0 4216660 191468 3049708    0    0     0     0  196  168  0  0 100  0  0  0
+ 0  0      0 4220380 191468 3049708    0    0     0     0  149  147  0  0 100  0  0  0
+ 0  0      0 4223636 191468 3049708    0    0     0     0  155  157  0  0 100  0  0  0
+ 0  0      0 4226484 191468 3049708    0    0     0     0  153  137  0  0 100  0  0  0
+ 0  0      0 4228976 191472 3049708    0    0     0   764  191  208  0  0 100  0  0  0
+
+## cgroup
+cgroup2fs
+
+## services
+nginx                    active
+php8.4-fpm               active
+postgresql               active
+redis-server             active
+examis-queue             active
+examis-scheduler.timer   active
+cron                     active
+fail2ban                 active
+ufw                      active
+docker                   inactive
+prometheus               inactive
+grafana-server           inactive
+node_exporter            inactive
+examis-queue-fallback.service
+examis-queue.service
+
+## top-memory
+  RSS %CPU COMMAND
+73948  0.0 php-fpm8.4
+71976  0.0 php-fpm8.4
+64940  0.0 php
+63572  0.0 php-fpm8.4
+60684  0.0 php
+59644  0.0 php-fpm8.4
+59256  0.0 php-fpm8.4
+59172  0.0 postgres
+58288  0.0 php-fpm8.4
+58228  0.0 php-fpm8.4
+57616  0.0 php-fpm8.4
+57176  0.0 php-fpm8.4
+57036  0.0 php-fpm8.4
+56908  0.0 php-fpm8.4
+
+## process-groups
+php-fpm        procs=17 rss_mb=971
+nginx          procs=5 rss_mb=44
+postgres       procs=23 rss_mb=650
+redis-server   procs=1 rss_mb=13
+
+## php-fpm-pool
+listen = /run/php/examis.sock
+pm = static
+pm.max_children = 16
+pm.max_requests = 1000
+request_terminate_timeout = 120s
+
+## php-ini
+memory_limit=256M
+opcache.enable=1
+opcache.memory_consumption=192
+upload_max_filesize=4M
+post_max_size=6M
+
+## nginx-sites
+examis-staging
+nginx version: nginx/1.24.0 (Ubuntu)
+
+## nginx-traffic-last-24h
+/var/log/nginx/access.log lines=250
+
+## postgres
+psql (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+examis_staging|11 MB
+postgres|7503 kB
+effective_cache_size=3932168kB
+log_min_duration_statement=250ms
+max_connections=50
+max_wal_size=1024MB
+shared_buffers=1310728kB
+shared_preload_libraries=
+work_mem=8192kB
+examis_staging|17
+postgres|1
+pg_stat_statements
+
+## redis
+Redis server v=7.0.15 sha=00000000:0 mal
+bind 127.0.0.1 -::1
+
+## tools
+k6               -
+docker           -
+podman           -
+prometheus       -
+node_exporter    -
+grafana-server   -
+semgrep          -
+zap.sh           -
+java             -
+python3          /usr/bin/python3
+jq               -
+
+## app
+/srv/examis
+/var/www/html
+0
+
+## app
+current -> /srv/examis/releases/20261106142707 (release 0f0de40); 5 releases, 845M; shared storage 13M

@@ -37,5 +37,5 @@ EXAMIS is the external-examination e-application platform: applicants register, 
 
 - PHP: `php artisan test --compact` (SQLite in memory) and `composer test:pgsql` (PostgreSQL database `examis_testing`; also in CI). Static analysis: `composer types:check` (Larastan level 7).
 - Frontend: `npm run types:check`, `npm run check`.
-- E2E: `npm run build && npm run test:e2e` (isolated `database/e2e.sqlite`, seeded by `EndToEndSeeder`).
+- E2E: `npm run build && npm run test:e2e` (PostgreSQL `examis_testing`, seeded by `EndToEndSeeder`; see `playwright.config.ts`).
 - Load tests: `tests/load/*.js` with k6, against local or staging only — never production.

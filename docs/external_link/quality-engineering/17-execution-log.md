@@ -12,4 +12,15 @@ One line per action that ran. Times +0300. No secrets.
 | 2026-11-06 18:08 | same | workstation, `k6 inspect` (init only) | guard on all 7 scripts | production and staging hosts refused (exit 107); heavy scripts refused without approval; VU ceiling 500 refused | `evidence/k6-guard-inspect.txt` |
 | 2026-11-06 18:05 | same | workstation | Pint, Larastan (new seeders), `vp check` (tests/load) | pass, 0 errors | console |
 
-Not run: anything on the server, any k6 request over the network, Playwright, ZAP, Semgrep, PostgreSQL test run.
+Not run (at 18:08): anything on the server, any k6 request over the network, Playwright, ZAP, Semgrep, PostgreSQL test run.
+
+## 2026-11-06, after the owner's approval ("موافق": D1, D2, D3, D4, D9)
+
+| When | Commit | Environment | Action | Result | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| 21:47 | `0f0de40` + QE changes | workstation | QE Pest re-run; k6 self-test (and without settings) | 34/34 passed; 51/51 checks, 0 HTTP; without settings the guard refuses with exit 107 | console |
+| 21:48 | `b463e83` | workstation, Git | committed this phase by explicit paths on `feature/staff-portal-auth`; `perf/phase-a-hardening` fast-forwarded to match (as the release log keeps them equal) | not pushed | `git log` |
+| 21:49 | — | `examis-staging-1`, SSH as root, read-only script | G1 inspection: CPU, RAM, disk, services, FPM, PostgreSQL settings, database names, tools | idle host; no `sis` database; no QE tools; 17/50 PostgreSQL connections | `evidence/g1-server-inspection.txt` |
+| 21:50 | `b463e83` | workstation, PostgreSQL `examis_testing` | marker `external_link:synthetic` set on `examis_testing` (D4); full Pest on PostgreSQL | 537 passed, 2,293 assertions, 0 skipped | `evidence/pest-full-suite-pgsql.txt` |
+| 21:55 | same | same | `--testsuite=Concurrency` | 4 passed, 7 assertions | `evidence/pest-concurrency-pgsql.txt` |
+| 21:56 | same | workstation | documents updated (D9): THREAT-MODEL T1/T19, ARCHITECTURE §2, STATUS-REPORT banner, `.ai` E2E note; CI `e2e` job gets a PostgreSQL service | CI not run | this commit |
