@@ -1,0 +1,330 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "public: /": {
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "public: /",
+                    "path": "::public: /",
+                    "id": "746e3ca4d6be8d05a800532ed28198f6"
+                },
+                "public: /apply/terms": {
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "public: /apply/terms",
+                    "path": "::public: /apply/terms",
+                    "id": "b4bbeadffc1ccb6ecfba69e75f41f305"
+                },
+                "public: /portal": {
+                    "name": "public: /portal",
+                    "path": "::public: /portal",
+                    "id": "c45e9fa63fa6de92789ea5d0be396a10",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "public: /track": {
+                    "name": "public: /track",
+                    "path": "::public: /track",
+                    "id": "008ec26ac7622bebeba2f86270f5ad21",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: QR opens the code page": {
+                    "fails": 0,
+                    "name": "student: QR opens the code page",
+                    "path": "::student: QR opens the code page",
+                    "id": "b4c4d65be680261520006b8b852d032f",
+                    "passes": 3
+                },
+                "student: access code signs in": {
+                    "name": "student: access code signs in",
+                    "path": "::student: access code signs in",
+                    "id": "a758d910f322a3a2ff3d4ff862eb987b",
+                    "passes": 3,
+                    "fails": 0
+                },
+                "student: specialization starts a draft": {
+                    "name": "student: specialization starts a draft",
+                    "path": "::student: specialization starts a draft",
+                    "id": "9287c9030dc3fb150af6c3d595c916e8",
+                    "passes": 2,
+                    "fails": 0
+                },
+                "student: step 1 saved": {
+                    "path": "::student: step 1 saved",
+                    "id": "07f6c3410176bbdeec82860dca14963e",
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "student: step 1 saved"
+                },
+                "student: step 2 saved": {
+                    "name": "student: step 2 saved",
+                    "path": "::student: step 2 saved",
+                    "id": "db5cf1e3f6f34feb322f3f14462ca33f",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: step 3 saved": {
+                    "name": "student: step 3 saved",
+                    "path": "::student: step 3 saved",
+                    "id": "8e01f609df080ce94f83b6755b6d5ed1",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: photo uploaded and verified": {
+                    "name": "student: photo uploaded and verified",
+                    "path": "::student: photo uploaded and verified",
+                    "id": "3f72d135ab8b276e2a1263d396679b79",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: submitted": {
+                    "id": "90dc4ca044d9f2a5172ec21d708bd639",
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "student: submitted",
+                    "path": "::student: submitted"
+                },
+                "student: retry after submit is harmless": {
+                    "name": "student: retry after submit is harmless",
+                    "path": "::student: retry after submit is harmless",
+                    "id": "11639c1f0cc6f7f779069a9598051998",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: form PDF downloaded": {
+                    "name": "student: form PDF downloaded",
+                    "path": "::student: form PDF downloaded",
+                    "id": "301d9672f4a84d4da49d1ffd4463c30e",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: signed out": {
+                    "name": "student: signed out",
+                    "path": "::student: signed out",
+                    "id": "67ba9532d0277015c445bf6004ab5075",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: another student's application is 404": {
+                    "name": "student: another student's application is 404",
+                    "path": "::student: another student's application is 404",
+                    "id": "e78c4fe7f28c71996769e11700b23943",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: staff portal stays closed": {
+                    "name": "student: staff portal stays closed",
+                    "path": "::student: staff portal stays closed",
+                    "id": "fdf600e27bbbfc4040b36fa9644012bf",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "student: signed-out visitor is sent to the terms": {
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "student: signed-out visitor is sent to the terms",
+                    "path": "::student: signed-out visitor is sent to the terms",
+                    "id": "537b01c725b21332a0db5fa08a7f0075"
+                },
+                "staff: sign-in page": {
+                    "id": "a7ca90fe5d206bab0407f8f5c1684c88",
+                    "passes": 2,
+                    "fails": 0,
+                    "name": "staff: sign-in page",
+                    "path": "::staff: sign-in page"
+                },
+                "staff: signed in": {
+                    "name": "staff: signed in",
+                    "path": "::staff: signed in",
+                    "id": "c696d57acd0867cea7a08bdd90829e20",
+                    "passes": 2,
+                    "fails": 0
+                },
+                "staff: reviewer cannot manage staff": {
+                    "id": "20aaee6106b16daeaba0036e6746e1da",
+                    "passes": 1,
+                    "fails": 0,
+                    "name": "staff: reviewer cannot manage staff",
+                    "path": "::staff: reviewer cannot manage staff"
+                },
+                "staff: signed out": {
+                    "fails": 0,
+                    "name": "staff: signed out",
+                    "path": "::staff: signed out",
+                    "id": "561e603b3650e1b9ab74077fc7bd347f",
+                    "passes": 2
+                },
+                "staff: queue listed": {
+                    "name": "staff: queue listed",
+                    "path": "::staff: queue listed",
+                    "id": "8383a47f9c279155afcde20dc0850109",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "staff: search answered": {
+                    "name": "staff: search answered",
+                    "path": "::staff: search answered",
+                    "id": "6521a7514761f17873d6d1d1729d8e26",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "staff: application opened": {
+                    "fails": 0,
+                    "name": "staff: application opened",
+                    "path": "::staff: application opened",
+                    "id": "1fdd5bdc2173bd95d508dfb815c46efb",
+                    "passes": 1
+                },
+                "staff: review started": {
+                    "name": "staff: review started",
+                    "path": "::staff: review started",
+                    "id": "83a26321f82954aa8144d45a1d9dec70",
+                    "passes": 1,
+                    "fails": 0
+                }
+            }
+    },
+    "metrics": {
+        "http_req_blocked": {
+            "p(95)": 2.345092899999993,
+            "p(99)": 3.44379404,
+            "max": 3.774259,
+            "avg": 0.20369779365079357,
+            "min": 0.00056,
+            "med": 0.00072,
+            "p(90)": 0.0012640000000000001
+        },
+        "data_received": {
+            "rate": 269826.8928726629,
+            "count": 3323348
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "qe_journey_complete": {
+            "passes": 4,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_waiting": {
+            "p(95)": 126.36823169999995,
+            "p(99)": 475.8043195399997,
+            "max": 785.51046,
+            "avg": 59.90429592063492,
+            "min": 11.450941,
+            "med": 33.64513,
+            "p(90)": 90.5900996
+        },
+        "checks": {
+            "passes": 34,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 60.42801331746032,
+            "min": 11.744025,
+            "med": 34.89319,
+            "p(90)": 90.96012940000001,
+            "p(95)": 126.86377569999996,
+            "p(99)": 476.10160933999975,
+            "max": 785.788505
+        },
+        "iterations": {
+            "count": 1,
+            "rate": 0.0811912844735679
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 63,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "http_req_connecting": {
+            "p(99)": 0.3061234,
+            "max": 0.335685,
+            "avg": 0.016643444444444447,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0.18281159999999944
+        },
+        "qe_step_ok": {
+            "passes": 34,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "http_reqs": {
+            "count": 63,
+            "rate": 5.1150509218347775
+        },
+        "data_sent": {
+            "count": 58919,
+            "rate": 4783.709289898147
+        },
+        "iteration_duration": {
+            "med": 12123.98993,
+            "p(90)": 12123.98993,
+            "p(95)": 12123.98993,
+            "p(99)": 12123.98993,
+            "max": 12123.98993,
+            "avg": 12123.98993,
+            "min": 12123.98993
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 2.0026394999999937,
+            "p(99)": 2.80306296,
+            "max": 2.879845,
+            "avg": 0.16802484126984127,
+            "min": 0
+        },
+        "http_req_duration": {
+            "p(90)": 90.96012940000001,
+            "p(95)": 126.86377569999996,
+            "p(99)": 476.10160933999975,
+            "max": 785.788505,
+            "avg": 60.42801331746032,
+            "min": 11.744025,
+            "med": 34.89319
+        },
+        "http_req_sending": {
+            "p(90)": 0.26390800000000003,
+            "p(95)": 0.31924099999999994,
+            "p(99)": 0.7438113399999999,
+            "max": 0.860894,
+            "avg": 0.19490144444444446,
+            "min": 0.091042,
+            "med": 0.167403
+        },
+        "http_req_receiving": {
+            "p(95)": 0.6884428999999997,
+            "p(99)": 1.2811004199999998,
+            "max": 1.618386,
+            "avg": 0.3288159523809524,
+            "min": 0.110842,
+            "med": 0.285885,
+            "p(90)": 0.5219760000000001
+        }
+    }
+}

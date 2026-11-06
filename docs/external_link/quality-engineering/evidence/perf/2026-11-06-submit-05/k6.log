@@ -1,0 +1,78 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /srv/examis-perf/qe/load/submission-flow.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 5 max VUs, 15m30s max duration (incl. graceful stop):
+              * submit: 1 iterations for each of 5 VUs (maxDuration: 15m0s, gracefulStop: 30s)
+
+
+running (00m01.0s), 5/5 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 5 VUs  00m00.9s/15m0s  0/5 iters, 1 per VU
+
+running (00m02.0s), 5/5 VUs, 0 complete and 0 interrupted iterations
+submit   [   0% ] 5 VUs  00m01.9s/15m0s  0/5 iters, 1 per VU
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate==1' rate=100.00%
+
+    http_req_failed
+    ✓ 'rate==0' rate=0.00%
+
+    qe_step_ok
+    ✓ 'rate==1' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 55      23.841831/s
+    checks_succeeded...: 100.00% 55 out of 55
+    checks_failed......: 0.00%   0 out of 55
+
+    ✓ student: QR opens the code page
+    ✓ student: access code signs in
+    ✓ student: specialization starts a draft
+    ✓ student: step 1 saved
+    ✓ student: step 2 saved
+    ✓ student: step 3 saved
+    ✓ student: photo uploaded and verified
+    ✓ student: racing submit 1 answered
+    ✓ student: racing submit 2 answered
+    ✓ student: retry after submit is harmless
+    ✓ student: form PDF downloaded
+
+    CUSTOM
+    qe_journey_complete............: 100.00% 5 out of 5
+    qe_step_ok.....................: 100.00% 55 out of 55
+
+    HTTP
+    http_req_duration..............: avg=152.21ms min=14.42ms med=37.32ms p(90)=70.16ms p(95)=1.29s p(99)=1.46s max=1.49s
+      { expected_response:true }...: avg=152.21ms min=14.42ms med=37.32ms p(90)=70.16ms p(95)=1.29s p(99)=1.46s max=1.49s
+    http_req_failed................: 0.00%   0 out of 112
+    http_reqs......................: 112     48.550637/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.2s     min=2.15s   med=2.23s   p(90)=2.23s   p(95)=2.23s p(99)=2.23s max=2.23s
+    iterations.....................: 5       2.167439/s
+    vus............................: 5       min=5        max=5
+    vus_max........................: 5       min=5        max=5
+
+    NETWORK
+    data_received..................: 6.1 MB  2.6 MB/s
+    data_sent......................: 120 kB  52 kB/s
+
+
+
+
+running (00m02.3s), 0/5 VUs, 5 complete and 0 interrupted iterations
+submit ✓ [ 100% ] 5 VUs  00m02.2s/15m0s  5/5 iters, 1 per VU

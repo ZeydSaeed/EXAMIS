@@ -1,0 +1,117 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /srv/examis-perf/qe/load/smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 5m30s max duration (incl. graceful stop):
+              * smoke: 1 iterations for each of 1 VUs (maxDuration: 5m0s, gracefulStop: 30s)
+
+
+running (0m01.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m00.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m02.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m01.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m03.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m02.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m04.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m03.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m05.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m04.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m06.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m05.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m07.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m06.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m08.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m07.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m09.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m08.8s/5m0s  0/1 iters, 1 per VU
+
+running (0m10.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+smoke   [   0% ] 1 VUs  0m09.8s/5m0s  0/1 iters, 1 per VU
+time="2026-11-06T20:10:45Z" level=error msg="{\"qe_run\":\"2026-11-06-smoke-01\",\"step\":\"student: QR opens the code page\",\"reason\":\"landed on applicant/applications/printed (/applications/01a1b27c-290b-703d-8c11-dc3ae36621b9/printed), expected auth/student-code\",\"vu\":1,\"iteration\":0,\"status\":200,\"url\":\"/applications/01a1b27c-290b-703d-8c11-dc3ae36621b9/printed\",\"request_id\":\"01a1b27c-2ff5-7076-8472-1cb5218a992a\"}" source=console
+time="2026-11-06T20:10:46Z" level=error msg="{\"qe_run\":\"2026-11-06-smoke-01\",\"step\":\"staff: signed in\",\"reason\":\"landed on admin/applications/index (/admin/applications), expected admin/home\",\"vu\":1,\"iteration\":0,\"status\":200,\"url\":\"/admin/applications\",\"request_id\":\"01a1b27c-31af-710b-916a-ac644d6a8491\"}" source=console
+time="2026-11-06T20:10:46Z" level=error msg="{\"qe_run\":\"2026-11-06-smoke-01\",\"step\":\"staff: sign-in page\",\"reason\":\"landed on admin/home (/admin/home), expected auth/staff-login\",\"vu\":1,\"iteration\":0,\"status\":200,\"url\":\"/admin/home\",\"request_id\":\"01a1b27c-31f8-717a-97fd-225d5e038c7a\"}" source=console
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✗ 'rate==1' rate=85.00%
+
+    http_req_failed
+    ✓ 'rate==0' rate=0.00%
+
+    qe_step_ok
+    ✗ 'rate==1' rate=85.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 20     1.823708/s
+    checks_succeeded...: 85.00% 17 out of 20
+    checks_failed......: 15.00% 3 out of 20
+
+    ✓ public: /
+    ✓ public: /apply/terms
+    ✓ public: /portal
+    ✓ public: /track
+    ✗ student: QR opens the code page
+      ↳  50% — ✓ 1 / ✗ 1
+    ✓ student: access code signs in
+    ✓ student: specialization starts a draft
+    ✓ student: step 1 saved
+    ✓ student: step 2 saved
+    ✓ student: step 3 saved
+    ✓ student: photo uploaded and verified
+    ✓ student: submitted
+    ✓ student: retry after submit is harmless
+    ✓ student: form PDF downloaded
+    ✓ student: staff portal stays closed
+    ✓ student: signed-out visitor is sent to the terms
+    ✗ staff: sign-in page
+      ↳  50% — ✓ 1 / ✗ 1
+    ✗ staff: signed in
+      ↳  0% — ✓ 0 / ✗ 1
+
+    CUSTOM
+    qe_journey_complete............: 50.00% 2 out of 4
+    qe_step_failures...............: 3      0.273556/s
+    qe_step_ok.....................: 85.00% 17 out of 20
+
+    HTTP
+    http_req_duration..............: avg=80.51ms min=13.24ms med=49.36ms p(90)=100.01ms p(95)=141.96ms p(99)=692.44ms max=919.4ms
+      { expected_response:true }...: avg=80.51ms min=13.24ms med=49.36ms p(90)=100.01ms p(95)=141.96ms p(99)=692.44ms max=919.4ms
+    http_req_failed................: 0.00%  0 out of 37
+    http_reqs......................: 37     3.37386/s
+
+    EXECUTION
+    iteration_duration.............: avg=10.77s  min=10.77s  med=10.77s  p(90)=10.77s   p(95)=10.77s   p(99)=10.77s   max=10.77s 
+    iterations.....................: 1      0.091185/s
+    vus............................: 1      min=1        max=1
+    vus_max........................: 1      min=1        max=1
+
+    NETWORK
+    data_received..................: 2.2 MB 201 kB/s
+    data_sent......................: 39 kB  3.5 kB/s
+
+
+
+
+running (0m11.0s), 0/1 VUs, 1 complete and 0 interrupted iterations
+smoke ✓ [ 100% ] 1 VUs  0m10.8s/5m0s  1/1 iters, 1 per VU
+time="2026-11-06T20:10:46Z" level=error msg="thresholds on metrics 'checks, qe_step_ok' have been crossed"

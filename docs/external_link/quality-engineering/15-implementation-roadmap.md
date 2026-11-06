@@ -4,11 +4,11 @@
 | --- | --- | --- | --- | --- |
 | 0 Approved version | prove the baseline | `01-approved-version-baseline.md` | done, confirmed by the owner 2026-11-06 | — |
 | 1 Current flows | routes and behaviour of `0f0de40` | `03-…`, contract test PASS | done (staff steps without ★ read from code) | — |
-| 2 k6 repair | no false success, current flows | self-test 51/51, guard evidence, contract test | done, committed `b463e83`; not run over HTTP | G2 |
-| 3 Safety guard | one guard for data and targets | `SyntheticTargetTest`, guard evidence | done, committed; marker on local `examis_testing` (D4); layers 3–4 designed | server parts G2 |
-| 4 Synthetic data | `PerfSeeder` at 100–50,000 | contract test; seed timings on perf | seeder done; volumes not run | G3 |
-| 5 Functional and concurrency | on the approved test environment | Pest on PostgreSQL, Playwright, `smoke.js`, `submission-flow.js` + SQL | not started | G3, G4 |
-| 6 Monitoring | free, local, capped | dashboards show a smoke run | not started | G2 |
+| 2 k6 repair | no false success, current flows | self-test 51/51, guard evidence, contract test | done; first runs on perf 2026-11-06 (smoke 34/34, submission 5 VUs 55/55) | G5 (20 VUs) |
+| 3 Safety guard | one guard for data and targets | `SyntheticTargetTest`, guard evidence | done; on the server the k6 guard refused the public portals (exit 107, 0 requests) | — |
+| 4 Synthetic data | `PerfSeeder` at 100–50,000 | contract test; seed timings on perf | 1,000 students + 7 staff on `examis_perf` in 2 s; 5,000 and 50,000 not run | larger volumes with G5 |
+| 5 Functional and concurrency | on the approved test environment | Pest on PostgreSQL, Playwright, `smoke.js`, `submission-flow.js` + SQL | Pest PG, smoke, submission 5 VUs done; Playwright not run | G5 |
+| 6 Monitoring | free, local, capped | `resources.csv` per run (CPU, memory per component from systemd cgroups); Prometheus/Grafana not installed (not needed yet) | D6 |
 | 7 Gradual load | 5 → 100 (→ 200) | per-stage results + integrity 0 + generator headroom | not started | G5 per session |
 | 8 Security | static → passive → active | reports, no open high/critical without a decision | not started | G6 |
 | 9 Remediation | limited fix cycles | defects closed with before/after | — | per fix |
@@ -19,9 +19,9 @@
 | Gate | What the owner approves |
 | --- | --- |
 | ~~G1~~ done 2026-11-06 | Read-only SSH inspection of `examis-staging-1`: CPU, RAM, swap, disk, services, FPM/PostgreSQL settings, database names (names only), installed tools. No change. |
-| **G2** (next) | Build the perf environment and install k6 + monitoring per `08-…` and `14-…` (packages, users, vhost on 127.0.0.1, database, Redis, exporters) |
-| G3 | Create `examis_perf` with the marker and run `PerfSeeder` there (and the marker on local `examis_testing`, D4) |
-| G4 | Run `smoke.js`, then `submission-flow.js` at 5 VUs, then the integrity SQL |
+| ~~G2~~ done 2026-11-06 | Build the perf environment and install k6 + monitoring per `08-…` and `14-…` (packages, users, vhost on 127.0.0.1, database, Redis, exporters) |
+| ~~G3~~ done 2026-11-06 | Create `examis_perf` with the marker and run `PerfSeeder` there (and the marker on local `examis_testing`, D4) |
+| ~~G4~~ done 2026-11-06 | Run `smoke.js`, then `submission-flow.js` at 5 VUs, then the integrity SQL |
 | G5 | Each load session, one stage at a time |
 | G6 | ZAP active scan; spike, stress, soak per run |
 

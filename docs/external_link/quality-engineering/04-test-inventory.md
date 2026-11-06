@@ -10,7 +10,9 @@
 | CI (`.github/workflows/tests.yml`) | quality, Pest on PG18, Playwright, gitleaks | history not readable (`gh` not signed in) | — | UNKNOWN; the `e2e` job now gets a PostgreSQL 18 service like the `pgsql` job (2026-11-06), not yet run in CI |
 | k6 self-test (new, offline) | 51 checks, 0 HTTP | 2026-11-06 | 51/51 | VERIFIED: `evidence/k6-selftest.txt` |
 | k6 guard (new) | 7 scripts × refused / allowed / heavy approval | 2026-11-06 | as expected | VERIFIED: `evidence/k6-guard-inspect.txt` |
-| k6 scripts over HTTP | 7 scripts | never on `0f0de40` | — | not run: needs an approved environment |
+| k6 `smoke.js` on perf | 1 VU, 4 journeys | 2026-11-06 20:13 UTC, perf copy of `0f0de40` | 34/34 steps, 0 HTTP errors, integrity 0 | PASS: `evidence/perf/2026-11-06-smoke-02/` |
+| k6 `submission-flow.js` on perf | 5 VUs, racing submit | 2026-11-06 20:14 UTC | 55/55 steps, 0 HTTP errors, integrity 0 | PASS: `evidence/perf/2026-11-06-submit-05/` |
+| k6 `normal-load`, `registration-journey`, spike, stress, soak | — | not run | — | NOT RUN (next gates) |
 | Larastan level 7 | new seeder files | 2026-11-06 | 0 errors | VERIFIED (console) |
 | Pint, `vp check` (oxlint, oxfmt) | new PHP and JS files | 2026-11-06 | pass | VERIFIED (console) |
 | Semgrep, ZAP, testssl, axe | — | never | — | MISSING |

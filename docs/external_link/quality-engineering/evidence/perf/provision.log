@@ -1,0 +1,52 @@
+
+[perf] Users
+
+[perf] Directories
+
+[perf] Secrets (generated once, root only, never printed)
+
+[perf] PostgreSQL cluster 16/perf on 127.0.0.1:5433 (not started at boot)
+Creating new PostgreSQL cluster 16/perf ...
+/usr/lib/postgresql/16/bin/initdb -D /var/lib/postgresql/16/perf --auth-local peer --auth-host scram-sha-256 --no-instructions
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "en_US.UTF-8".
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+fixing permissions on existing directory /var/lib/postgresql/16/perf ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... Etc/UTC
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+Ver Cluster Port Status Owner    Data directory              Log file
+16  perf    5433 down   postgres /var/lib/postgresql/16/perf /var/log/postgresql/postgresql-16-perf.log
+
+[perf] Redis instance on 127.0.0.1:6380
+
+[perf] PHP-FPM master and pool
+[06-Nov-2026 20:07:03] NOTICE: configuration file /etc/examis-perf/php-fpm.conf test is successful
+
+[perf] systemd units (examis-perf.target is started per session, not at boot)
+
+[perf] TLS certificate for the loopback names (self-signed, k6 skips verification)
+
+[perf] Nginx vhost on 127.0.0.1:8443
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+[perf] k6 2.2.0 (official arm64 binary, checksum verified)
+k6-v2.2.0-linux-arm64.tar.gz: OK
+k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/arm64)
+
+[perf] Session tools
+
+[perf] Done. Next: release-perf.sh, then examis-qe-run.
