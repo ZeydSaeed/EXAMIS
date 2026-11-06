@@ -9,7 +9,7 @@
 | 4 Synthetic data | `PerfSeeder` at 100–50,000 | contract test; seed timings on perf | 1,000 students + 7 staff on `examis_perf` in 2 s; 5,000 and 50,000 not run | larger volumes with G5 |
 | 5 Functional and concurrency | on the approved test environment | Pest on PostgreSQL, Playwright, `smoke.js`, `submission-flow.js` + SQL | Pest PG, smoke, submission 5 VUs done; Playwright not run | G5 |
 | 6 Monitoring | free, local, capped | `resources.csv` per run (CPU, memory per component from systemd cgroups); Prometheus/Grafana not installed (not needed yet) | D6 |
-| 7 Gradual load | 5 → 100 (→ 200) | per-stage results + integrity 0 + generator headroom | not started | G5 per session |
+| 7 Gradual load | 5 → 100 (→ 200) | per-stage results + integrity 0 + generator headroom | 5→50 PASS 2026-11-06 (p95 40 ms, host CPU 12% at 50); 100 not run | G6: 100, then 150/200 |
 | 8 Security | static → passive → active | reports, no open high/critical without a decision | not started | G6 |
 | 9 Remediation | limited fix cycles | defects closed with before/after | — | per fix |
 | 10 Continuous | periodic, free | 4 weeks of reports | — | after all gates |

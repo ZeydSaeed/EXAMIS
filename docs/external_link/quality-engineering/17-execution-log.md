@@ -40,3 +40,26 @@ Times are UTC as recorded on the server (+0300 locally). Environment for every r
 | 20:13:56 | `b2f0774` | `smoke.js` (`2026-11-06-smoke-02`) | **PASS** 34/34 steps, 4/4 journeys, 0/63 HTTP errors, p95 127 ms; integrity 8/8 zero, `examis:verify-integrity` passed | `evidence/perf/2026-11-06-smoke-02/` |
 | 20:14:42 | `b2f0774` | `submission-flow.js` QE_VUS=5, offset 100, racing double submit (`2026-11-06-submit-05`) | **PASS** 55/55 steps, 5/5 journeys, 0/112 HTTP errors, p50 37 ms, p95 1.29 s (submit); integrity 8/8 zero | `evidence/perf/2026-11-06-submit-05/` |
 | 20:16 | — | perf session stopped (`examis-perf.target`) | perf units inactive; staging active; 7.0 GB available | console |
+
+## 2026-11-06/07, gate G5 and the QE-002 fix (owner approved items 1, 2, 3)
+
+| When (UTC) | Commit | Action | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| 20:35 | `e16ff52` | QE-002 fix: regression test first (fails: lands on the other student's printed page), then `EnsureAccountIsActive` | test passes; full Pest 538/538 on PostgreSQL, 529 + 9 skipped on SQLite | console |
+| 20:40 | `e16ff52` | `git push` of both branches | **blocked by the Claude Code permission classifier**; not pushed | — |
+| 20:54 | `b2f0774` | perf rebuilt with 2,000 students; `submission-flow.js` 20 VUs without `QE_MAX_VUS` | refused by the guard before any request (ceiling defaults to 5) | `evidence/perf/2026-11-06-submit-20/` |
+| 20:55:35 | `b2f0774` | `submission-flow.js` QE_VUS=20, QE_MAX_VUS=20, offset 200 (`2026-11-06-submit-20b`) | **PASS** 220/220 steps, 20/20 journeys, 0/442 HTTP errors, integrity 0; p50 180 ms, **p95 3.41 s, max 6.5 s** (20 PDF renders at once, host CPU ~70%) | `evidence/perf/2026-11-06-submit-20b/` |
+| 20:56:21 | `b2f0774` | `normal-load.js` 5→10→20→50 (`2026-11-06-normal-50`) | aborted after 45 s by its own threshold: staff sign-in 429 (test defect QE-004); other requests p95 25 ms | `evidence/perf/2026-11-06-normal-50/` |
+| 21:00:32 | `1bf5468` | QE-004 fixed; perf rebuilt; `normal-load.js` 5→10→20→50 VUs (+1 staff, 2 submissions/min), 16.5 min (`2026-11-06-normal-50b`) | **PASS** 6,506/6,506 steps, 1,769/1,769 journeys, 0/7,437 HTTP errors, 7.6 req/s; p95 40 ms (read 37, write 45, upload 61, pdf 40); submit avg 0.28 s, max 0.78 s; integrity 0 | `evidence/perf/2026-11-06-normal-50b/` |
+| 21:18 | — | perf session stopped | perf inactive, staging active | console |
+
+Per-stage resources (`normal-50b/resources.csv`, averages; vCPU = share of one core):
+
+| Stage | Host CPU user | Steal | Min. available RAM | perf FPM | perf PostgreSQL | k6 | FPM workers busy (max) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 VUs | 3.1% | 0 | 6,675 MB | 0.07 | 0.01 | 0.03 | 2 / 16 |
+| 10 VUs | 4.1% | 0 | 6,670 MB | 0.09 | 0.02 | 0.05 | 2 / 16 |
+| 20 VUs | 6.4% | 0 | 6,647 MB | 0.15 | 0.03 | 0.09 | 2 / 16 |
+| 50 VUs | 12.4% | 0 | 6,631 MB | 0.31 | 0.06 | ~0.1 | 3 / 16 |
+
+The generator stayed far below its 1 vCPU cap, so the run is valid. The staging services used no measurable CPU.

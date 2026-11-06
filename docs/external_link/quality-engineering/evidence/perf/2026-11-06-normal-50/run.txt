@@ -1,0 +1,11 @@
+run_id=2026-11-06-normal-50
+script=normal-load.js
+settings=QE_MAX_VUS=53 QE_STUDENT_OFFSET=300 QE_SUBMIT_OFFSET=1000
+commit=b2f0774
+app_release=/srv/examis/releases/20261106142707
+started=2026-11-06T20:56:21+00:00
+host=examis-staging-1 4 vCPU 7729 MB
+k6=k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/arm64)
+caps=k6 CPUQuota=100% MemoryMax=1536M
+finished=2026-11-06T20:57:06+00:00
+k6_exit=99

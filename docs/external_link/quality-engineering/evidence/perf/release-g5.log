@@ -1,0 +1,102 @@
+
+[perf-release] Stopping the perf session
+
+[perf-release] Copying the approved release /srv/examis/releases/20261106142707
+
+[perf-release] Environment file
+
+[perf-release] Clearing old perf files
+
+[perf-release] Starting PostgreSQL and Redis
+
+[perf-release] Composer with dev packages (the demo seeder needs factories)
+
+[perf-release] Guard: the target must be examis_perf, marked synthetic
+
+[perf-release] Rebuilding the perf database
+
+  Dropping all tables ........................................... 67.26ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table ...................................... 18.06ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table .......................... 40.89ms DONE
+  0001_01_01_000001_create_cache_table .......................... 19.46ms DONE
+  0001_01_01_000002_create_jobs_table ........................... 34.09ms DONE
+  2024_01_01_000000_create_passkeys_table ....................... 22.18ms DONE
+  2025_08_14_170933_add_two_factor_columns_to_users_table ........ 3.53ms DONE
+  2026_10_14_163910_create_role_assignments_table ............... 12.36ms DONE
+  2026_10_14_163911_create_reference_items_table ................. 8.87ms DONE
+  2026_10_14_163913_create_exam_periods_table ................... 37.81ms DONE
+  2026_10_14_163916_create_applications_table ................... 39.16ms DONE
+  2026_10_14_163918_create_application_documents_table .......... 30.22ms DONE
+  2026_10_14_163920_create_application_events_table ............. 34.04ms DONE
+  2026_10_14_163923_create_content_pages_table .................. 12.13ms DONE
+  2026_10_14_163925_create_notifications_table ................... 9.95ms DONE
+  2026_10_14_194309_add_query_indexes_to_applications_table ...... 6.90ms DONE
+  2026_10_15_221303_add_status_form_fields_to_applications_table . 9.26ms DONE
+  2026_10_29_000000_add_student_identity_to_users_table ......... 34.13ms DONE
+  2026_10_29_010000_drop_unused_sign_in_columns .................. 5.98ms DONE
+  2026_10_29_020000_split_applicant_names ........................ 9.08ms DONE
+  2026_10_29_030000_simplify_education_fields .................... 3.08ms DONE
+  2026_10_29_040000_add_birth_place_to_applications_table ........ 2.29ms DONE
+  2026_10_29_050000_allow_arabic_usernames ....................... 2.53ms DONE
+  2026_10_29_060000_add_last_grade_to_applications_table ......... 1.56ms DONE
+  2026_10_31_000000_update_application_regulations_content ....... 7.98ms DONE
+  2026_10_31_010000_make_student_accounts_one_time .............. 11.98ms DONE
+  2026_10_31_020000_widen_student_numbers ........................ 3.48ms DONE
+  2026_11_01_000000_add_school_governorate_other_to_applications_table  1.85ms DONE
+  2026_11_02_000000_create_staff_permission_overrides_table ..... 11.02ms DONE
+  2026_11_02_010000_make_staff_email_the_sign_in_identifier ...... 6.83ms DONE
+  2026_11_02_020000_create_staff_invitations_table .............. 14.89ms DONE
+  2026_11_02_040000_create_staff_sessions_table ................. 15.70ms DONE
+  2026_11_03_000000_create_message_templates_table .............. 12.84ms DONE
+  2026_11_03_000000_remove_audit_and_operations_permissions ...... 1.91ms DONE
+  2026_11_03_010000_add_mother_grandfather_name_to_applications_table  2.46ms DONE
+  2026_11_04_000000_add_receipt_texts_to_content_pages .......... 15.82ms DONE
+  2026_11_04_000000_index_foreign_keys .......................... 25.49ms DONE
+
+
+   INFO  Seeding database.  
+
+  Database\Seeders\PerfSeeder ........................................ RUNNING  
+  Database\Seeders\ReferenceDataSeeder ............................... RUNNING  
+  Database\Seeders\ReferenceDataSeeder ........................... 145 ms DONE  
+
+  Database\Seeders\DocumentTypeSeeder ................................ RUNNING  
+  Database\Seeders\DocumentTypeSeeder ............................. 18 ms DONE  
+
+  Database\Seeders\ContentPageSeeder ................................. RUNNING  
+  Database\Seeders\ContentPageSeeder .............................. 26 ms DONE  
+
+  Database\Seeders\MessageTemplateSeeder ............................. RUNNING  
+  Database\Seeders\MessageTemplateSeeder ........................... 8 ms DONE  
+
+  Database\Seeders\DemoSeeder ........................................ RUNNING  
+  Database\Seeders\DemoSeeder .................................... 308 ms DONE  
+
+2000 synthetic students ready.
+Synthetic staff ready: 7 accounts.
+  Database\Seeders\PerfSeeder .................................... 995 ms DONE  
+
+[perf-release] seed: 2000 students in 3s
+
+[perf-release] Composer without dev packages, caches
+
+   INFO  Caching framework bootstrap, configuration, and metadata.  
+
+  config ........................................................ 13.87ms DONE
+  events ......................................................... 1.38ms DONE
+  routes ........................................................ 19.80ms DONE
+  views ......................................................... 23.10ms DONE
+
+
+[perf-release] k6 suite for the qe user
+
+[perf-release] Starting the perf session
+GET /up -> 200
+
+[perf-release] Done: perf runs 1bf5468 (app code of /srv/examis/releases/20261106142707), 2000 students

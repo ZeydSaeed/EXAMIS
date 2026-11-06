@@ -12,7 +12,9 @@
 | k6 guard (new) | 7 scripts × refused / allowed / heavy approval | 2026-11-06 | as expected | VERIFIED: `evidence/k6-guard-inspect.txt` |
 | k6 `smoke.js` on perf | 1 VU, 4 journeys | 2026-11-06 20:13 UTC, perf copy of `0f0de40` | 34/34 steps, 0 HTTP errors, integrity 0 | PASS: `evidence/perf/2026-11-06-smoke-02/` |
 | k6 `submission-flow.js` on perf | 5 VUs, racing submit | 2026-11-06 20:14 UTC | 55/55 steps, 0 HTTP errors, integrity 0 | PASS: `evidence/perf/2026-11-06-submit-05/` |
-| k6 `normal-load`, `registration-journey`, spike, stress, soak | — | not run | — | NOT RUN (next gates) |
+| k6 `submission-flow.js` on perf | 20 VUs, racing submit | 2026-11-06 20:55 UTC | 220/220 steps, 0 HTTP errors, integrity 0; p95 3.41 s (QE-003) | PASS (functional): `evidence/perf/2026-11-06-submit-20b/` |
+| k6 `normal-load.js` on perf | 5→10→20→50 VUs, 16.5 min | 2026-11-06 21:00 UTC | 6,506/6,506 steps, 0/7,437 HTTP errors, p95 40 ms, integrity 0 | PASS: `evidence/perf/2026-11-06-normal-50b/` |
+| k6 `registration-journey`, spike, stress, soak; normal-load above 50 | — | not run | — | NOT RUN |
 | Larastan level 7 | new seeder files | 2026-11-06 | 0 errors | VERIFIED (console) |
 | Pint, `vp check` (oxlint, oxfmt) | new PHP and JS files | 2026-11-06 | pass | VERIFIED (console) |
 | Semgrep, ZAP, testssl, axe | — | never | — | MISSING |

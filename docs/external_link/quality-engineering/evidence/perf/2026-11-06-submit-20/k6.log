@@ -1,0 +1,1 @@
+time="2026-11-06T20:54:46Z" level=error msg="Error: QE guard refused submission-flow: 20 VUs is above QE_MAX_VUS=5\n\tat assertVus (file:///srv/examis-perf/qe/load/lib/guard.js:143:15(18))\n\tat file:///srv/examis-perf/qe/load/submission-flow.js:12:22(30)\n" hint="script exception" source=stacktrace
