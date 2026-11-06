@@ -14,7 +14,7 @@ import {
     browsePublicPages,
     fillingStudent,
     submissionJourney,
-    supervisorJourney,
+    staffWorking,
 } from './lib/journeys.js';
 
 const HELPERS = 3;
@@ -91,7 +91,7 @@ export function fillingScenario() {
 }
 
 export function staffScenario() {
-    supervisorJourney(1, { review: false });
+    staffWorking(1);
 }
 
 export function submitScenario() {

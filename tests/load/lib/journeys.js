@@ -82,6 +82,9 @@ export function fillingStudent(n) {
 
         if (!state) {
             journeyComplete.add(false, { journey: 'filling' });
+            // A person waits before trying again; an instant retry would only
+            // hammer the sign-in rate limit.
+            think(5, 15);
 
             return false;
         }
@@ -108,6 +111,48 @@ export function fillingStudent(n) {
     journeyComplete.add(!!state, { journey: 'filling' });
 
     return !!state;
+}
+
+/**
+ * A staff member working the queue for a while: signs in once per VU and
+ * stays signed in (as people do), then lists, searches and opens with think
+ * time. Signs in again only after a failed step, and never at once.
+ */
+const staffSignedIn = {};
+
+export function staffWorking(i) {
+    if (!staffSignedIn[i]) {
+        freshDevice();
+
+        if (!staff.signIn(staff.staffEmail('supervisor', i))) {
+            journeyComplete.add(false, { journey: 'staff' });
+            think(15, 30);
+
+            return false;
+        }
+
+        staffSignedIn[i] = true;
+    }
+
+    think(5, 15);
+    const submitted = staff.queue('submitted');
+    let ok = submitted !== null;
+    think(5, 15);
+    ok = staff.search('900') && ok;
+
+    if (ok && submitted.length > 0) {
+        think(5, 15);
+        ok = staff.open(submitted[0]) !== null;
+    }
+
+    if (!ok) {
+        delete staffSignedIn[i];
+        think(15, 30);
+    }
+
+    journeyComplete.add(ok, { journey: 'staff' });
+
+    return ok;
 }
 
 /** A supervisor working the queue: list, search, open, take one into review. */
