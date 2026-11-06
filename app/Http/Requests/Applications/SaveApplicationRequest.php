@@ -72,8 +72,8 @@ class SaveApplicationRequest extends FormRequest
      * "Save and continue" sends its step: the required fields of that step
      * must then be filled, because the form has no way back to them.
      *
-     * @param  array<string, array<mixed>|string>  $rules
-     * @return array<string, array<mixed>|string>
+     * @param  array<string, array<mixed>>  $rules
+     * @return array<string, array<mixed>>
      */
     private function requireStep(array $rules): array
     {
