@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Applicant;
 use App\Actions\Applications\SubmitApplication;
 use App\Actions\Students\CloseStudentAccount;
 use App\Http\Controllers\Controller;
+use App\Jobs\WarmApplicationForm;
 use App\Models\Application;
 use App\Services\Receipts\ReceiptRenderer;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,7 @@ class ApplicationSubmissionController extends Controller
      * with the PDF remains (ADR-0010). The account stays open until the form
      * has been printed or downloaded.
      */
-    public function store(Request $request, Application $application, SubmitApplication $submitApplication, ReceiptRenderer $renderer): RedirectResponse
+    public function store(Request $request, Application $application, SubmitApplication $submitApplication): RedirectResponse
     {
         Gate::authorize('submit', $application);
 
@@ -30,7 +31,8 @@ class ApplicationSubmissionController extends Controller
 
         $application = $submitApplication->handle($application, $request->user());
 
-        $renderer->warm($application);
+        // Built on the queue: sending answers at once, even at a deadline rush.
+        WarmApplicationForm::dispatch($application->id, app()->getLocale());
 
         // The pages behind this one must not come back from the browser's history.
         Inertia::clearHistory();

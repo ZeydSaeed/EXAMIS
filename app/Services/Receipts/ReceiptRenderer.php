@@ -7,6 +7,8 @@ use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Services\ReferenceData;
 use App\Services\Students\StudentIdentity;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Config\ConfigVariables;
@@ -88,12 +90,27 @@ class ReceiptRenderer
             return $kept;
         }
 
-        $pdf = $this->render($application);
+        // The queued build after sending and the printed page's own request
+        // often ask at the same moment: one builds, the other waits for it.
+        try {
+            return Cache::lock('form-render:'.$application->uuid, 60)->block(30, function () use ($application, $disk, $directory, $path): string {
+                $kept = $disk->get($path);
 
-        $disk->deleteDirectory($directory);
-        $disk->put($path, $pdf);
+                if ($kept !== null) {
+                    return $kept;
+                }
 
-        return $pdf;
+                $pdf = $this->render($application);
+
+                $disk->deleteDirectory($directory);
+                $disk->put($path, $pdf);
+
+                return $pdf;
+            });
+        } catch (LockTimeoutException) {
+            // Never leave the student without the form: build it here.
+            return $this->render($application);
+        }
     }
 
     /**
@@ -326,7 +343,7 @@ class ReceiptRenderer
             return 'receipt-'.$application->reference_number;
         }
 
-        $number = $application->user?->student_number;
+        $number = $application->user->student_number;
 
         return $number === null ? $name : $name.'_'.$number;
     }
