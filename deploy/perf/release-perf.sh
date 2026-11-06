@@ -30,10 +30,12 @@ fail() { printf '[perf-release] ERROR: %s\n' "$*" >&2; exit 1; }
 [[ "$(id -u)" == "0" ]] || fail "run as root"
 [[ -f "$ETC/secrets" ]] || fail "run provision-perf.sh first"
 [[ "$STUDENTS" =~ ^[0-9]+$ && "$STUDENTS" -ge 1 && "$STUDENTS" -le 50000 ]] || fail "students must be 1-50000"
+# Listed once: "tar | grep -q" under pipefail fails when grep stops early.
+LISTING="$(tar -tzf "$OVERLAY")"
 FULL=no
-if tar -tzf "$OVERLAY" | grep -qE '^(\./)?public/build/manifest\.json$'; then
+if grep -qE '^(\./)?public/build/manifest\.json$' <<< "$LISTING"; then
     FULL=yes
-elif tar -tzf "$OVERLAY" | grep -vE '^(\./)?(database/|database/seeders/.*|tests/|tests/load/.*|pax_global_header)?$' | grep -q .; then
+elif grep -vE '^(\./)?(database/|database/seeders/.*|tests/|tests/load/.*|pax_global_header)?$' <<< "$LISTING" | grep -q .; then
     fail "the overlay may hold database/seeders and tests/load only"
 fi
 # shellcheck disable=SC1091
