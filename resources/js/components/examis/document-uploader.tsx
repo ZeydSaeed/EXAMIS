@@ -146,14 +146,6 @@ export function DocumentUploader({
                             {requirement.description}
                         </p>
                     )}
-                    {requirement.is_photo && (
-                        <p
-                            className="text-sm font-medium text-destructive"
-                            data-test="photo-note"
-                        >
-                            {t('documents.photo_note')}
-                        </p>
-                    )}
                     <p className="text-xs text-muted-foreground">
                         {t('documents.allowed', {
                             types: mimeTypes

@@ -339,7 +339,6 @@ return [
         'allowed' => 'Allowed types: :types — maximum size :size',
         'upload' => 'Upload file',
         'upload_photo' => 'Attach personal photo',
-        'photo_note' => 'Attach a clear official personal photo on a white background from your phone gallery. Snapshots taken directly with the phone camera are not accepted.',
         'replace' => 'Replace',
         'uploading' => 'Uploading',
         'checking' => 'Checking files…',
