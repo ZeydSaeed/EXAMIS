@@ -1,0 +1,85 @@
+# run: 2026-11-06T18:08:12+0300  k6 v2.2.0  baseline: 0f0de40 + uncommitted QE changes  offline: no HTTP request (threshold http_reqs count==0)
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate==1' rate=100.00%
+
+    http_reqs
+    ✓ 'count==0' count=0
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 51      8935.297931/s
+    checks_succeeded...: 100.00% 51 out of 51
+    checks_failed......: 0.00%   0 out of 51
+
+    ✓ guard accepts the loopback perf portals
+    ✓ guard refuses: production students portal
+    ✓ guard refuses: public staging portal
+    ✓ guard refuses: staging server address
+    ✓ guard refuses: private network address
+    ✓ guard refuses: localhost as a subdomain
+    ✓ guard refuses: localhost inside another domain
+    ✓ guard refuses: credentials in the URL
+    ✓ guard refuses: a path in the URL
+    ✓ guard refuses: one host for both portals
+    ✓ guard refuses: missing staff URL
+    ✓ guard refuses: production environment
+    ✓ guard refuses: staging environment
+    ✓ guard refuses: missing environment
+    ✓ guard refuses: missing run id
+    ✓ guard refuses: run id with spaces
+    ✓ guard refuses: old BASE_URL variable
+    ✓ guard refuses: old approval bypass
+    ✓ guard refuses: VU ceiling above 200
+    ✓ guard refuses: VU ceiling zero
+    ✓ guard refuses: VU ceiling not a number
+    ✓ refused: more VUs than QE_MAX_VUS
+    ✓ refused: a heavy test without the approval for this run
+    ✓ sign-in passes on the specialization page
+    ✓ sign-in fails when sent back to the code page
+    ✓ a step fails when the session expired (terms page)
+    ✓ a step fails on HTTP 500
+    ✓ a step fails on HTTP 419 (CSRF)
+    ✓ a step fails on HTTP 429
+    ✓ a step fails on a page without Inertia data
+    ✓ a step fails on a transport error
+    ✓ a step fails when the form came back with errors
+    ✓ a saved step passes with the next step, a new version and the answers
+    ✓ a save fails when the lock version did not move (not applied)
+    ✓ a save fails when the form stayed on the same step
+    ✓ a save fails when an answer reads back different (lost data)
+    ✓ an upload passes with a verified photo and nothing missing
+    ✓ an upload fails when the photo is not listed
+    ✓ an upload fails when the photo is still pending or rejected
+    ✓ a submission passes on this student's printed page
+    ✓ a submission fails on another student's printed page
+    ✓ a submission fails when the form came back instead
+    ✓ a refusal passes on the expected 404
+    ✓ a refusal fails when the page was served (IDOR leak)
+    ✓ a refusal fails on 403 where 404 is required (existence leak)
+    ✓ a permission check fails when the page was served
+    ✓ the form passes as a real PDF
+    ✓ the form fails as an HTML page with status 200
+    ✓ the form fails when the body is not a PDF
+    ✓ the form fails when the PDF is empty
+    ✓ the form fails on HTTP 403
+
+    HTTP
+    http_reqs............: 0   0/s
+
+    EXECUTION
+    iteration_duration...: avg=3.71ms min=3.71ms med=3.71ms max=3.71ms p(90)=3.71ms p(95)=3.71ms
+    iterations...........: 1   175.20192/s
+
+    NETWORK
+    data_received........: 0 B 0 B/s
+    data_sent............: 0 B 0 B/s
+
+
+
+k6 exit code: 0
+# finished: 2026-11-06T18:08:13+0300

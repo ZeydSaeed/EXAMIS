@@ -1,0 +1,21 @@
+# run: 2026-11-06T18:08:26+0300  k6 inspect (init stage only, no HTTP)  baseline: 0f0de40 + uncommitted QE changes
+## refused: production hosts students./staff.mahani-iq.com
+smoke exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+normal-load exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+submission-flow exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+registration-journey exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+spike exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+stress exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+soak exit=107 QE guard refused the run: STUDENTS_URL host [students.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+## refused: public staging hosts
+smoke exit=107 QE guard refused the run: STUDENTS_URL host [students-staging.mahani-iq.com] is not a loopback name on this machine; STAFF_URL host [staff-staging.mahani-iq.com] is not a loopback name on this machine\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
+## allowed loopback target; heavy scripts without / with QE_HEAVY_APPROVAL=QE_RUN_ID
+smoke without-approval exit=0 with-approval exit=0
+normal-load without-approval exit=0 with-approval exit=0
+submission-flow without-approval exit=0 with-approval exit=0
+registration-journey without-approval exit=0 with-approval exit=0
+spike without-approval exit=107 with-approval exit=0
+stress without-approval exit=107 with-approval exit=0
+soak without-approval exit=107 with-approval exit=0
+## refused: VU ceiling above 200
+normal-load exit=107 QE guard refused the run: QE_MAX_VUS must be an integer from 1 to 200\n\tat enforceTarget (file:///D:/Projects/External_Link/tests/load/lib/guard.js:119:15(19))\n\tat file:///D:/Projects/External_Link/tests/load/lib/common.js:18:36(61)\n
