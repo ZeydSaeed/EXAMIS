@@ -14,7 +14,8 @@
 | k6 `submission-flow.js` on perf | 5 VUs, racing submit | 2026-11-06 20:14 UTC | 55/55 steps, 0 HTTP errors, integrity 0 | PASS: `evidence/perf/2026-11-06-submit-05/` |
 | k6 `submission-flow.js` on perf | 20 VUs, racing submit | 2026-11-06 20:55 UTC | 220/220 steps, 0 HTTP errors, integrity 0; p95 3.41 s (QE-003) | PASS (functional): `evidence/perf/2026-11-06-submit-20b/` |
 | k6 `normal-load.js` on perf | 5→10→20→50 VUs, 16.5 min | 2026-11-06 21:00 UTC | 6,506/6,506 steps, 0/7,437 HTTP errors, p95 40 ms, integrity 0 | PASS: `evidence/perf/2026-11-06-normal-50b/` |
-| k6 `registration-journey`, spike, stress, soak; normal-load above 50 | — | not run | — | NOT RUN |
+| k6 `normal-load.js` on perf, release `b9a9096` | 5→100 VUs, 20.6 min | 2026-11-06 21:38 UTC | 13,857/13,857 steps, 0/15,535 HTTP errors, p95 39 ms, integrity 0 | PASS: `evidence/perf/2026-11-07-normal-100/` |
+| k6 `registration-journey`, spike, stress, soak; normal-load above 100 | — | not run | — | NOT RUN |
 | Larastan level 7 | new seeder files | 2026-11-06 | 0 errors | VERIFIED (console) |
 | Pint, `vp check` (oxlint, oxfmt) | new PHP and JS files | 2026-11-06 | pass | VERIFIED (console) |
 | Semgrep, ZAP, testssl, axe | — | never | — | MISSING |

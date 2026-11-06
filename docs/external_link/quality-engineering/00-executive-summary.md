@@ -36,4 +36,4 @@ The suite can now prove what it claims, cannot reach a forbidden target, and has
 
 ## Next gate
 
-G1 to G4 are done (2026-11-06). The perf copy runs on the server (`deploy/perf/`). Smoke and submission at 5 VUs PASS with integrity 0. Findings QE-002 (shared-device privacy) and QE-003 (PDF render inside submit) wait for the owner (`13-defect-remediation.md`). Next: G5, submission at 20 VUs, then normal-load in stages 8 → 20 → 50. See `15-implementation-roadmap.md`.
+G1 to G6 are done (2026-11-06/07). The perf copy runs on the server (`deploy/perf/`). Load up to 100 users PASSES: p95 39 ms, host CPU 27.5%, integrity 0. QE-002 (shared-device privacy) and QE-003 (PDF inside submit: 3.0 s → 0.26 s) are fixed and released to staging as `b9a9096`. Next: G7, 150/200 VUs, soak and spike (heavy runs, per-run approval). See `15-implementation-roadmap.md`.

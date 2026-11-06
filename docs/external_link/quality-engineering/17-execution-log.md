@@ -63,3 +63,27 @@ Per-stage resources (`normal-50b/resources.csv`, averages; vCPU = share of one c
 | 50 VUs | 12.4% | 0 | 6,631 MB | 0.31 | 0.06 | ~0.1 | 3 / 16 |
 
 The generator stayed far below its 1 vCPU cap, so the run is valid. The staging services used no measurable CPU.
+
+## 2026-11-07 (UTC 2026-11-06 21:20–22:00): QE-003, staging release, gate G6 (owner approved)
+
+| When (UTC) | Commit | Action | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| 21:10 | `e600f2a` | `git push` of both branches (owner ran the request) | pushed | — |
+| 21:25 | `a142687` | QE-003: `WarmApplicationForm` queued after commit, per-application lock in `ReceiptRenderer::cached`; Larastan fixes (`06910ce`) | Pest 540 (531 + 9 skipped), `composer types:check` 0 errors | console |
+| 21:33 | `df72817` | first candidate install on perf was labelled as the approved release: `tar \| grep -q` under pipefail. Fixed in `3404884` (the overlay check had the same hole) | run `2026-11-07-submit-20-after` kept, superseded | `evidence/perf/2026-11-07-submit-20-after/` |
+| 21:34:38 | `df72817` (candidate) | `submission-flow.js` 20 VUs, same data and settings as `2026-11-06-submit-20b` | **PASS** 220/220, integrity 0. Before → after: submit avg 3.02 → **0.26 s**, max 6.5 → 0.46 s; overall p95 3.41 → **0.44 s**; journey median 9.06 → 6.70 s; PHP + queue CPU 32.1 → **23.0 s (−28%)**; first PDF view 0.12 → 2.97 s (the build moved there) | `evidence/perf/2026-11-07-submit-20-after2/` |
+| 21:36 | `df72817` | `smoke.js` on the candidate | **PASS** 34/34, integrity 0 | `evidence/perf/2026-11-07-smoke-candidate/` |
+| 21:37 | `b9a9096` | staging release with `release.sh` (QE-002 + QE-003) | nothing to migrate, `/up` 200, current → `releases/20261106213754`, queue active | `status.md` |
+| 21:38:48 | `b9a9096` | perf rebuilt from the same package; `normal-load.js` 5→10→20→50→100 VUs (+1 staff, 2 submissions/min), 20.6 min (`2026-11-07-normal-100`) | **PASS** 13,857/13,857 steps, 3,820/3,820 journeys, 0/15,535 HTTP errors, 12.7 req/s; p95 39 ms (read 36, write 45, upload 65, pdf 580); submit avg 35 ms; integrity 0 | `evidence/perf/2026-11-07-normal-100/` |
+| 22:00 | — | perf stopped; staging active | — | console |
+| 22:01 | `b9a9096` | `git push` | pushed; CI result not readable here (`gh` not signed in) | — |
+
+| Stage | Host CPU | Steal | Min. available RAM | FPM busy (max of 16) | k6 | perf FPM | perf PostgreSQL (vCPU) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 | 4.7% | 0 | 6,713 MB | 2 | 0.03 | 0.07 | 0.01 |
+| 10 | 5.6% | 0 | 6,710 MB | 3 | 0.05 | 0.09 | 0.02 |
+| 20 | 8.3% | 0 | 6,689 MB | 4 | 0.09 | 0.15 | 0.03 |
+| 50 | 16.3% | 0 | 6,676 MB | 3 | 0.19 | 0.33 | 0.07 |
+| 100 | 27.5% | 0 | 6,656 MB | 3 | 0.35 | 0.58 | 0.11 |
+
+At 100 VUs the generator used 0.35 of its 1 vCPU cap, so the run is valid. Reported as "application + generator on one shared 4 vCPU host".
