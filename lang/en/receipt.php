@@ -115,7 +115,7 @@ return [
     // Test form for computer assembly and maintenance applicants, completed by the test committees.
     'pledge' => [
         'title' => 'Pledge',
-        'text' => 'I, the undersigned, pledge to submit my intermediate-school certificate after passing the preliminary examinations, and I bear all legal consequences of failing to do so.',
+        'text' => 'I, the undersigned, pledge to submit my intermediate-school certificate after passing the preliminary examinations, and I bear all legal consequences of failing to do so. In witness whereof, I have signed below.',
     ],
 
     'test_form' => [

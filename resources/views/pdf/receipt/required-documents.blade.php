@@ -1,7 +1,6 @@
-{{-- Page 4: the required documents, the folder colour of each branch and the stages of applying. --}}
-@include('pdf.receipt.page-head')
-
-<div class="section-title" style="margin-top: 5mm;">{{ $texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['title'] }}</div>
+{{-- Page 4: the required documents, the folder colour of each branch and the stages of applying.
+     No page head: the list starts at the top of the page. --}}
+<div class="section-title" style="margin-top: 0;">{{ $texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['title'] }}</div>
 
 <div class="documents">
     @foreach ($texts[\App\Services\Receipts\ReceiptTexts::DOCUMENTS]['paragraphs'] as $index => $item)
