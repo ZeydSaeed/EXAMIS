@@ -3,10 +3,14 @@
 # rebuild its synthetic database. Run as root after provision-perf.sh:
 #
 #   bash release-perf.sh /tmp/examis-perf-overlay-<sha>.tgz <sha> [students]
+#   bash release-perf.sh /tmp/examis-<sha>.tgz <sha> [students]
 #
-# The application is copied from /srv/examis/current (the approved release,
-# with its built assets). The overlay adds only database/seeders and
-# tests/load from <sha>; release-perf refuses an overlay with anything else.
+# With an overlay, the application is copied from /srv/examis/current (the
+# approved release, with its built assets) and the overlay adds only
+# database/seeders and tests/load from <sha>; anything else is refused.
+# With a full release tarball from deploy/staging/package.ps1 (it holds
+# public/build), perf runs that commit instead: a candidate is measured here
+# before it reaches staging.
 # The perf database is dropped and rebuilt every time: migrations, then
 # PerfSeeder (default 1,000 students), which refuses any database that
 # SyntheticTarget does not allow.
@@ -26,7 +30,10 @@ fail() { printf '[perf-release] ERROR: %s\n' "$*" >&2; exit 1; }
 [[ "$(id -u)" == "0" ]] || fail "run as root"
 [[ -f "$ETC/secrets" ]] || fail "run provision-perf.sh first"
 [[ "$STUDENTS" =~ ^[0-9]+$ && "$STUDENTS" -ge 1 && "$STUDENTS" -le 50000 ]] || fail "students must be 1-50000"
-if tar -tzf "$OVERLAY" | grep -vE '^(\./)?(database/|database/seeders/.*|tests/|tests/load/.*|pax_global_header)?$' | grep -q .; then
+FULL=no
+if tar -tzf "$OVERLAY" | grep -qE '^(\./)?public/build/manifest\.json$'; then
+    FULL=yes
+elif tar -tzf "$OVERLAY" | grep -vE '^(\./)?(database/|database/seeders/.*|tests/|tests/load/.*|pax_global_header)?$' | grep -q .; then
     fail "the overlay may hold database/seeders and tests/load only"
 fi
 # shellcheck disable=SC1091
@@ -37,10 +44,19 @@ as_perf() { runuser -u examisperf -- env HOME="$PERF" COMPOSER_HOME="$PERF/.comp
 log "Stopping the perf session"
 systemctl stop examis-perf.target examis-perf-fpm examis-perf-queue || true
 
-log "Copying the approved release $(readlink -f /srv/examis/current)"
 rm -rf "$APP.new"
-rsync -a --exclude=/storage --exclude=/.env --exclude=/bootstrap/cache/*.php /srv/examis/current/ "$APP.new/"
-tar -xzf "$OVERLAY" -C "$APP.new"
+if [[ "$FULL" == "yes" ]]; then
+    log "Unpacking the release candidate $SHA"
+    mkdir -p "$APP.new"
+    tar -xzf "$OVERLAY" -C "$APP.new"
+    rm -rf "$APP.new/storage"
+    SOURCE="candidate $SHA"
+else
+    log "Copying the approved release $(readlink -f /srv/examis/current)"
+    rsync -a --exclude=/storage --exclude=/.env --exclude=/bootstrap/cache/*.php /srv/examis/current/ "$APP.new/"
+    tar -xzf "$OVERLAY" -C "$APP.new"
+    SOURCE="app code of $(readlink -f /srv/examis/current)"
+fi
 # Staging's cached config would point at examis_staging: none may survive.
 rm -f "$APP.new"/bootstrap/cache/*.php
 ln -sfn "$PERF/storage" "$APP.new/storage"
@@ -152,4 +168,5 @@ curl -fsSk -o /dev/null -w 'GET /up -> %{http_code}\n' \
     --resolve students.perf.localhost:8443:127.0.0.1 https://students.perf.localhost:8443/up \
     || fail "perf health check failed"
 
-log "Done: perf runs $SHA (app code of $(readlink -f /srv/examis/current)), $STUDENTS students"
+printf '%s\n' "$SOURCE" > "$APP/.perf-source"
+log "Done: perf runs $SHA ($SOURCE), $STUDENTS students"
