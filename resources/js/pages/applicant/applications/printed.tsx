@@ -108,23 +108,20 @@ export default function PrintedApplication({
                         />
                         {t('applicant.printed_title')}
                     </h1>
-                    <p className="text-sm leading-relaxed">
-                        {t(
-                            isTouch
-                                ? 'applicant.printed_text_download'
-                                : 'applicant.printed_text',
-                        )}
+                    <p className="text-sm">
+                        {t('applicant.printed_form_number')} ({' '}
+                        <bdi
+                            dir="ltr"
+                            className="font-semibold"
+                            data-test="printed-form-number"
+                        >
+                            {studentNumber ?? '—'}
+                        </bdi>{' '}
+                        )
                     </p>
-                    <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                        <dt className="text-muted-foreground">
-                            {t('student.student_number')}
-                        </dt>
-                        <dd>
-                            <bdi dir="ltr" className="font-semibold">
-                                {studentNumber ?? '—'}
-                            </bdi>
-                        </dd>
-                    </dl>
+                    <p className="text-sm leading-relaxed">
+                        {t('applicant.printed_text')}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                         {!isTouch && (
                             <Button
