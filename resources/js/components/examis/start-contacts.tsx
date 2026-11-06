@@ -15,7 +15,7 @@ const contacts: Contact[] = [
     },
     {
         label: 'Technical and Administrative Support',
-        name: 'محمد عبد الباري عبود',
+        name: 'Muhamed Abd Al Bari',
         email: 'mumh159@gmail.com',
     },
 ];
