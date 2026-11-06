@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,9 @@ class EnsureAccountIsActive
         if ($user->isActive()) {
             $application = $user->applicationAwaitingPrint();
 
-            return $application === null || $request->routeIs('applications.receipt', 'applications.printed', 'applications.finish')
+            return $application === null
+                || $request->routeIs('applications.receipt', 'applications.printed', 'applications.finish')
+                || $this->opensAnotherStudent($request, $user)
                 ? $next($request)
                 : to_route('applications.printed', $application);
         }
@@ -50,5 +53,16 @@ class EnsureAccountIsActive
             $closed => 'start',
             default => 'apply.terms',
         })->with('status', $message);
+    }
+
+    /**
+     * Another student's QR link on a shared device: the QR controller signs the
+     * waiting student out, so the next student never sees their form. The
+     * waiting student still lands on the final page when they sign in again.
+     */
+    private function opensAnotherStudent(Request $request, User $user): bool
+    {
+        return $request->routeIs('student.qr')
+            && strtolower((string) $request->route('publicId')) !== $user->public_id;
     }
 }

@@ -149,6 +149,23 @@ test('until the print is finished nothing else can be reached, not even sign-out
     $this->assertAuthenticatedAs($student);
 });
 
+test('another student opening their QR link on the same device signs the waiting student out', function () {
+    [$student, $application] = printedStudent();
+    $next = User::factory()->student()->create();
+
+    // A shared device: the next student must never see the previous student's form.
+    $this->actingAs($student)
+        ->get(route('student.qr', $next->public_id))
+        ->assertRedirect(route('student.code', absolute: false));
+    $this->assertGuest();
+
+    // The waiting student's own link still leads only to their final page.
+    $this->actingAs($student)
+        ->get(route('student.qr', $student->public_id))
+        ->assertRedirect(route('applications.printed', $application));
+    expect($student->fresh()->isActive())->toBeTrue();
+});
+
 test('a closed account cannot sign in with its number, QR link or a remembered device', function () {
     [$student, $application] = printedStudent();
     finishPrinting($this, $student, $application);
