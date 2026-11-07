@@ -1,0 +1,1 @@
+{"tool":"pest","result":"passed","tests":548,"passed":548,"assertions":2313} (composer test:pgsql, 2026-11-07, after QE-006/QE-007); composer types:check 0 errors

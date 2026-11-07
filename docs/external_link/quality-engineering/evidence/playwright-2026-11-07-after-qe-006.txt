@@ -1,0 +1,118 @@
+
+ Dropping all tables .. 299.03ms DONE
+
+ INFO Preparing database. 
+
+ Creating migration table .. 16.57ms DONE
+
+ INFO Running migrations. 
+
+ 0001_01_01_000000_create_users_table .. 31.82ms DONE
+ 0001_01_01_000001_create_cache_table .. 12.50ms DONE
+ 0001_01_01_000002_create_jobs_table .. 23.65ms DONE
+ 2024_01_01_000000_create_passkeys_table .. 25.54ms DONE
+ 2025_08_14_170933_add_two_factor_columns_to_users_table .. 2.77ms DONE
+ 2026_10_14_163910_create_role_assignments_table .. 9.55ms DONE
+ 2026_10_14_163911_create_reference_items_table .. 7.20ms DONE
+ 2026_10_14_163913_create_exam_periods_table .. 30.71ms DONE
+ 2026_10_14_163916_create_applications_table .. 31.21ms DONE
+ 2026_10_14_163918_create_application_documents_table .. 29.29ms DONE
+ 2026_10_14_163920_create_application_events_table .. 25.08ms DONE
+ 2026_10_14_163923_create_content_pages_table .. 11.41ms DONE
+ 2026_10_14_163925_create_notifications_table .. 6.86ms DONE
+ 2026_10_14_194309_add_query_indexes_to_applications_table .. 3.75ms DONE
+ 2026_10_15_221303_add_status_form_fields_to_applications_table .. 4.68ms DONE
+ 2026_10_29_000000_add_student_identity_to_users_table .. 21.29ms DONE
+ 2026_10_29_010000_drop_unused_sign_in_columns .. 10.69ms DONE
+ 2026_10_29_020000_split_applicant_names .. 6.68ms DONE
+ 2026_10_29_030000_simplify_education_fields .. 1.87ms DONE
+ 2026_10_29_040000_add_birth_place_to_applications_table .. 1.37ms DONE
+ 2026_10_29_050000_allow_arabic_usernames .. 1.61ms DONE
+ 2026_10_29_060000_add_last_grade_to_applications_table .. 1.00ms DONE
+ 2026_10_31_000000_update_application_regulations_content .. 9.74ms DONE
+ 2026_10_31_010000_make_student_accounts_one_time .. 9.56ms DONE
+ 2026_10_31_020000_widen_student_numbers .. 3.29ms DONE
+ 2026_11_01_000000_add_school_governorate_other_to_applications_table .. 1.06ms DONE
+ 2026_11_02_000000_create_staff_permission_overrides_table .. 8.83ms DONE
+ 2026_11_02_010000_make_staff_email_the_sign_in_identifier .. 4.47ms DONE
+ 2026_11_02_020000_create_staff_invitations_table .. 10.79ms DONE
+ 2026_11_02_040000_create_staff_sessions_table .. 7.67ms DONE
+ 2026_11_03_000000_create_message_templates_table .. 8.06ms DONE
+ 2026_11_03_000000_remove_audit_and_operations_permissions .. 2.51ms DONE
+ 2026_11_03_010000_add_mother_grandfather_name_to_applications_table .. 1.03ms DONE
+ 2026_11_04_000000_add_receipt_texts_to_content_pages .. 14.22ms DONE
+ 2026_11_04_000000_index_foreign_keys .. 12.44ms DONE
+
+
+ INFO Seeding database. 
+
+ Database\Seeders\EndToEndSeeder .. RUNNING 
+ Database\Seeders\ReferenceDataSeeder .. RUNNING 
+ Database\Seeders\ReferenceDataSeeder .. 67 ms DONE 
+
+ Database\Seeders\DocumentTypeSeeder .. RUNNING 
+ Database\Seeders\DocumentTypeSeeder .. 13 ms DONE 
+
+ Database\Seeders\ContentPageSeeder .. RUNNING 
+ Database\Seeders\ContentPageSeeder .. 20 ms DONE 
+
+ Database\Seeders\MessageTemplateSeeder .. RUNNING 
+ Database\Seeders\MessageTemplateSeeder .. 7 ms DONE 
+
+ Database\Seeders\DemoSeeder .. RUNNING 
+ Database\Seeders\DemoSeeder .. 469 ms DONE 
+
+ Database\Seeders\EndToEndSeeder .. 587 ms DONE 
+
+
+Running 47 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\applicant-journey.spec.ts:13:5 › student journey › registers with a mobile number after accepting the terms (4.2s)
+  ok  2 [chromium] › tests\e2e\applicant-journey.spec.ts:21:5 › student journey › cannot register before accepting the terms (2.1s)
+  ok  3 [chromium] › tests\e2e\applicant-journey.spec.ts:27:5 › student journey › corrects, sends and prints an application, then the account closes (25.1s)
+  ok  4 [chromium] › tests\e2e\applicant-journey.spec.ts:49:5 › student journey › blocks a file type that the document does not allow (12.4s)
+  ok  5 [chromium] › tests\e2e\applicant-journey.spec.ts:70:5 › student journey › names the missing document before the review step (10.5s)
+  ok  6 [chromium] › tests\e2e\portals.spec.ts:13:9 › two portals › /admin does not exist on the student portal (466ms)
+  ok  7 [chromium] › tests\e2e\portals.spec.ts:13:9 › two portals › /admin/users does not exist on the student portal (447ms)
+  ok  8 [chromium] › tests\e2e\portals.spec.ts:13:9 › two portals › /staff/login does not exist on the student portal (1.4s)
+  ok  9 [chromium] › tests\e2e\portals.spec.ts:13:9 › two portals › /staff/invitation does not exist on the student portal (345ms)
+  ok 10 [chromium] › tests\e2e\portals.spec.ts:13:9 › two portals › /settings/security does not exist on the student portal (317ms)
+  ok 11 [chromium] › tests\e2e\portals.spec.ts:23:9 › two portals › /apply/terms does not exist on the staff portal (523ms)
+  ok 12 [chromium] › tests\e2e\portals.spec.ts:23:9 › two portals › /register does not exist on the staff portal (789ms)
+  ok 13 [chromium] › tests\e2e\portals.spec.ts:23:9 › two portals › /portal does not exist on the staff portal (542ms)
+  ok 14 [chromium] › tests\e2e\portals.spec.ts:23:9 › two portals › /track does not exist on the staff portal (835ms)
+  ok 15 [chromium] › tests\e2e\portals.spec.ts:30:5 › two portals › a signed-in student is a stranger to the staff portal (6.0s)
+  ok 16 [chromium] › tests\e2e\portals.spec.ts:54:5 › two portals › a student cookie replayed under the staff name opens nothing (6.0s)
+  ok 17 [chromium] › tests\e2e\portals.spec.ts:76:5 › two portals › signed-in staff are strangers to the student portal (4.2s)
+  ok 18 [chromium] › tests\e2e\portals.spec.ts:95:5 › two portals › the staff portal keeps out of search engines and service workers (1.3s)
+  ok 19 [chromium] › tests\e2e\portals.spec.ts:111:5 › two portals › neither portal links to the other (1.8s)
+  ok 20 [chromium] › tests\e2e\public-portal.spec.ts:3:1 › the home page is Arabic and right-to-left by default (1.3s)
+  ok 21 [chromium] › tests\e2e\public-portal.spec.ts:15:1 › managed content pages render as text (1.1s)
+  ok 22 [chromium] › tests\e2e\public-portal.spec.ts:22:1 › tracking with unknown details reveals nothing (7.6s)
+  ok 23 [chromium] › tests\e2e\public-portal.spec.ts:35:1 › the PWA manifest, service worker and offline page are served (2.8s)
+  ok 24 [chromium] › tests\e2e\public-portal.spec.ts:60:1 › shows the offline page for navigations when the network is down (7.9s)
+  ok 25 [chromium] › tests\e2e\responsive.spec.ts:19:5 › / fits a phone screen without horizontal scrolling (4.7s)
+  ok 26 [chromium] › tests\e2e\responsive.spec.ts:19:5 › /apply/terms fits a phone screen without horizontal scrolling (3.2s)
+  ok 27 [chromium] › tests\e2e\responsive.spec.ts:19:5 › /register fits a phone screen without horizontal scrolling (4.8s)
+  ok 28 [chromium] › tests\e2e\responsive.spec.ts:19:5 › /track fits a phone screen without horizontal scrolling (1.4s)
+  ok 29 [chromium] › tests\e2e\responsive.spec.ts:19:5 › /pages/instructions fits a phone screen without horizontal scrolling (1.3s)
+  ok 30 [chromium] › tests\e2e\responsive.spec.ts:27:1 › the application form fits a phone screen (11.1s)
+  ok 31 [chromium] › tests\e2e\review-workflow.spec.ts:5:1 › a supervisor reviews a student application and accepts it (45.7s)
+  ok 32 [chromium] › tests\e2e\review-workflow.spec.ts:36:1 › a reviewer cannot see the decision buttons (38.4s)
+  ok 33 [chromium] › tests\e2e\review-workflow.spec.ts:56:1 › the header arrows move back and forward through page history (7.7s)
+  ok 34 [chromium] › tests\e2e\review-workflow.spec.ts:72:1 › the applications list shows the agreed columns and decides in place (39.5s)
+  ok 35 [chromium] › tests\e2e\security.spec.ts:5:5 › security boundaries › another student gets 404 for an application URL (46.3s)
+  ok 36 [chromium] › tests\e2e\security.spec.ts:21:5 › security boundaries › guests are sent to the terms page (4.7s)
+  ok 37 [chromium] › tests\e2e\security.spec.ts:26:5 › security boundaries › private pages are not cacheable and carry a strict CSP (8.8s)
+  ok 38 [chromium] › tests\e2e\security.spec.ts:39:5 › security boundaries › the service worker never stores private pages (8.6s)
+  ok 39 [chromium] › tests\e2e\staff-onboarding.spec.ts:25:1 › an administrator activates and invites staff without any shared secret (29.7s)
+  ok 40 [chromium] › tests\e2e\staff-onboarding.spec.ts:79:1 › a student account cannot sign in on the staff portal (4.0s)
+  ok 41 [chromium] › tests\e2e\student-export.spec.ts:5:1 › a supervisor exports student information to Excel (37.2s)
+  ok 42 [mobile-chromium] › tests\e2e\responsive.spec.ts:19:5 › / fits a phone screen without horizontal scrolling (4.3s)
+  ok 43 [mobile-chromium] › tests\e2e\responsive.spec.ts:19:5 › /apply/terms fits a phone screen without horizontal scrolling (3.0s)
+  ok 44 [mobile-chromium] › tests\e2e\responsive.spec.ts:19:5 › /register fits a phone screen without horizontal scrolling (2.8s)
+  ok 45 [mobile-chromium] › tests\e2e\responsive.spec.ts:19:5 › /track fits a phone screen without horizontal scrolling (1.3s)
+  ok 46 [mobile-chromium] › tests\e2e\responsive.spec.ts:19:5 › /pages/instructions fits a phone screen without horizontal scrolling (1.4s)
+  ok 47 [mobile-chromium] › tests\e2e\responsive.spec.ts:27:1 › the application form fits a phone screen (8.0s)
+
+  47 passed (7.3m)

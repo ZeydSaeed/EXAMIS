@@ -1,0 +1,12 @@
+# npm audit report
+
+@babel/core  8.0.0-alpha.0 - 8.0.0-rc.4
+@babel/core: Arbitrary File Read via sourceMappingURL Comment - https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
+fix available via `npm audit fix`
+node_modules/@babel/core
+
+1 low severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+exit=1
