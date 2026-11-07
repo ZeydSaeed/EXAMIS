@@ -1,8 +1,6 @@
 <?php
 
 use App\Enums\Portal;
-use App\Http\Controllers\Public\LivenessController;
-use App\Http\Controllers\Public\ReadinessController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,12 +9,10 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | A route answers on its own portal's host and is a 404 on the other. Only
-| the health checks answer everywhere.
+| the health checks answer everywhere (bootstrap/app.php, outside the web
+| group).
 |
 */
-
-Route::get('up', LivenessController::class)->name('health.live');
-Route::get('health/ready', ReadinessController::class)->name('health.ready');
 
 Route::domain(Portal::Students->routeDomain())->group(base_path('routes/students.php'));
 

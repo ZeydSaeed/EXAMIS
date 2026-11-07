@@ -44,6 +44,8 @@ return [
     'security' => [
         'content_security_policy' => (bool) env('EXAMIS_CSP_ENABLED', true),
         'hsts' => (bool) env('EXAMIS_HSTS_ENABLED', env('APP_ENV') === 'production'),
+        // Start low on a new host (300, then a day) and raise to a year.
+        'hsts_max_age' => (int) env('EXAMIS_HSTS_MAX_AGE', 31536000),
         // Raise only on an isolated load-test environment (k6 runs from one IP).
         'login_attempts_per_ip_per_hour' => (int) env('EXAMIS_LOGIN_ATTEMPTS_PER_IP_PER_HOUR', 100),
     ],
