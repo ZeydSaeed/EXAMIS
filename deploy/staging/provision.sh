@@ -71,7 +71,9 @@ apt-get update -q
 apt-get upgrade -yq
 apt-get install -yq software-properties-common ca-certificates curl unzip git \
     ufw fail2ban unattended-upgrades apache2-utils \
-    nginx redis-server postgresql postgresql-contrib
+    nginx redis-server postgresql postgresql-contrib clamav-daemon clamav-freshclam
+# Upload scanning (DOCUMENT_SCANNER=clamav): signatures update via freshclam.
+systemctl enable --now clamav-freshclam clamav-daemon
 add-apt-repository -y ppa:ondrej/php
 apt-get update -q
 apt-get install -yq "php${PHP}-fpm" "php${PHP}-cli" "php${PHP}-pgsql" "php${PHP}-redis" \

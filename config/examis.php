@@ -105,7 +105,8 @@ return [
     |
     | `disk` must be private (never the `public` disk). `scanner` selects the
     | malware/structure scanner: "structural" performs signature and active
-    | content checks only and is NOT a substitute for an antivirus engine.
+    | content checks only and is NOT a substitute for an antivirus engine;
+    | "clamav" runs the same checks and then the ClamAV daemon (production).
     | `scan_inline` runs the scan during the upload, so the student never
     | waits on a queue worker. Turn it off for a slow scanner such as an
     | antivirus, which then runs on the `queue` below.
@@ -116,6 +117,11 @@ return [
         'disk' => env('DOCUMENTS_DISK', 'documents'),
         'scanner' => env('DOCUMENT_SCANNER', 'structural'),
         'scan_inline' => (bool) env('DOCUMENT_SCAN_INLINE', true),
+        // Used when `scanner` is "clamav": the clamd socket (unix:// or tcp://).
+        'clamav' => [
+            'socket' => env('CLAMAV_SOCKET', 'unix:///run/clamav/clamd.ctl'),
+            'timeout' => (int) env('CLAMAV_TIMEOUT', 30),
+        ],
         // Keep each generated form on the private disk until its data changes.
         'form_cache' => (bool) env('EXAMIS_FORM_CACHE', true),
         'queue' => env('DOCUMENTS_QUEUE', 'documents'),

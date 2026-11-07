@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Auth\AccountTypeUserProvider;
 use App\Enums\Permission;
 use App\Models\User;
+use App\Services\Documents\ClamAvDocumentScanner;
+use App\Services\Documents\Clamd;
 use App\Services\Documents\DocumentScanner;
 use App\Services\Documents\StructuralDocumentScanner;
 use App\Services\ReferenceData;
@@ -32,8 +34,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(ReferenceData::class);
 
         $this->app->bind(DocumentScanner::class, function (): DocumentScanner {
+            $structural = new StructuralDocumentScanner((int) config('examis.documents.max_image_pixels'));
+
             return match (config('examis.documents.scanner')) {
-                'structural' => new StructuralDocumentScanner((int) config('examis.documents.max_image_pixels')),
+                'structural' => $structural,
+                'clamav' => new ClamAvDocumentScanner($structural, new Clamd(
+                    (string) config('examis.documents.clamav.socket'),
+                    (int) config('examis.documents.clamav.timeout'),
+                )),
                 default => throw new InvalidArgumentException('Unknown document scanner ['.config('examis.documents.scanner').'].'),
             };
         });
