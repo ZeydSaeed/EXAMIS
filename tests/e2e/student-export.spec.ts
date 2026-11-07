@@ -18,7 +18,10 @@ test('a supervisor exports student information to Excel', async ({
     await expect(
         staffPage.getByRole('columnheader', { name: 'اسم جد الأم' }),
     ).toBeVisible();
-    await expect(staffPage.getByRole('cell', { name: 'جواد' })).toBeVisible();
+    // Earlier specs send applications with the same answers.
+    await expect(
+        staffPage.getByRole('cell', { name: 'جواد', exact: true }).first(),
+    ).toBeVisible();
 
     // A range with no applications empties the list, and can still be left.
     await staffPage.getByLabel('من تاريخ').fill('2000-01-01');
