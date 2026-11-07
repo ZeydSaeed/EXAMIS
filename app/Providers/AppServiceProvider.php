@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use InvalidArgumentException;
@@ -46,6 +47,17 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAuthorization();
         $this->configureRateLimiting();
+        $this->configureRouteKeys();
+    }
+
+    /**
+     * Applications and documents are found by UUID columns: anything else in
+     * the path is a 404 before it reaches PostgreSQL, which would refuse it.
+     */
+    protected function configureRouteKeys(): void
+    {
+        Route::pattern('application', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}');
+        Route::pattern('document', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}');
     }
 
     /**
