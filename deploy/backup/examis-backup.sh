@@ -13,12 +13,15 @@ set -euo pipefail
 umask 077
 
 KIND="${1:?usage: examis-backup.sh 6h|daily}"
-ROOT=/var/backups/examis
-RECIPIENTS=/etc/examis-backup/recipients.txt
+# The overrides are for a trial run before installation (no pull group, no
+# off-server copy, another directory).
+ROOT="${EXAMIS_BACKUP_ROOT:-/var/backups/examis}"
+RECIPIENTS="${EXAMIS_BACKUP_RECIPIENTS:-/etc/examis-backup/recipients.txt}"
 SHARED=/srv/examis/shared
 ALLOWED_DATABASES=(examis_staging)
-PULL_GROUP=examis-pull
-RCLONE_CONFIG=/root/.config/rclone/rclone.conf
+PULL_GROUP="${EXAMIS_BACKUP_PULL_GROUP-examis-pull}"
+RCLONE_CONFIG="${EXAMIS_BACKUP_RCLONE_CONFIG:-/root/.config/rclone/rclone.conf}"
+OFFSITE="examis-offsite:examis-staging-backups"
 
 log() { printf '[backup %s] %s\n' "$KIND" "$*"; }
 fail() { printf '[backup %s] ERROR: %s\n' "$KIND" "$*" >&2; exit 1; }
@@ -37,20 +40,23 @@ OUT="$ROOT/$KIND/$STAMP"
 mkdir -p "$OUT"
 # The owner's computer pulls daily sets as examis-pull: it may enter these
 # directories and read the encrypted files, nothing else.
-chgrp "$PULL_GROUP" "$ROOT" "$ROOT/$KIND" && chmod 750 "$ROOT" "$ROOT/$KIND"
+[[ -z "$PULL_GROUP" ]] || { chgrp "$PULL_GROUP" "$ROOT" "$ROOT/$KIND" && chmod 750 "$ROOT" "$ROOT/$KIND"; }
 encrypt() { age --encrypt --recipients-file "$RECIPIENTS" --output "$1"; }
 
 log "Database $DB"
 # pg_restore --list reads the dump on its way to age: a dump whose header and
 # table of contents it cannot read fails the backup, without a plain copy on
 # disk. tee -p keeps going when pg_restore stops reading early.
+mkfifo "$OUT/.dump-fifo"
+runuser -u postgres -- pg_restore --list < "$OUT/.dump-fifo" > "$OUT/.toc" 2>/dev/null &
+LIST_PID=$!
 runuser -u postgres -- pg_dump --format=custom --no-owner --dbname="$DB" \
-    | tee -p >(runuser -u postgres -- pg_restore --list > "$OUT/.toc" 2>/dev/null || : > "$OUT/.toc-failed") \
+    | tee -p "$OUT/.dump-fifo" \
     | encrypt "$OUT/database.dump.age"
-wait $! 2>/dev/null || true
-[[ ! -e "$OUT/.toc-failed" && -s "$OUT/.toc" ]] || fail "pg_restore could not read the dump"
+wait "$LIST_PID" || fail "pg_restore could not read the dump"
+[[ -s "$OUT/.toc" ]] || fail "pg_restore listed nothing"
 grep -c ' TABLE DATA ' "$OUT/.toc" > "$OUT/table-data-entries.txt"
-rm -f "$OUT/.toc"
+rm -f "$OUT/.toc" "$OUT/.dump-fifo"
 runuser -u postgres -- psql --dbname="$DB" -AtF' ' -c "
     select format('%s %s', t.relname, (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from %I.%I', n.nspname, t.relname), false, true, '')))[1]::text)
     from pg_class t join pg_namespace n on n.oid = t.relnamespace
@@ -67,7 +73,7 @@ if [[ "$KIND" == daily ]]; then
 fi
 
 (cd "$OUT" && sha256sum -- * > SHA256SUMS)
-chgrp -R "$PULL_GROUP" "$OUT" && chmod 750 "$OUT" && chmod 640 "$OUT"/*
+if [[ -n "$PULL_GROUP" ]]; then chgrp -R "$PULL_GROUP" "$OUT" && chmod 750 "$OUT" && chmod 640 "$OUT"/*; fi
 printf '%s %s %s\n' "$STAMP" "$KIND" "$(du -sb "$OUT" | cut -f1)" > "$ROOT/last-$KIND"
 
 if [[ "$KIND" == daily && "$(date -u +%u)" == 7 ]]; then
@@ -75,18 +81,23 @@ if [[ "$KIND" == daily && "$(date -u +%u)" == 7 ]]; then
     mkdir -p "$ROOT/weekly" && cp -al "$OUT" "$ROOT/weekly/$STAMP"
 fi
 
+log "Retention"
+prune() { find "$ROOT/$1" -mindepth 1 -maxdepth 1 -type d | sort | head -n -"$2" | xargs -r rm -rf --; }
+[[ -d "$ROOT/6h" ]] && find "$ROOT/6h" -mindepth 1 -maxdepth 1 -type d -mmin +$((48 * 60)) -exec rm -rf -- {} +
+[[ -d "$ROOT/daily" ]] && prune daily 7
+[[ -d "$ROOT/weekly" ]] && prune weekly 4
+
+# Off-server last, after the local set is complete and pruned. The whole kind
+# directory is copied, so sets missed during an outage go up with the next
+# run; --immutable never rewrites an object already there. A failure fails the
+# unit (visible in systemctl --failed) but keeps the local set.
 if [[ -s "$RCLONE_CONFIG" ]] && rclone --config "$RCLONE_CONFIG" listremotes | grep -qx 'examis-offsite:'; then
     log "Off-server copy"
-    rclone --config "$RCLONE_CONFIG" copy --immutable "$OUT" "examis-offsite:$KIND/$STAMP"
+    rclone --config "$RCLONE_CONFIG" copy --immutable --retries 5 --low-level-retries 10 \
+        "$ROOT/$KIND" "$OFFSITE/$KIND" || fail "off-server copy failed; the local set $OUT is kept"
     printf '%s\n' "$STAMP" > "$ROOT/last-offsite-$KIND"
 else
     log "No off-server remote configured: kept on this server only"
 fi
-
-log "Retention"
-prune() { find "$ROOT/$1" -mindepth 1 -maxdepth 1 -type d | sort | head -n -"$2" | xargs -r rm -rf --; }
-find "$ROOT/6h" -mindepth 1 -maxdepth 1 -type d -mmin +$((48 * 60)) -exec rm -rf -- {} +
-prune daily 7
-[[ -d "$ROOT/weekly" ]] && prune weekly 4
 
 log "Done: $OUT ($(du -sh "$OUT" | cut -f1))"
