@@ -166,8 +166,8 @@ chown -R qe:qe "$PERF/qe/load"
 log "Starting the perf session"
 systemctl start examis-perf.target
 sleep 2
-curl -fsSk -o /dev/null -w 'GET /up -> %{http_code}\n' \
-    --resolve students.perf.localhost:8443:127.0.0.1 https://students.perf.localhost:8443/up \
+curl -fsSk -o /dev/null -w 'GET /health/ready -> %{http_code}\n' \
+    --resolve students.perf.localhost:8443:127.0.0.1 https://students.perf.localhost:8443/health/ready \
     || fail "perf health check failed"
 
 printf '%s\n' "$SOURCE" > "$APP/.perf-source"

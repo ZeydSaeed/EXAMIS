@@ -88,11 +88,12 @@ sudo /usr/bin/systemctl restart examis-queue-fallback.service
 
 log "Health check"
 sleep 2
-# Over HTTPS on this server: /up needs no password from 127.0.0.1. The origin
-# certificate is signed by Cloudflare's own CA, so curl cannot verify it here.
+# Over HTTPS on this server. Readiness also checks the database, cache and
+# storage. The origin certificate is signed by Cloudflare's own CA, so curl
+# cannot verify it here.
 HOST="$(grep '^EXAMIS_STUDENTS_HOST=' "$SHARED/.env" | cut -d= -f2)"
-curl -fsSk -o /dev/null -w 'GET /up -> %{http_code}\n' \
-    --resolve "${HOST}:443:127.0.0.1" "https://${HOST}/up" \
+curl -fsSk -o /dev/null -w 'GET /health/ready -> %{http_code}\n' \
+    --resolve "${HOST}:443:127.0.0.1" "https://${HOST}/health/ready" \
     || fail "health check failed; previous releases are in $APP_ROOT/releases"
 
 log "Keeping the last $KEEP releases"

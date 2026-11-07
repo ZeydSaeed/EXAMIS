@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Portal;
+use App\Http\Controllers\Public\LivenessController;
 use App\Http\Controllers\Public\ReadinessController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('up', LivenessController::class)->name('health.live');
 Route::get('health/ready', ReadinessController::class)->name('health.ready');
 
 Route::domain(Portal::Students->routeDomain())->group(base_path('routes/students.php'));

@@ -120,6 +120,16 @@ it('reports readiness without revealing dependency details', function () {
         ->assertExactJson(['status' => 'ready']);
 });
 
+it('answers liveness with a status only, without a page or third-party script', function () {
+    $response = $this->get('/up');
+
+    $response->assertOk()
+        ->assertExactJson(['status' => 'up'])
+        ->assertHeader('X-Content-Type-Options', 'nosniff');
+    expect($response->headers->get('Cache-Control'))->toContain('no-store')
+        ->and($response->getContent())->not->toContain('<script');
+});
+
 it('never shares the full user model with the browser', function () {
     $user = applicant();
 
