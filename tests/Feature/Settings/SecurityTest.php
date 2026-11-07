@@ -53,6 +53,12 @@ test('correct password must be provided to update password', function () {
         ->assertRedirect(route('security.edit'));
 });
 
+test('other staff are refused before being asked for their password', function () {
+    $this->actingAs(staffWith(Role::Reviewer))
+        ->get(route('security.edit'))
+        ->assertForbidden();
+});
+
 test('only administrators change their own password', function () {
     $staff = staffWith(Role::Reviewer);
 

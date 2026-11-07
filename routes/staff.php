@@ -114,7 +114,7 @@ Route::middleware('auth:staff')->group(function () {
 
     // Administrators set everyone else's password; only they change their own.
     Route::get('settings/security', [SecurityController::class, 'edit'])
-        ->middleware([RequirePassword::class, 'can:users.manage'])
+        ->middleware(['can:users.manage', RequirePassword::class])
         ->name('security.edit');
 
     Route::put('settings/password', [SecurityController::class, 'update'])
