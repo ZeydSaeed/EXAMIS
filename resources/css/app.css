@@ -175,8 +175,8 @@
      * container keeps that alignment, and alignment utilities still win.
      */
     :where(p, li, dd, blockquote, figcaption):not(
-            :where([class*='text-center'], [class*='text-end']) *
-        ) {
+        :where([class*='text-center'], [class*='text-end']) *
+    ) {
         text-align: justify;
     }
 

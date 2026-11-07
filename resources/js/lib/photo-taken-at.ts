@@ -16,7 +16,10 @@ export async function photoTakenAt(file: File): Promise<Date | null> {
         const marker = view.getUint16(offset);
         const length = view.getUint16(offset + 2);
 
-        if (marker === 0xffe1 && readAscii(view, offset + 4, 6) === 'Exif\0\0') {
+        if (
+            marker === 0xffe1 &&
+            readAscii(view, offset + 4, 6) === 'Exif\0\0'
+        ) {
             return readExifDate(view, offset + 10);
         }
 

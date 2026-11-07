@@ -1,11 +1,6 @@
 import { Head, Link, router, useForm, usePoll } from '@inertiajs/react';
-import {
-    AlertTriangle,
-    Pencil,
-    Printer,
-    RefreshCw,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Pencil, Printer, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';

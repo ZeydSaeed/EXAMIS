@@ -13,16 +13,16 @@ Status labels used in this folder: **VERIFIED** (checked, evidence named), **EXI
 
 ## What was done in this phase
 
-| Item | Result | Evidence |
-| --- | --- | --- |
-| Approved version | `0f0de40`, the last release recorded as approved and deployed; equal to `origin` on both working branches | `01-approved-version-baseline.md` |
-| Student and staff flows | Re-read from the code of `0f0de40`, route by route | `03-student-and-staff-flows.md` |
-| k6 suite | 6 of 7 scripts were incompatible with the current sign-in and form; all 7 rebuilt with strict checks | `05-k6-correction-plan.md` |
-| False-success proof | 51/51 offline checks PASS, 0 HTTP requests | `evidence/k6-selftest.txt` |
-| Guard | Central allow-list guard for data (`SyntheticTarget`) and for k6 targets (`lib/guard.js`); all 7 scripts refuse production and staging hosts before any request | `evidence/k6-guard-inspect.txt`, `evidence/pest-quality-engineering.txt` |
-| Synthetic data | `PerfSeeder` (100 to 50,000 students, staff) matching the current auth model | `07-synthetic-data-strategy.md` |
-| Contract test | The k6 journey replayed through Laravel with the same accounts and answers: 34/34 PASS | `evidence/pest-quality-engineering.txt` |
-| Regression | Full Pest suite 537 tests on SQLite: 528 PASS, 9 skipped (PostgreSQL-only), 0 failed; on PostgreSQL `examis_testing` (marked synthetic): 537/537 PASS, 2,293 assertions | `evidence/pest-full-suite.txt`, `evidence/pest-full-suite-pgsql.txt` |
+| Item                    | Result                                                                                                                                                                  | Evidence                                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Approved version        | `0f0de40`, the last release recorded as approved and deployed; equal to `origin` on both working branches                                                               | `01-approved-version-baseline.md`                                        |
+| Student and staff flows | Re-read from the code of `0f0de40`, route by route                                                                                                                      | `03-student-and-staff-flows.md`                                          |
+| k6 suite                | 6 of 7 scripts were incompatible with the current sign-in and form; all 7 rebuilt with strict checks                                                                    | `05-k6-correction-plan.md`                                               |
+| False-success proof     | 51/51 offline checks PASS, 0 HTTP requests                                                                                                                              | `evidence/k6-selftest.txt`                                               |
+| Guard                   | Central allow-list guard for data (`SyntheticTarget`) and for k6 targets (`lib/guard.js`); all 7 scripts refuse production and staging hosts before any request         | `evidence/k6-guard-inspect.txt`, `evidence/pest-quality-engineering.txt` |
+| Synthetic data          | `PerfSeeder` (100 to 50,000 students, staff) matching the current auth model                                                                                            | `07-synthetic-data-strategy.md`                                          |
+| Contract test           | The k6 journey replayed through Laravel with the same accounts and answers: 34/34 PASS                                                                                  | `evidence/pest-quality-engineering.txt`                                  |
+| Regression              | Full Pest suite 537 tests on SQLite: 528 PASS, 9 skipped (PostgreSQL-only), 0 failed; on PostgreSQL `examis_testing` (marked synthetic): 537/537 PASS, 2,293 assertions | `evidence/pest-full-suite.txt`, `evidence/pest-full-suite-pgsql.txt`     |
 
 ## What was not done (and why)
 

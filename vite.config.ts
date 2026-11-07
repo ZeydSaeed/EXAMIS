@@ -77,6 +77,7 @@ export default defineConfig({
             '.github/**',
             'storage/**',
             'composer.json',
+            'docs/external_link/quality-engineering/evidence/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],

@@ -2,15 +2,15 @@
 
 An isolated copy of the approved staging release, used only for k6 runs. It lives on the same server as staging (`examis-staging-1`), costs nothing extra, and is reachable only on `127.0.0.1:8443`. Design and decisions: `docs/external_link/quality-engineering/08-single-server-architecture.md`.
 
-| Part | Perf | Staging (unchanged) |
-| --- | --- | --- |
-| Names | `students.perf.localhost`, `staff.perf.localhost` on 127.0.0.1:8443 | public portals via Cloudflare |
-| Code | copy of `/srv/examis/current` + `database/seeders`, `tests/load` from the given commit | `/srv/examis/current` |
-| PHP-FPM | own master `examis-perf-fpm`, static 16, user `examisperf` | `php8.4-fpm`, pool `examis` |
-| PostgreSQL | cluster `16/perf` on 127.0.0.1:5433, `examis_perf` (marked `external_link:synthetic`), `pg_stat_statements` | cluster `16/main`, `examis_staging` |
-| Redis | `examis-perf-redis` on 127.0.0.1:6380, no persistence | `redis-server` on 6379 |
-| Client address | `X-QE-Client-IP` from k6 (loopback vhost only) | Cloudflare `CF-Connecting-IP` |
-| Running | only during a session (`examis-perf.target`, not at boot) | always |
+| Part           | Perf                                                                                                        | Staging (unchanged)                 |
+| -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Names          | `students.perf.localhost`, `staff.perf.localhost` on 127.0.0.1:8443                                         | public portals via Cloudflare       |
+| Code           | copy of `/srv/examis/current` + `database/seeders`, `tests/load` from the given commit                      | `/srv/examis/current`               |
+| PHP-FPM        | own master `examis-perf-fpm`, static 16, user `examisperf`                                                  | `php8.4-fpm`, pool `examis`         |
+| PostgreSQL     | cluster `16/perf` on 127.0.0.1:5433, `examis_perf` (marked `external_link:synthetic`), `pg_stat_statements` | cluster `16/main`, `examis_staging` |
+| Redis          | `examis-perf-redis` on 127.0.0.1:6380, no persistence                                                       | `redis-server` on 6379              |
+| Client address | `X-QE-Client-IP` from k6 (loopback vhost only)                                                              | Cloudflare `CF-Connecting-IP`       |
+| Running        | only during a session (`examis-perf.target`, not at boot)                                                   | always                              |
 
 The settings that differ from staging: PostgreSQL `shared_buffers` is 512 MB rather than 1 GB, `max_connections` is 40 rather than 50, and only perf loads `pg_stat_statements`. Every result is recorded with these differences.
 
@@ -32,6 +32,7 @@ systemctl stop examis-perf.target                                    # end of se
 ```
 
 Rules:
+
 - One heavy tool at a time.
 - `examis-qe-run` caps k6 at 1 vCPU and 1.5 GB.
 - It samples every component's CPU and memory into `resources.csv`.

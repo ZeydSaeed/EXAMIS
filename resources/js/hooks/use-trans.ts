@@ -38,12 +38,8 @@ export function useTrans() {
 
             // One pass over whole placeholder names, so `:to` never eats the
             // start of `:total`.
-            return text.replace(
-                /:([A-Za-z_]+)/g,
-                (placeholder, name: string) =>
-                    name in replacements
-                        ? String(replacements[name])
-                        : placeholder,
+            return text.replace(/:([A-Za-z_]+)/g, (placeholder, name: string) =>
+                name in replacements ? String(replacements[name]) : placeholder,
             );
         },
         [translations],

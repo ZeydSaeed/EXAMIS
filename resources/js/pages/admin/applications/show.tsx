@@ -22,7 +22,6 @@ import { useTrans } from '@/hooks/use-trans';
 import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import admin from '@/routes/admin';
-import applications from '@/routes/applications';
 import type { Application, ApplicationStatus } from '@/types';
 
 type Props = {
