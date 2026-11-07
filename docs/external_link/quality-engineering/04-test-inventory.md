@@ -6,7 +6,6 @@
 | Pest `tests/Feature/QualityEngineering` (new) | 34 tests, 355 assertions | same | 34 passed | VERIFIED: `evidence/pest-quality-engineering.txt` |
 | Pest on PostgreSQL (`composer test:pgsql`) | 537 tests incl. concurrency and the QE self-target test | 2026-11-06 21:50, workstation, PostgreSQL `examis_testing` (marked synthetic, D4) | 537 passed, 2,293 assertions, 0 skipped (≈ 133 s) | VERIFIED: `evidence/pest-full-suite-pgsql.txt` |
 | `tests/Concurrency` (real PostgreSQL connections) | `StaffRaceTest` (4 tests) | 2026-11-06 21:55, PostgreSQL `examis_testing` | 4 passed, 7 assertions | VERIFIED: `evidence/pest-concurrency-pgsql.txt` |
-| Playwright `tests/e2e` | 8 specs, about 30 tests (Chromium, mobile Chromium) | not run in this phase | — | EXISTS BUT NOT VERIFIED; uses PostgreSQL `examis_testing` |
 | CI (`.github/workflows/tests.yml`) | quality, Pest on PG18, Playwright, gitleaks | history not readable (`gh` not signed in) | — | UNKNOWN; the `e2e` job now gets a PostgreSQL 18 service like the `pgsql` job (2026-11-06), not yet run in CI |
 | k6 self-test (new, offline) | 51 checks, 0 HTTP | 2026-11-06 | 51/51 | VERIFIED: `evidence/k6-selftest.txt` |
 | k6 guard (new) | 7 scripts × refused / allowed / heavy approval | 2026-11-06 | as expected | VERIFIED: `evidence/k6-guard-inspect.txt` |
@@ -21,7 +20,14 @@
 | k6 `registration-journey` | — | not run | — | NOT RUN |
 | Larastan level 7 | new seeder files | 2026-11-06 | 0 errors | VERIFIED (console) |
 | Pint, `vp check` (oxlint, oxfmt) | new PHP and JS files | 2026-11-06 | pass | VERIFIED (console) |
-| Semgrep, ZAP, testssl, axe | — | never | — | MISSING |
+| Semgrep CE 1.184 (`p/php`, `p/javascript`, `p/typescript`, `p/react`, `p/secrets`, `p/owasp-top-ten`; metrics off) | 147 rules, 383 files | 2026-11-07, workstation | 5 findings, all reviewed as not defects (`13-…`) | VERIFIED: `evidence/security/semgrep-2026-11-07.json` |
+| `composer audit`, `npm audit` | locked dependencies | 2026-11-07, workstation | Symfony advisories fixed (QE-008); dev tooling deferred (QE-009) | VERIFIED: `evidence/security/*-audit-2026-11-07.txt` |
+| Playwright `tests/e2e` (Chromium + mobile Chromium) | 47 tests | 2026-11-07, workstation, `examis_testing` | first run 45/47 (QE-005 + a spec defect); after the fixes **47/47**, and 47/47 again after QE-006/007 | PASS: `evidence/playwright-2026-11-07-*.txt` |
+| ZAP 2.17.0 passive scan on perf (`b9a9096`) | guest, student and administrator identities; 44 seeded requests + spider | 2026-11-07 13:41 UTC | no High; Medium/Low header findings only (QE-010 or by design) | DONE: `evidence/perf/2026-11-07-zap-passive/` |
+| ZAP 2.17.0 active scan on perf (`b9a9096`) | same identities, 22,649 requests, 12.7 min | 2026-11-07 13:45 UTC | no injection, XSS, traversal or command alerts; 27 × 500 found (QE-006, QE-007); integrity 0 | DONE: `evidence/perf/2026-11-07-zap-active/` |
+| ZAP active scan on perf, candidate `692b206` (fixes) | same plan, 23,847 requests | 2026-11-07 14:15 UTC | **0 × 500**, 0 application errors, integrity 0; same header alerts | PASS: `evidence/perf/2026-11-07-zap-active-after/`, `evidence/perf/zap-before-after.txt` |
+| Pest on PostgreSQL after the fixes | 548 tests | 2026-11-07 | 548/548, Larastan 0 errors | VERIFIED: `evidence/security/pest-pgsql-after-qe-007-2026-11-07.txt` |
+| testssl, axe | — | never | — | MISSING |
 
 ## What each new test proves
 

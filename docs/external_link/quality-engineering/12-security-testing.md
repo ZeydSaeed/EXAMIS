@@ -28,3 +28,7 @@ Order: static analysis and non-destructive tests first; active scanning only on 
 | Manual | business logic (one-time links, closing accounts, decision messages), accepted residual risks | no | owner sign-off |
 
 Accepted residual risks waiting for the owner's sign-off (THREAT-MODEL §4): `style-src 'unsafe-inline'`, no antivirus, administrator could use a one-time link first, no staff second factor, decision messages over WhatsApp. Added in this phase: access codes are stored in plain text (ADR-0009, owner's choice), so a database or backup leak exposes every student account.
+
+## Results (2026-11-07)
+
+Static, passive and active levels have run: Semgrep, audits, Playwright, and ZAP on perf with guest, student and administrator identities. No High-risk alert. Findings and fixes: `13-defect-remediation.md` QE-005 to QE-010. Steps and evidence: `17-execution-log.md`. Still open: the manual business-logic review and the owner's sign-off on the residual risks above; testssl against the public host (needs approval); antivirus (B3).

@@ -142,3 +142,26 @@ Nothing queued up or failed during the surge: at most 8 of 16 FPM workers were b
 - These are "application + generator on one shared 4 vCPU host" figures. k6 used up to 0.81 vCPU, under its 1 vCPU cap.
 - The stress and spike mixes contain no submit, upload or PDF requests. Submission was measured under contention in `submission-flow.js` (20 VUs) and once a minute through the 2-hour soak.
 - The soak lasted 2 hours, not a full exam day.
+
+## 2026-11-07 (UTC 13:00–14:30): security phase (owner approved)
+
+| When (UTC) | Where | Action | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| 13:05 | workstation | Semgrep CE 1.184.0 (7 registry rulesets, `--metrics=off`) on `app bootstrap config database deploy resources routes public` | 5 findings, all reviewed: not defects | `evidence/security/semgrep-2026-11-07.json`, `13-…` |
+| 13:08 | workstation | `composer audit`, `npm audit` | Symfony 8.1.9 advisories (QE-008); dev tooling only in npm and phpunit (QE-009) | `evidence/security/*-audit-*.txt` |
+| 13:12 | workstation | `composer update "symfony/*" --patch-only` → 8.1.10/8.1.11 (`0ab921e`) | Pest PG 540/540, Larastan 0; audit clean except phpunit | `evidence/security/pest-pgsql-after-fixes-2026-11-07.txt` |
+| 13:15 | workstation | Playwright, 47 tests, fresh `npm run build` | 45/47: QE-005 (403 expected, got the password prompt) and a strict locator matching 6 rows | `evidence/playwright-2026-11-07-first.txt` |
+| 13:25 | workstation | QE-005 fixed (`4341538`), spec fixed (`1ea60ab`) | Playwright **47/47** | `evidence/playwright-2026-11-07-after-fixes.txt` |
+| 13:30 | server | Installed `openjdk-21-jre-headless` (Ubuntu) and ZAP 2.17.0 (SHA-256 checked) under `/opt/zap`; nothing runs at boot | disk 6.2 of 75 GB used | `deploy/perf/zap/install-zap.sh` |
+| 13:38 | perf | Rebuilt from `b9a9096`; `submission-flow.js` 5 VUs to leave submitted applications; `zap-prepare.py`: synthetic administrator, students 2900/2901 with drafts | student A asking for B's application: 404 on both URLs | `evidence/perf/2026-11-07-zap-seed/` |
+| 13:41 | perf | ZAP passive plan (guest, student, administrator; 44 seeded requests + spider) | no High; header findings (QE-010) or by design | `evidence/perf/2026-11-07-zap-passive/` |
+| 13:45–13:58 | perf | ZAP active plan, both contexts, `threadPerHost` 2 | 22,649 requests; no injection, XSS, traversal or command alert; **27 × 500**: 21 NUL-byte dates (QE-006), 6 non-UUID keys on PostgreSQL (QE-007); integrity 0. ZAP peak 504 MB | `evidence/perf/2026-11-07-zap-active/` |
+| 14:00 | workstation | QE-006 (`b3c616a`) and QE-007 (`b7ca0e3`), tests first (5 of 7 failed before) | Pest PG **548/548**, Larastan 0, Pint; Playwright 47/47 | `evidence/security/pest-pgsql-after-qe-007-2026-11-07.txt`, `evidence/playwright-2026-11-07-after-qe-006.txt` |
+| 14:15–14:28 | perf only | Candidate `692b206` (package.ps1), the same seed + prepare + active plan | 23,847 requests: **0 × 500**, 0 application errors, the NUL payloads answer 400; integrity 0 | `evidence/perf/2026-11-07-zap-active-after/`, `evidence/perf/zap-before-after.txt` |
+| 14:28 | server | perf stopped | staging untouched (still `b9a9096`) | — |
+
+Notes:
+- **How the scans authenticate.** ZAP cannot crawl Inertia pages, so `zap-prepare.py` seeds every page and the main forms with the session of each identity (replacer rules).
+- **The spider runs unauthenticated.** Its own requests carried no session, which is why there are so many 302s. The seeded requests and the active scan of them were authenticated: 200 answers continued up to the last minute of the scan.
+- **Rate limits held.** The student routes answered 429 to most of the attack traffic (2,900+), so the per-route limits held and coverage of those forms was partial.
+- **Cookies stay out of the evidence.** Session cookies were scrubbed from all result files, and a search finds none.

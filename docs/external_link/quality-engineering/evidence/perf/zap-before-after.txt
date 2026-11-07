@@ -1,0 +1,16 @@
+﻿== before: requests 22649
+  15259 302    3008 200    2935 429     452 405     360 404     251 422     127 400     120 301     110 403      27 500 
+-- 5xx:
+      1 "GET /admin/applications/772557522048625223
+      1 "GET /admin/applications/trace.axd
+      1 "GET /admin/documents/1555045989503345631
+      1 "GET /admin/documents/trace.axd
+     21 "GET /admin/student-export
+      1 "GET /applications/597592337783201897
+      1 "GET /applications/trace.axd
+-- 400 on student-export with %00: 0
+== after: requests 23847
+  16445 302    2987 200    2900 429     439 405     366 404     296 422     184 400     120 301     110 403 
+-- 5xx:
+-- 400 on student-export with %00: 14
+== laravel ERROR lines 14:15-14:28: 0

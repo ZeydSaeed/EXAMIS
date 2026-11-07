@@ -25,10 +25,10 @@ Extra monthly cost: **$0**. The server is already paid for; every tool below is 
 | node, postgres, redis, php-fpm exporters | ~60 MB together | negligible | small | with Prometheus |
 | `pg_stat_statements` | small | negligible | — | perf database |
 | Perf environment (pool 10–12 workers, database, Redis) | 1.5–2 GB during a session | shares the app CPU | 1–5 GB | session only |
-| OWASP ZAP (Java, `-Xmx1g`) | 1–1.5 GB | ~1 vCPU | ~1 GB | session, alone |
+| OWASP ZAP 2.17.0 (Java 21, `-Xmx1g`) | 1–1.5 GB; **measured 2026-11-07: peak 504 MB** | ~1 vCPU; measured 0.2–0.4 vCPU (host peak 55% with the perf app) | ~600 MB (Java + ZAP) | INSTALLED 2026-11-07 (`deploy/perf/zap/install-zap.sh`), session only, alone |
 | Playwright Chromium | 0.5–1 GB | spikes | ~0.5 GB | session, alone |
 
-Semgrep CE runs in CI or on the workstation, not on the server. No Docker on the server: it would add its own overhead and its published ports bypass `ufw`.
+Semgrep CE runs in CI or on the workstation, not on the server (run 2026-11-07 on the workstation from a throwaway virtualenv, 1.184.0). Playwright runs on the workstation against `examis_testing`, as in CI. No Docker on the server: it would add its own overhead and its published ports bypass `ufw`.
 
 ## Memory during a 100-VU session (estimate)
 
