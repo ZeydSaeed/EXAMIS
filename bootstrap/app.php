@@ -6,6 +6,7 @@ use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RejectNullBytes;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SelectPortal;
 use App\Http\Middleware\SetLocale;
@@ -22,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prepend([SelectPortal::class, AssignRequestId::class]);
+        $middleware->prepend([SelectPortal::class, AssignRequestId::class, RejectNullBytes::class]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
