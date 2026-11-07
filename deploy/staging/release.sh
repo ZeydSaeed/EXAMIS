@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# EXAMIS staging: install one release built by package.ps1. Run as "examis":
+# EXAMIS staging or production: install one release built by package.ps1.
+# Run as "examis":
 #
 #   bash release.sh /tmp/examis-<sha>.tgz            # deploy
 #   bash release.sh /tmp/examis-<sha>.tgz --seed     # first deploy: also seed
 #
-# --seed runs DatabaseSeeder, which outside production adds the synthetic demo
-# accounts and applications (password "password"; Nginx asks for the staging
-# password first). Rollback: point "current" at the previous release, then
-# reload PHP-FPM and restart the queue services.
+# --seed runs DatabaseSeeder: reference data everywhere, and on staging only
+# the synthetic demo accounts and applications. Rollback: point "current" at
+# the previous release, then reload PHP-FPM and restart the queue services.
 set -euo pipefail
 
 APP_ROOT=/srv/examis
@@ -25,9 +25,15 @@ fail() { printf '[release] ERROR: %s\n' "$*" >&2; exit 1; }
 [[ -f "$TARBALL" ]] || fail "no such file: $TARBALL"
 [[ -f "$SHARED/.env" ]] || fail "missing $SHARED/.env (run provision.sh first)"
 
-# Staging only, synthetic data only.
-grep -qx 'APP_ENV=staging' "$SHARED/.env" || fail "APP_ENV must be staging"
-grep -qx 'DB_DATABASE=examis_staging' "$SHARED/.env" || fail "DB_DATABASE must be examis_staging"
+# Each environment has its own database, never the live sis.
+if grep -qx 'APP_ENV=production' "$SHARED/.env"; then
+    ENVIRONMENT=production
+    grep -qx 'DB_DATABASE=examis_production' "$SHARED/.env" || fail "DB_DATABASE must be examis_production"
+else
+    ENVIRONMENT=staging
+    grep -qx 'APP_ENV=staging' "$SHARED/.env" || fail "APP_ENV must be staging or production"
+    grep -qx 'DB_DATABASE=examis_staging' "$SHARED/.env" || fail "DB_DATABASE must be examis_staging"
+fi
 ! grep -qiE '^DB_DATABASE=sis$' "$SHARED/.env" || fail "refusing the live database"
 
 RELEASE="$APP_ROOT/releases/$(date -u +%Y%m%d%H%M%S)"
@@ -42,9 +48,11 @@ ln -s "$SHARED/.env" "$RELEASE/.env"
 
 cd "$RELEASE"
 # The demo seeders build rows with factories, which need Faker, a dev
-# package. Seeding installs dev packages for that step only; the site always
-# runs without them, as production will.
-if [[ "$SEED" == "--seed" ]]; then
+# package. Seeding staging installs dev packages for that step only; the site
+# always runs without them. Production seeds reference data only.
+DEV_FOR_SEED=""
+[[ "$SEED" == "--seed" && "$ENVIRONMENT" == staging ]] && DEV_FOR_SEED=1
+if [[ -n "$DEV_FOR_SEED" ]]; then
     log "Composer with dev packages, for seeding only"
     composer install --no-interaction --prefer-dist --no-progress
 else
@@ -70,7 +78,7 @@ log "Migrations as the schema owner"
     fi
 )
 
-if [[ "$SEED" == "--seed" ]]; then
+if [[ -n "$DEV_FOR_SEED" ]]; then
     log "Composer: removing the dev packages again"
     composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative --no-progress
 fi
