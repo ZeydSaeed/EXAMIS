@@ -1,0 +1,48 @@
+# Per-minute aggregates from /var/log/nginx/examis-perf.access.log (urt = upstream time, PHP-FPM).
+# Produced by perminute.sh (aggregates only: no addresses or paths). Soak lines: first 3, then every 15th minute.
+﻿STRESS
+2026-11-07T09:41 req=82 5xx=0 429=0 p95=84ms max=270ms
+2026-11-07T09:42 req=544 5xx=0 429=0 p95=39ms max=50ms
+2026-11-07T09:43 req=944 5xx=0 429=0 p95=39ms max=58ms
+2026-11-07T09:44 req=979 5xx=0 429=0 p95=38ms max=49ms
+2026-11-07T09:45 req=975 5xx=0 429=0 p95=39ms max=69ms
+2026-11-07T09:46 req=1014 5xx=0 429=0 p95=40ms max=56ms
+2026-11-07T09:47 req=1490 5xx=0 429=0 p95=40ms max=55ms
+2026-11-07T09:48 req=1895 5xx=0 429=0 p95=38ms max=53ms
+2026-11-07T09:49 req=1930 5xx=0 429=0 p95=39ms max=55ms
+2026-11-07T09:50 req=1912 5xx=0 429=0 p95=38ms max=48ms
+2026-11-07T09:51 req=1972 5xx=0 429=0 p95=38ms max=47ms
+2026-11-07T09:52 req=2468 5xx=0 429=0 p95=41ms max=81ms
+2026-11-07T09:53 req=2858 5xx=0 429=0 p95=41ms max=65ms
+2026-11-07T09:54 req=2874 5xx=0 429=0 p95=39ms max=59ms
+2026-11-07T09:55 req=2871 5xx=0 429=0 p95=39ms max=76ms
+2026-11-07T09:56 req=2940 5xx=0 429=0 p95=43ms max=83ms
+2026-11-07T09:57 req=3412 5xx=0 429=0 p95=44ms max=110ms
+2026-11-07T09:58 req=3793 5xx=0 429=0 p95=51ms max=120ms
+2026-11-07T09:59 req=3814 5xx=0 429=0 p95=48ms max=130ms
+2026-11-07T10:00 req=3846 5xx=0 429=0 p95=48ms max=130ms
+2026-11-07T10:01 req=3773 5xx=0 429=0 p95=44ms max=106ms
+2026-11-07T10:02 req=2533 5xx=0 429=0 p95=40ms max=86ms
+2026-11-07T10:03 req=655 5xx=0 429=0 p95=39ms max=57ms
+2026-11-07T10:04 req=84 5xx=0 429=0 p95=83ms max=251ms
+SPIKE
+2026-11-07T10:04 req=84 5xx=0 429=0 p95=83ms max=251ms
+2026-11-07T10:05 req=2223 5xx=0 429=0 p95=48ms max=97ms
+2026-11-07T10:06 req=4509 5xx=0 429=0 p95=47ms max=112ms
+2026-11-07T10:07 req=4528 5xx=0 429=0 p95=47ms max=123ms
+2026-11-07T10:08 req=1426 5xx=0 429=0 p95=42ms max=85ms
+2026-11-07T10:09 req=133 5xx=0 429=0 p95=34ms max=46ms
+2026-11-07T10:10 req=128 5xx=0 429=0 p95=31ms max=42ms
+2026-11-07T10:11 req=69 5xx=0 429=0 p95=35ms max=257ms
+SOAK
+2026-11-07T10:12 req=1283 5xx=0 429=0 p95=241ms max=773ms
+2026-11-07T10:13 req=1093 5xx=0 429=0 p95=37ms max=518ms
+2026-11-07T10:14 req=1076 5xx=0 429=0 p95=36ms max=531ms
+2026-11-07T10:26 req=1094 5xx=0 429=0 p95=41ms max=546ms
+2026-11-07T10:41 req=1091 5xx=0 429=0 p95=38ms max=516ms
+2026-11-07T10:56 req=1085 5xx=0 429=0 p95=36ms max=538ms
+2026-11-07T11:11 req=1078 5xx=0 429=0 p95=37ms max=532ms
+2026-11-07T11:26 req=1098 5xx=0 429=0 p95=39ms max=550ms
+2026-11-07T11:41 req=1097 5xx=0 429=0 p95=37ms max=538ms
+2026-11-07T11:56 req=1075 5xx=0 429=0 p95=37ms max=525ms
+2026-11-07T12:11 req=1102 5xx=0 429=0 p95=37ms max=536ms

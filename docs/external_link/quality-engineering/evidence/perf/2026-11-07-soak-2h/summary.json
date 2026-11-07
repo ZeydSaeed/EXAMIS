@@ -1,0 +1,298 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "public: /": {
+                    "name": "public: /",
+                    "path": "::public: /",
+                    "id": "746e3ca4d6be8d05a800532ed28198f6",
+                    "passes": 26624,
+                    "fails": 0
+                },
+                "student: QR opens the code page": {
+                    "name": "student: QR opens the code page",
+                    "path": "::student: QR opens the code page",
+                    "id": "b4c4d65be680261520006b8b852d032f",
+                    "passes": 141,
+                    "fails": 0
+                },
+                "student: access code signs in": {
+                    "name": "student: access code signs in",
+                    "path": "::student: access code signs in",
+                    "id": "a758d910f322a3a2ff3d4ff862eb987b",
+                    "passes": 141,
+                    "fails": 0
+                },
+                "public: /apply/terms": {
+                    "name": "public: /apply/terms",
+                    "path": "::public: /apply/terms",
+                    "id": "b4bbeadffc1ccb6ecfba69e75f41f305",
+                    "passes": 26624,
+                    "fails": 0
+                },
+                "student: specialization starts a draft": {
+                    "passes": 141,
+                    "fails": 0,
+                    "name": "student: specialization starts a draft",
+                    "path": "::student: specialization starts a draft",
+                    "id": "9287c9030dc3fb150af6c3d595c916e8"
+                },
+                "student: step 1 saved": {
+                    "name": "student: step 1 saved",
+                    "path": "::student: step 1 saved",
+                    "id": "07f6c3410176bbdeec82860dca14963e",
+                    "passes": 141,
+                    "fails": 0
+                },
+                "student: step 2 saved": {
+                    "path": "::student: step 2 saved",
+                    "id": "db5cf1e3f6f34feb322f3f14462ca33f",
+                    "passes": 7318,
+                    "fails": 0,
+                    "name": "student: step 2 saved"
+                },
+                "student: step 3 saved": {
+                    "name": "student: step 3 saved",
+                    "path": "::student: step 3 saved",
+                    "id": "8e01f609df080ce94f83b6755b6d5ed1",
+                    "passes": 141,
+                    "fails": 0
+                },
+                "student: photo uploaded and verified": {
+                    "fails": 0,
+                    "name": "student: photo uploaded and verified",
+                    "path": "::student: photo uploaded and verified",
+                    "id": "3f72d135ab8b276e2a1263d396679b79",
+                    "passes": 121
+                },
+                "student: submitted": {
+                    "id": "90dc4ca044d9f2a5172ec21d708bd639",
+                    "passes": 121,
+                    "fails": 0,
+                    "name": "student: submitted",
+                    "path": "::student: submitted"
+                },
+                "student: retry after submit is harmless": {
+                    "name": "student: retry after submit is harmless",
+                    "path": "::student: retry after submit is harmless",
+                    "id": "11639c1f0cc6f7f779069a9598051998",
+                    "passes": 121,
+                    "fails": 0
+                },
+                "public: /portal": {
+                    "name": "public: /portal",
+                    "path": "::public: /portal",
+                    "id": "c45e9fa63fa6de92789ea5d0be396a10",
+                    "passes": 26624,
+                    "fails": 0
+                },
+                "student: form PDF downloaded": {
+                    "name": "student: form PDF downloaded",
+                    "path": "::student: form PDF downloaded",
+                    "id": "301d9672f4a84d4da49d1ffd4463c30e",
+                    "passes": 121,
+                    "fails": 0
+                },
+                "public: /track": {
+                    "path": "::public: /track",
+                    "id": "008ec26ac7622bebeba2f86270f5ad21",
+                    "passes": 26624,
+                    "fails": 0,
+                    "name": "public: /track"
+                },
+                "student: draft reads back intact": {
+                    "name": "student: draft reads back intact",
+                    "path": "::student: draft reads back intact",
+                    "id": "c6af9db618c5f9fc8539654e5fb9a317",
+                    "passes": 7177,
+                    "fails": 0
+                }
+            }
+    },
+    "metrics": {
+        "http_req_duration": {
+            "max": 793.406368,
+            "avg": 24.30465504698238,
+            "min": 12.081965,
+            "med": 21.025566,
+            "p(90)": 36.187881600000004,
+            "p(95)": 38.591876799999994,
+            "p(99)": 45.65187244
+        },
+        "vus_max": {
+            "value": 51,
+            "min": 51,
+            "max": 51
+        },
+        "checks": {
+            "fails": 0,
+            "passes": 122180,
+            "value": 1
+        },
+        "http_req_duration{type:write}": {
+            "p(99)": 168.95288039999983,
+            "max": 327.532269,
+            "avg": 38.56438830959791,
+            "min": 17.488954,
+            "med": 36.092789,
+            "p(90)": 41.1485854,
+            "p(95)": 44.457366199999996,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "data_received": {
+            "count": 11317016546,
+            "rate": 1566857.6039850404
+        },
+        "http_reqs": {
+            "count": 130709,
+            "rate": 18.096853506118453
+        },
+        "http_req_duration{type:upload}": {
+            "avg": 49.94966661157023,
+            "min": 32.594418,
+            "med": 48.215413,
+            "p(90)": 63.659316100000005,
+            "p(95)": 66.26624375,
+            "p(99)": 73.43998519,
+            "max": 260.292674,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "iteration_duration": {
+            "avg": 10628.640927851762,
+            "min": 1194.941928,
+            "med": 8519.657921,
+            "p(90)": 20395.296928300002,
+            "p(95)": 23263.418212349996,
+            "p(99)": 27063.990230189997,
+            "max": 31694.777517
+        },
+        "http_req_receiving": {
+            "avg": 0.4066293693089228,
+            "min": 0.050081,
+            "med": 0.343806,
+            "p(90)": 0.569409,
+            "p(95)": 0.7673239999999993,
+            "p(99)": 1.4389365999999988,
+            "max": 44.525898
+        },
+        "http_req_duration{expected_response:true}": {
+            "max": 793.406368,
+            "avg": 24.30465504698238,
+            "min": 12.081965,
+            "med": 21.025566,
+            "p(90)": 36.187881600000004,
+            "p(95)": 38.591876799999994,
+            "p(99)": 45.65187244
+        },
+        "http_req_duration{type:pdf}": {
+            "min": 498.057092,
+            "med": 525.415967,
+            "p(90)": 546.070104,
+            "p(95)": 556.473637,
+            "p(99)": 790.9715552,
+            "max": 793.406368,
+            "avg": 535.8013681983474,
+            "thresholds": {
+                "p(95)<3000": false
+            }
+        },
+        "http_req_sending": {
+            "max": 89.477323,
+            "avg": 0.1929230193559759,
+            "min": 0.0416,
+            "med": 0.179403,
+            "p(90)": 0.24913260000000012,
+            "p(95)": 0.2859083999999998,
+            "p(99)": 0.44004287999999997
+        },
+        "http_req_waiting": {
+            "p(99)": 44.983541679999995,
+            "max": 791.820699,
+            "avg": 23.705102658317607,
+            "min": 1.329184,
+            "med": 20.416558,
+            "p(90)": 35.6630216,
+            "p(95)": 38.0502432
+        },
+        "data_sent": {
+            "rate": 14051.918006955286,
+            "count": 101493453
+        },
+        "http_req_duration{type:read}": {
+            "p(95)": 35.2240032,
+            "p(99)": 40.94762816,
+            "max": 405.98857,
+            "avg": 21.65628800036889,
+            "min": 12.081965,
+            "med": 20.342838,
+            "p(90)": 26.0463406,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "http_req_blocked": {
+            "p(99)": 0.00164,
+            "max": 60.023395,
+            "avg": 0.017766150311006066,
+            "min": 0.0002,
+            "med": 0.00088,
+            "p(90)": 0.00112,
+            "p(95)": 0.00128
+        },
+        "http_req_connecting": {
+            "avg": 0.006402195495336966,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 43.085354
+        },
+        "vus": {
+            "min": 1,
+            "max": 51,
+            "value": 1
+        },
+        "qe_journey_complete": {
+            "passes": 33922,
+            "fails": 0,
+            "value": 1
+        },
+        "iterations": {
+            "count": 33922,
+            "rate": 4.696550846801293
+        },
+        "http_req_tls_handshaking": {
+            "p(99)": 0,
+            "max": 41.760612,
+            "avg": 0.010017332563174691,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 130709,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "qe_step_ok": {
+            "passes": 122180,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.99": false
+            },
+            "value": 1
+        }
+    }
+}

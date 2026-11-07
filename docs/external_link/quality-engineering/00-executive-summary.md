@@ -32,8 +32,8 @@ Status labels used in this folder: **VERIFIED** (checked, evidence named), **EXI
 
 ## Answer in one line
 
-The suite can now prove what it claims, cannot reach a forbidden target, and has accounts that sign in the way students and staff really do; it has not yet been run against a live environment.
+The suite proves what it claims, cannot reach a forbidden target, and has run on an isolated synthetic copy on the staging server up to 200 concurrent users, a 30-second surge and a 2-hour soak with 0 errors and 0 integrity violations; security scans and Playwright are still to run.
 
 ## Next gate
 
-G1 to G6 are done (2026-11-06/07). The perf copy runs on the server (`deploy/perf/`). Load up to 100 users PASSES: p95 39 ms, host CPU 27.5%, integrity 0. QE-002 (shared-device privacy) and QE-003 (PDF inside submit: 3.0 s → 0.26 s) are fixed and released to staging as `b9a9096`. Next: G7, 150/200 VUs, soak and spike (heavy runs, per-run approval). See `15-implementation-roadmap.md`.
+G1 to G7 are done (2026-11-06/07). The perf copy runs on the server (`deploy/perf/`). Load up to 100 users PASSES: p95 39 ms, host CPU 27.5%, integrity 0. QE-002 (shared-device privacy) and QE-003 (PDF inside submit: 3.0 s → 0.26 s) are fixed and released to staging as `b9a9096`. G7 heavy runs on `b9a9096` PASS: stress to 200 VUs (p95 ≈ 48 ms, host CPU 53%, no breaking point below the 200 cap), spike 5 → 200 in 30 s (0 errors, recovered within a minute), soak 2 h with 121 submissions (no latency drift, memory flat at the end), integrity 0 on every run. All figures are "application + generator on one shared 4 vCPU host". Next: security (Semgrep, ZAP passive then active) and Playwright. See `15-implementation-roadmap.md`.

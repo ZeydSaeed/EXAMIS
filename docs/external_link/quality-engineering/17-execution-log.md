@@ -87,3 +87,58 @@ The generator stayed far below its 1 vCPU cap, so the run is valid. The staging 
 | 100 | 27.5% | 0 | 6,656 MB | 3 | 0.35 | 0.58 | 0.11 |
 
 At 100 VUs the generator used 0.35 of its 1 vCPU cap, so the run is valid. Reported as "application + generator on one shared 4 vCPU host".
+
+## 2026-11-07 (UTC 09:41–12:13): gate G7, heavy runs (owner approved)
+
+One chain on the server (`evidence/perf/g7-chain/g7.sh`), one run at a time. Before each run the perf database was rebuilt from the `b9a9096` package with 3,000 synthetic students (seed 3 s, `release-*.log`). Each run carried its own `QE_HEAVY_APPROVAL` equal to its run id. Perf was stopped at the end; staging stayed active throughout.
+
+| When (UTC) | Run | Load | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| 09:41:34–10:04:04 | `2026-11-07-stress-200` | `stress.js`: public visitors + students filling the form, 50 → 100 → 150 → 200 VUs (2 min ramp + 3 min hold each), 2 min down | **PASS** 45,106/45,106 steps, 13,009/13,009 journeys, 0/49,573 HTTP errors; p95 47 ms (read 43, write 59), max 208 ms; integrity 0 | `evidence/perf/2026-11-07-stress-200/` |
+| 10:04:20–10:11:41 | `2026-11-07-spike-200` | `spike.js`: 5 VUs 1 min, 5 → 200 in 30 s, hold 2 min, back to 5, 3 min recovery | **PASS** 12,088/12,088 steps, 3,196/3,196 journeys, 0/13,098 HTTP errors; p95 75 ms (read 74, write 81), max 284 ms; integrity 0 | `evidence/perf/2026-11-07-spike-200/` |
+| 10:11:57–12:12:33 | `2026-11-07-soak-2h` | `soak.js`: 30 public + 20 filling VUs for 2 h, plus one full submission a minute | **PASS** 122,180/122,180 steps, 33,922/33,922 journeys, 0/130,709 HTTP errors; p95 39 ms (read 35, write 44, upload 66, pdf 556); 121 applications submitted with 121 documents; integrity 0 | `evidence/perf/2026-11-07-soak-2h/` |
+| 12:12:33 | — | `systemctl stop examis-perf.target` | perf inactive; staging services active | `g7-chain/g7.status` |
+
+Per-minute numbers come from the perf Nginx log (`g7-chain/nginx-per-minute.txt`: upstream p95 and 5xx/429 count per minute; 0 in every minute of all three runs). Resource numbers come from `resources.csv` (`g7-chain/resources-summary.txt`; vCPU = share of one core).
+
+### Stress: each hold (last 3 minutes of each stage)
+
+| VUs | Requests/min | Upstream p95 (max) | Host CPU | Steal | FPM busy (max of 16) | perf FPM | perf PostgreSQL | k6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 50 | ~975 | 38–40 ms (69) | 16.3% | 0 | 3 | 0.31 | 0.06 | 0.19 |
+| 100 | ~1,910 | 38–39 ms (55) | 29.0% | 0 | 4 | 0.58 | 0.11 | 0.36 |
+| 150 | ~2,870 | 39–43 ms (83) | 41.9% | 0 | 9 | 0.87 | 0.16 | 0.53 |
+| 200 | ~3,810 | 44–51 ms (130) | 53.2% (peak 60%) | 0 | 6 | 1.14 | 0.21 | 0.66 |
+
+No breaking point up to 200 VUs, which is the cap for this shared server. Latency rose only slightly (p95 39 → ~48 ms). CPU grew linearly at about 0.27% of the host per VU, with the generator included. Available RAM never fell below 6,474 MB, and swap stayed at 0. A higher limit cannot be measured here without a separate generator, which the plan does not allow, or a decision by the owner to raise the 200 cap.
+
+### Spike: surge and recovery
+
+| Phase | Requests/min | Upstream p95 (max) | Host CPU |
+| --- | --- | --- | --- |
+| 5 VUs, before | ~130 | 31–35 ms | ~4% |
+| ramp to 200 in 30 s | 2,223 | 48 ms (97) | peak 71.5% |
+| 200 VUs held | ~4,520 | 47 ms (123) | 58–61% |
+| first minute back at 5 | 133 | 34 ms | 3.8% |
+
+Nothing queued up or failed during the surge: at most 8 of 16 FPM workers were busy, and nothing returned 429 or 5xx. Recovery was immediate: within one minute CPU and latency were back at the levels seen before the spike.
+
+### Soak: 2 hours
+
+| Time | Host CPU | perf FPM memory | perf PostgreSQL memory | Queue worker memory | Min. available RAM |
+| --- | --- | --- | --- | --- | --- |
+| 0–10 min | 17.6% | 125 MB | 100 MB | 40 MB | 6,617 MB |
+| 60–70 min | 17.5% | 145 MB | 103 MB | 40 MB | 6,596 MB |
+| 100–110 min | 17.5% | 153 MB | 104 MB | 61 MB | 6,568 MB |
+| 110–120 min | 17.8% | 153 MB | 105 MB | 64 MB | 6,564 MB |
+
+- Latency did not drift. Upstream p95 was 36–41 ms in every minute from minute 2 to the end, and the PDF view stayed at about 0.5 s.
+- The first minute had a p95 of 241 ms. All 50 VUs started at the same moment on caches just rebuilt by `optimize`. This is warm-up after a release, not drift.
+- The memory SLO (`11-performance-slos.md`) holds for 2 hours, measured from cgroups rather than Prometheus. Each FPM worker is recycled every 1,000 requests (`pm.max_requests`, about 8 times per worker in this run). The cgroup figure includes page cache. Under these conditions, FPM memory grew by 28 MB and then stayed flat for the last 20 minutes.
+- PostgreSQL grew by 5 MB. The queue worker moved between 40 and 64 MB without a trend. Steal and swap stayed at 0.
+
+### Limits of these results
+
+- These are "application + generator on one shared 4 vCPU host" figures. k6 used up to 0.81 vCPU, under its 1 vCPU cap.
+- The stress and spike mixes contain no submit, upload or PDF requests. Submission was measured under contention in `submission-flow.js` (20 VUs) and once a minute through the 2-hour soak.
+- The soak lasted 2 hours, not a full exam day.

@@ -9,7 +9,7 @@
 | 4 Synthetic data | `PerfSeeder` at 100–50,000 | contract test; seed timings on perf | 1,000 students + 7 staff on `examis_perf` in 2 s; 5,000 and 50,000 not run | larger volumes with G5 |
 | 5 Functional and concurrency | on the approved test environment | Pest on PostgreSQL, Playwright, `smoke.js`, `submission-flow.js` + SQL | Pest PG, smoke, submission 5 VUs done; Playwright not run | G5 |
 | 6 Monitoring | free, local, capped | `resources.csv` per run (CPU, memory per component from systemd cgroups); Prometheus/Grafana not installed (not needed yet) | D6 |
-| 7 Gradual load | 5 → 100 (→ 200) | per-stage results + integrity 0 + generator headroom | 5→100 PASS (p95 39 ms, host CPU 27.5% at 100, release `b9a9096`) | G7: 150/200, soak, spike (heavy approval) |
+| 7 Gradual load | 5 → 100 (→ 200) | per-stage results + integrity 0 + generator headroom | 5→100 PASS (p95 39 ms, host CPU 27.5% at 100); G7 2026-11-07: stress to 200 PASS (p95 ≈ 48 ms, CPU 53%), spike 5→200 PASS (recovered in 1 min), soak 2 h PASS (no drift), release `b9a9096` | done; above 200 needs an owner decision |
 | 8 Security | static → passive → active | reports, no open high/critical without a decision | not started | G6 |
 | 9 Remediation | limited fix cycles | defects closed with before/after | — | per fix |
 | 10 Continuous | periodic, free | 4 weeks of reports | — | after all gates |
@@ -23,7 +23,7 @@
 | ~~G3~~ done 2026-11-06 | Create `examis_perf` with the marker and run `PerfSeeder` there (and the marker on local `examis_testing`, D4) |
 | ~~G4~~ done 2026-11-06 | Run `smoke.js`, then `submission-flow.js` at 5 VUs, then the integrity SQL |
 | G5 | Each load session, one stage at a time |
-| G6 | ZAP active scan; spike, stress, soak per run |
+| G6 | ZAP active scan (not run); spike, stress, soak per run: done 2026-11-07 as gate G7 (`17-execution-log.md`) |
 
 ## Decisions for the owner
 

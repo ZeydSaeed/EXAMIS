@@ -15,7 +15,10 @@
 | k6 `submission-flow.js` on perf | 20 VUs, racing submit | 2026-11-06 20:55 UTC | 220/220 steps, 0 HTTP errors, integrity 0; p95 3.41 s (QE-003) | PASS (functional): `evidence/perf/2026-11-06-submit-20b/` |
 | k6 `normal-load.js` on perf | 5→10→20→50 VUs, 16.5 min | 2026-11-06 21:00 UTC | 6,506/6,506 steps, 0/7,437 HTTP errors, p95 40 ms, integrity 0 | PASS: `evidence/perf/2026-11-06-normal-50b/` |
 | k6 `normal-load.js` on perf, release `b9a9096` | 5→100 VUs, 20.6 min | 2026-11-06 21:38 UTC | 13,857/13,857 steps, 0/15,535 HTTP errors, p95 39 ms, integrity 0 | PASS: `evidence/perf/2026-11-07-normal-100/` |
-| k6 `registration-journey`, spike, stress, soak; normal-load above 100 | — | not run | — | NOT RUN |
+| k6 `stress.js` on perf, release `b9a9096` | 50→100→150→200 VUs, 22 min | 2026-11-07 09:41 UTC | 45,106/45,106 steps, 0/49,573 HTTP errors, p95 47 ms (≈ 48 ms at 200), host CPU 53% at 200, integrity 0 | PASS: `evidence/perf/2026-11-07-stress-200/` |
+| k6 `spike.js` on perf, release `b9a9096` | 5 → 200 VUs in 30 s, hold 2 min, recovery | 2026-11-07 10:04 UTC | 12,088/12,088 steps, 0/13,098 HTTP errors, p95 75 ms, recovered within 1 min, integrity 0 | PASS: `evidence/perf/2026-11-07-spike-200/` |
+| k6 `soak.js` on perf, release `b9a9096` | 50 VUs + 1 submission/min, 2 h | 2026-11-07 10:12 UTC | 122,180/122,180 steps, 0/130,709 HTTP errors, p95 39 ms with no drift, 121 submitted, FPM memory +28 MB then flat, integrity 0 | PASS: `evidence/perf/2026-11-07-soak-2h/` |
+| k6 `registration-journey` | — | not run | — | NOT RUN |
 | Larastan level 7 | new seeder files | 2026-11-06 | 0 errors | VERIFIED (console) |
 | Pint, `vp check` (oxlint, oxfmt) | new PHP and JS files | 2026-11-06 | pass | VERIFIED (console) |
 | Semgrep, ZAP, testssl, axe | — | never | — | MISSING |
