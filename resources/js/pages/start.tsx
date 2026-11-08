@@ -10,11 +10,11 @@ import apply from '@/routes/apply';
 
 /**
  * Standalone entry page: the Ministry of Education seal on the right, the
- * application mark in the middle and the vocational-education seal on the
- * left (fixed sides in both languages), then the service title and the
- * ways in. No portal header or footer. Sizes follow the screen height so the
- * whole page fits without scrolling; it only scrolls when a screen is too
- * short to keep the text readable.
+ * service title in the middle and the vocational-education seal on the left
+ * (fixed sides in both languages), then the city, the credits with the
+ * application mark under them, and the ways in. No portal header or footer.
+ * Sizes follow the screen height so the whole page fits without scrolling;
+ * it only scrolls when a screen is too short to keep the text readable.
  */
 export default function Start() {
     const { t, isRtl } = useTrans();
@@ -41,20 +41,12 @@ export default function Start() {
                             decoding="async"
                             draggable={false}
                         />
-                        <div className="flex flex-col items-center gap-1">
-                            <ExamisMark
-                                surface="light"
-                                title={name}
-                                className="size-[clamp(3.5rem,19svh,11rem)] drop-shadow-md"
-                            />
-                            <p
-                                dir="ltr"
-                                lang="en"
-                                className="max-w-40 text-center text-[clamp(0.6875rem,min(2svh,3.4vw),1rem)] leading-tight font-normal text-black sm:max-w-none dark:text-white"
-                            >
-                                {t('brand.full_name')}
-                            </p>
-                        </div>
+                        <h1
+                            dir={isRtl ? 'rtl' : 'ltr'}
+                            className="min-w-0 flex-1 text-center text-[clamp(1.125rem,min(5.5svh,5.5vw),3.5rem)] leading-tight font-bold tracking-tight text-balance"
+                        >
+                            {t('start.heading')}
+                        </h1>
                         <img
                             src="/images/vocational-education-logo.webp"
                             alt={t('start.vocational_logo')}
@@ -66,10 +58,7 @@ export default function Start() {
 
                     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-4 py-[1.5svh] text-center sm:px-6">
                         <div className="space-y-[1.5svh] motion-safe:animate-[start-rise_0.7s_0.15s_ease-out_both]">
-                            <div className="space-y-[1svh]">
-                                <h1 className="text-[clamp(1.25rem,min(6.5svh,8vw),3.75rem)] leading-tight font-bold tracking-tight text-balance">
-                                    {t('start.heading')}
-                                </h1>
+                            <div>
                                 <p className="inline-block rounded-[1.75rem] border-2 border-[var(--examis-gold)] bg-white/60 px-8 py-[0.5svh] text-[clamp(1rem,min(4svh,6vw),2.25rem)] leading-tight font-bold tracking-tight shadow-[var(--examis-navy)]/10 shadow-md backdrop-blur-sm dark:bg-white/10">
                                     {t('start.city')}
                                 </p>
@@ -81,6 +70,20 @@ export default function Start() {
                                 <p>{t('start.credits_patron')}</p>
                                 <p>{t('start.credits_development')}</p>
                                 <p>{t('start.credits_support')}</p>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <ExamisMark
+                                    surface="light"
+                                    title={name}
+                                    className="size-[clamp(3rem,12svh,7rem)] drop-shadow-md"
+                                />
+                                <p
+                                    dir="ltr"
+                                    lang="en"
+                                    className="max-w-40 text-center text-[clamp(0.6875rem,min(2svh,3.4vw),1rem)] leading-tight font-normal text-black sm:max-w-none dark:text-white"
+                                >
+                                    {t('brand.full_name')}
+                                </p>
                             </div>
                         </div>
 

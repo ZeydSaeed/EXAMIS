@@ -9,12 +9,12 @@ type Contact = {
 /** Credits and how to reach them; English in both languages. */
 const contacts: Contact[] = [
     {
-        label: 'Design and Implementation',
+        label: 'Design',
         name: 'Dr. Zeyd Saeed',
         email: 'zeydsaeed@gmail.com',
     },
     {
-        label: 'Technical and Administrative Support',
+        label: 'Support',
         name: 'Muhamed Abd Al Bari',
         email: 'mumh159@gmail.com',
     },
