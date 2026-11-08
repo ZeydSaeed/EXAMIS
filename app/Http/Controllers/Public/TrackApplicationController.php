@@ -51,7 +51,7 @@ class TrackApplicationController extends Controller
         return back()->with('track_result', [
             'reference_number' => $application->reference_number,
             'status' => $application->status->value,
-            'status_label' => $application->status->label(),
+            'status_label' => $application->status->shownAs()->label(),
             'exam_period' => $application->examPeriod->localizedName(),
             'submitted_at' => $application->submitted_at?->toIso8601String(),
         ]);

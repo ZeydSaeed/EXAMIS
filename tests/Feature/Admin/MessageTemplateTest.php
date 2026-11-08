@@ -73,13 +73,13 @@ it('starts with one message for each decision, and never adds them twice', funct
     MessageTemplate::query()->first()->delete();
     $this->seed(MessageTemplateSeeder::class);
 
-    expect(MessageTemplate::query()->count())->toBe(2);
+    expect(MessageTemplate::query()->count())->toBe(4);
 
     MessageTemplate::query()->delete();
     $this->seed(MessageTemplateSeeder::class);
 
     expect(MessageTemplate::query()->pluck('status')->map->value->sort()->values()->all())
-        ->toBe(['accepted', 'rejected', 'requires_correction']);
+        ->toBe(['accepted', 'fees_paid', 'rejected', 'requires_correction', 'under_review']);
 });
 
 it('gives the list what the dialog needs to fill a message', function () {

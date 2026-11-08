@@ -1,11 +1,9 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
 import {
+    BadgeCheck,
     CheckCircle2,
-    CircleSlash,
     FileEdit,
-    RotateCcw,
     Search,
-    Send,
     XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -51,12 +49,6 @@ const statusAppearance: Partial<
         avatar: 'text-white ring-green-500/25',
         tint: 'bg-[color-mix(in_srgb,var(--color-green-500)_8%,var(--card))] border-green-500/25',
     },
-    submitted: {
-        icon: Send,
-        fill: 'bg-blue-600',
-        avatar: 'text-white ring-blue-500/25',
-        tint: 'bg-[color-mix(in_srgb,var(--color-blue-500)_8%,var(--card))] border-blue-500/25',
-    },
     under_review: {
         icon: Search,
         fill: 'bg-yellow-500',
@@ -69,23 +61,17 @@ const statusAppearance: Partial<
         avatar: 'text-white ring-orange-500/25',
         tint: 'bg-[color-mix(in_srgb,var(--color-orange-500)_8%,var(--card))] border-orange-500/25',
     },
-    resubmitted: {
-        icon: RotateCcw,
-        fill: 'bg-teal-600',
-        avatar: 'text-white ring-teal-500/25',
-        tint: 'bg-[color-mix(in_srgb,var(--color-teal-500)_8%,var(--card))] border-teal-500/25',
-    },
     rejected: {
         icon: XCircle,
         fill: 'bg-red-600',
         avatar: 'text-white ring-red-500/25',
         tint: 'bg-[color-mix(in_srgb,var(--color-red-500)_8%,var(--card))] border-red-500/25',
     },
-    withdrawn: {
-        icon: CircleSlash,
-        fill: 'bg-stone-500',
-        avatar: 'text-white ring-stone-500/25',
-        tint: 'bg-[color-mix(in_srgb,var(--color-stone-500)_8%,var(--card))] border-stone-500/25',
+    fees_paid: {
+        icon: BadgeCheck,
+        fill: 'bg-indigo-600',
+        avatar: 'text-white ring-indigo-500/25',
+        tint: 'bg-[color-mix(in_srgb,var(--color-indigo-500)_8%,var(--card))] border-indigo-500/25',
     },
 };
 

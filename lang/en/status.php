@@ -9,4 +9,5 @@ return [
     'accepted' => 'Accepted',
     'rejected' => 'Rejected',
     'withdrawn' => 'Withdrawn',
+    'fees_paid' => 'Fees paid (final acceptance)',
 ];

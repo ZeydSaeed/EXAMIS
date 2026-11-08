@@ -1,11 +1,10 @@
 import {
+    BadgeCheck,
     CheckCircle2,
     CircleDashed,
     CircleSlash,
-    Clock,
     FileEdit,
     Search,
-    Send,
     XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -13,7 +12,7 @@ import { cn } from '@/lib/utils';
 import type { ApplicationStatus } from '@/types';
 
 const appearance: Record<
-    ApplicationStatus,
+    Exclude<ApplicationStatus, 'submitted' | 'resubmitted'>,
     { icon: LucideIcon; text: string; border: string; surface: string }
 > = {
     draft: {
@@ -21,12 +20,6 @@ const appearance: Record<
         text: 'text-slate-700 dark:text-slate-300',
         border: 'border-slate-500/40',
         surface: 'bg-slate-500/10',
-    },
-    submitted: {
-        icon: Send,
-        text: 'text-blue-700 dark:text-blue-300',
-        border: 'border-blue-500/40',
-        surface: 'bg-blue-500/10',
     },
     under_review: {
         icon: Search,
@@ -39,12 +32,6 @@ const appearance: Record<
         text: 'text-orange-700 dark:text-orange-300',
         border: 'border-orange-500/40',
         surface: 'bg-orange-500/10',
-    },
-    resubmitted: {
-        icon: Clock,
-        text: 'text-teal-700 dark:text-teal-300',
-        border: 'border-teal-500/40',
-        surface: 'bg-teal-500/10',
     },
     accepted: {
         icon: CheckCircle2,
@@ -64,13 +51,28 @@ const appearance: Record<
         border: 'border-stone-500/40',
         surface: 'bg-stone-500/10',
     },
+    fees_paid: {
+        icon: BadgeCheck,
+        text: 'text-indigo-700 dark:text-indigo-300',
+        border: 'border-indigo-500/40',
+        surface: 'bg-indigo-500/10',
+    },
 };
+
+/** A sent application is shown as under review from the moment it arrives. */
+function appearanceOf(status: ApplicationStatus) {
+    return appearance[
+        status === 'submitted' || status === 'resubmitted'
+            ? 'under_review'
+            : status
+    ];
+}
 
 /**
  * Background tint of a status, for table cells that show a `plain` badge.
  */
 export function statusSurface(status: ApplicationStatus): string {
-    return appearance[status].surface;
+    return appearanceOf(status).surface;
 }
 
 /**
@@ -89,7 +91,7 @@ export function StatusBadge({
     variant?: 'badge' | 'plain';
     className?: string;
 }) {
-    const { icon: Icon, text, border, surface } = appearance[status];
+    const { icon: Icon, text, border, surface } = appearanceOf(status);
 
     return (
         <span

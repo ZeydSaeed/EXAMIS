@@ -35,7 +35,7 @@ it('seeds 100 applicants covering every status and assignee option through the r
         ->and($submitted->every(fn (Application $application): bool => $application->submitted_at->isPast()))->toBeTrue();
 
     $reopened = Application::query()
-        ->whereHas('events', fn ($query) => $query->where('from_status', ApplicationStatus::Accepted))
+        ->whereHas('events', fn ($query) => $query->where('from_status', ApplicationStatus::Accepted)->where('to_status', ApplicationStatus::UnderReview))
         ->count();
     expect($reopened)->toBe(5);
 });

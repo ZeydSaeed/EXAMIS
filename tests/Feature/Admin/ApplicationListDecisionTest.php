@@ -43,18 +43,23 @@ it('shows the mobile number of each student', function () {
         ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.phone', '07701234567'));
 });
 
-it('offers the three decisions to those who may take them', function () {
+it('offers the decisions to those who may take them', function () {
     listedApplication();
 
     $this->actingAs(staffWith(Role::Supervisor))
         ->get(route('admin.applications.index'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('applications.data.0.decisions.0.value', 'accepted')
+            ->where('applications.data.0.status_label', 'قيد التدقيق')
+            ->has('applications.data.0.decisions', 4)
+            ->where('applications.data.0.decisions.0.value', 'under_review')
+            ->where('applications.data.0.decisions.0.label', 'بدء التدقيق')
             ->where('applications.data.0.decisions.0.requires_reason', false)
-            ->where('applications.data.0.decisions.1.value', 'rejected')
-            ->where('applications.data.0.decisions.1.requires_reason', true)
-            ->where('applications.data.0.decisions.2.value', 'requires_correction')
-            ->where('applications.data.0.decisions.2.requires_reason', true));
+            ->where('applications.data.0.decisions.1.value', 'accepted')
+            ->where('applications.data.0.decisions.1.requires_reason', false)
+            ->where('applications.data.0.decisions.2.value', 'rejected')
+            ->where('applications.data.0.decisions.2.requires_reason', true)
+            ->where('applications.data.0.decisions.3.value', 'requires_correction')
+            ->where('applications.data.0.decisions.3.requires_reason', true));
 });
 
 it('offers a reviewer only what a reviewer may do, and an auditor nothing', function () {
@@ -63,8 +68,9 @@ it('offers a reviewer only what a reviewer may do, and an auditor nothing', func
     $this->actingAs(staffWith(Role::Reviewer))
         ->get(route('admin.applications.index'))
         ->assertInertia(fn (Assert $page) => $page
-            ->has('applications.data.0.decisions', 1)
-            ->where('applications.data.0.decisions.0.value', 'requires_correction'));
+            ->has('applications.data.0.decisions', 2)
+            ->where('applications.data.0.decisions.0.value', 'under_review')
+            ->where('applications.data.0.decisions.1.value', 'requires_correction'));
 
     $this->actingAs(staffWith(Role::Auditor))
         ->get(route('admin.applications.index'))
@@ -154,4 +160,44 @@ it('opens the student form from the list', function () {
 
     expect($response->headers->get('Content-Type'))->toContain('application/pdf')
         ->and($response->headers->get('Content-Disposition'))->toStartWith('inline');
+});
+
+it('confirms the fees of an accepted application with its message', function () {
+    $application = listedApplication(ApplicationStatus::Accepted);
+
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->get(route('admin.applications.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('applications.data.0.decisions.0.label', 'إعادة إلى التدقيق')
+            ->where('applications.data.0.decisions.3.value', 'fees_paid')
+            ->where('applications.data.0.decisions.3.label', 'تم دفع الرسوم (القبول النهائي)')
+            ->where('applications.data.0.decisions.3.requires_reason', false));
+
+    decide($application, 'fees_paid', 'أصبحت مؤهلاً لأداء الامتحانات التمهيدية.')->assertSessionHasNoErrors();
+
+    expect($application->refresh()->status)->toBe(ApplicationStatus::FeesPaid)
+        ->and($application->events()->latest('id')->first()->reason)->toBe('أصبحت مؤهلاً لأداء الامتحانات التمهيدية.');
+});
+
+it('offers fees paid only after an acceptance', function () {
+    $application = listedApplication(ApplicationStatus::UnderReview);
+
+    $this->actingAs(staffWith(Role::Supervisor));
+
+    decide($application, 'fees_paid')->assertSessionHasErrors();
+
+    expect($application->refresh()->status)->toBe(ApplicationStatus::UnderReview);
+});
+
+it('counts the five staff statuses on the dashboard, sent applications as under review', function () {
+    Application::factory()->submitted()->create();
+    Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
+    Application::factory()->inStatus(ApplicationStatus::FeesPaid)->create();
+
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->get(route('admin.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('statusCounts', 5)
+            ->where('statusCounts.0', ['status' => 'under_review', 'label' => 'قيد التدقيق', 'count' => 2])
+            ->where('statusCounts.4', ['status' => 'fees_paid', 'label' => 'تم دفع الرسوم (القبول النهائي)', 'count' => 1]));
 });

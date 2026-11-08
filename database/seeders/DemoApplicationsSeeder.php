@@ -49,7 +49,8 @@ class DemoApplicationsSeeder extends Seeder
         'under_review' => 12,
         'requires_correction' => 9,
         'resubmitted' => 9,
-        'accepted' => 13,
+        'accepted' => 9,
+        'fees_paid' => 4,
         'rejected' => 9,
         'withdrawn' => 6,
         'withdrawn_after_correction' => 4,
@@ -247,6 +248,11 @@ class DemoApplicationsSeeder extends Seeder
             'accepted', 'reopened_after_acceptance' => [
                 [ApplicationStatus::UnderReview, $reviewer, null],
                 [ApplicationStatus::Accepted, $supervisor, null],
+            ],
+            'fees_paid' => [
+                [ApplicationStatus::UnderReview, $reviewer, null],
+                [ApplicationStatus::Accepted, $supervisor, null],
+                [ApplicationStatus::FeesPaid, $supervisor, null],
             ],
             'rejected', 'reopened_after_rejection' => [
                 [ApplicationStatus::UnderReview, $reviewer, null],

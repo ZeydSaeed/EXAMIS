@@ -20,9 +20,11 @@ class DecideApplication
      * @var list<ApplicationStatus>
      */
     public const DECISIONS = [
+        ApplicationStatus::UnderReview,
         ApplicationStatus::Accepted,
         ApplicationStatus::Rejected,
         ApplicationStatus::RequiresCorrection,
+        ApplicationStatus::FeesPaid,
     ];
 
     public function __construct(private TransitionApplication $transition) {}
@@ -70,10 +72,23 @@ class DecideApplication
             }
 
             if ($allowed) {
-                $options[] = ['value' => $decision->value, 'label' => $decision->label(), 'requires_reason' => $requiresReason];
+                $options[] = ['value' => $decision->value, 'label' => $this->label($application, $decision), 'requires_reason' => $requiresReason];
             }
         }
 
         return $options;
+    }
+
+    /**
+     * Under review is shown for a sent application already, so choosing it
+     * reads as the step it takes: starting the review, or going back to it.
+     */
+    private function label(Application $application, ApplicationStatus $decision): string
+    {
+        if ($decision !== ApplicationStatus::UnderReview) {
+            return $decision->label();
+        }
+
+        return __('applications.actions.'.($application->status->isDecided() ? 'reopen' : 'under_review'));
     }
 }

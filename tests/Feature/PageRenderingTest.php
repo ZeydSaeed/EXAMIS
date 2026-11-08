@@ -91,8 +91,12 @@ it('lists only the review queue for reviewers and filters by status', function (
     $this->actingAs($reviewer)->get(route('admin.applications.index'))
         ->assertInertia(fn (Assert $page) => $page->component('admin/applications/index')->where('applications.total', 1));
 
+    // Sent applications are shown, and filtered, as under review.
     $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['status' => 'under_review']))
-        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1));
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 2));
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['status' => 'accepted']))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 0));
 });
 
 it('finds applications by reference number', function () {

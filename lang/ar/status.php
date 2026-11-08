@@ -9,4 +9,5 @@ return [
     'accepted' => 'مقبول',
     'rejected' => 'مرفوض',
     'withdrawn' => 'مسحوب',
+    'fees_paid' => 'تم دفع الرسوم (القبول النهائي)',
 ];

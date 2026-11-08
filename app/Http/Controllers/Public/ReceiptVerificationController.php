@@ -25,7 +25,7 @@ class ReceiptVerificationController extends Controller
             'receipt' => $application === null ? null : [
                 'reference_number' => $application->reference_number,
                 'exam_period' => $application->examPeriod->localizedName(),
-                'status_label' => $application->status->label(),
+                'status_label' => $application->status->shownAs()->label(),
                 'submitted_at' => $application->submitted_at?->toIso8601String(),
             ],
         ]);

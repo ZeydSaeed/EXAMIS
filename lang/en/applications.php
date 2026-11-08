@@ -46,5 +46,7 @@ return [
         'requires_correction' => 'Request correction',
         'accepted' => 'Accept',
         'rejected' => 'Reject',
+        'fees_paid' => 'Confirm fees paid (final acceptance)',
+        'reopen' => 'Return to review',
     ],
 ];

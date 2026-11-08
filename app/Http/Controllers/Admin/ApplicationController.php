@@ -60,7 +60,7 @@ class ApplicationController extends Controller
         $applications = Application::query()
             ->visibleToStaff($user)
             ->with('user:id,student_number')
-            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->whereIn('status', ApplicationStatus::from($status)->shownAs()->shownFrom()))
             ->when($filters['period'] ?? null, fn (Builder $query, int|string $period) => $query->where('exam_period_id', $period))
             ->when(($filters['assigned'] ?? null) === 'me', fn (Builder $query) => $query->where('assigned_to', $user->id))
             ->when(($filters['assigned'] ?? null) === 'unassigned', fn (Builder $query) => $query->whereNull('assigned_to'))
@@ -79,7 +79,7 @@ class ApplicationController extends Controller
                     'student_number' => $application->user->student_number,
                     'full_name_ar' => $application->full_name_ar,
                     'status' => $application->status->value,
-                    'status_label' => $application->status->label(),
+                    'status_label' => $application->status->shownAs()->label(),
                     'phone' => $application->phone,
                     'decisions' => $decisions,
                     // What the message is filled with, only for those who send it.
@@ -101,8 +101,7 @@ class ApplicationController extends Controller
             'filters' => $filters,
             'periods' => ExamPeriod::query()->latest('opens_at')->get(['id', 'name_ar', 'name_en'])
                 ->map(fn (ExamPeriod $period): array => ['id' => $period->id, 'name' => $period->localizedName()]),
-            'statuses' => collect(ApplicationStatus::cases())
-                ->reject(fn (ApplicationStatus $status): bool => $status === ApplicationStatus::Draft)
+            'statuses' => collect(ApplicationStatus::staffStatuses())
                 ->map(fn (ApplicationStatus $status): array => ['value' => $status->value, 'label' => $status->label()])
                 ->values(),
         ]);

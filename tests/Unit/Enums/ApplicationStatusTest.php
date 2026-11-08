@@ -19,9 +19,10 @@ test('the transition table matches ADR-0004', function () {
         'under_review' => ['requires_correction', 'accepted', 'rejected'],
         'requires_correction' => ['resubmitted', 'withdrawn'],
         'resubmitted' => ['under_review'],
-        'accepted' => ['under_review'],
+        'accepted' => ['under_review', 'fees_paid'],
         'rejected' => ['under_review'],
         'withdrawn' => [],
+        'fees_paid' => ['under_review'],
     ]);
 });
 

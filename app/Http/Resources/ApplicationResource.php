@@ -24,7 +24,7 @@ class ApplicationResource extends JsonResource
             'uuid' => $this->uuid,
             'reference_number' => $this->reference_number,
             'status' => $this->status->value,
-            'status_label' => $this->status->label(),
+            'status_label' => $this->status->shownAs()->label(),
             'lock_version' => $this->lock_version,
             'is_editable' => $this->status->isEditableByApplicant(),
             'exam_period' => $this->whenLoaded('examPeriod', fn (): array => [

@@ -6,7 +6,8 @@ export type ApplicationStatus =
     | 'resubmitted'
     | 'accepted'
     | 'rejected'
-    | 'withdrawn';
+    | 'withdrawn'
+    | 'fees_paid';
 
 /** Fields of the official student status form (استمارة واقع حال). */
 export type ApplicationForm = {

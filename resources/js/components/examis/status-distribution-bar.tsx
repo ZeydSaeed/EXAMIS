@@ -18,13 +18,11 @@ type Props = {
 
 /** Display order of the statuses, shared with the dashboard cards. */
 export const statusOrder: ApplicationStatus[] = [
-    'submitted',
     'under_review',
-    'requires_correction',
-    'resubmitted',
     'accepted',
     'rejected',
-    'withdrawn',
+    'requires_correction',
+    'fees_paid',
 ];
 
 /** Non-empty statuses in display order, with their total. */
