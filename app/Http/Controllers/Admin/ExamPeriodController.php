@@ -89,8 +89,8 @@ class ExamPeriodController extends Controller
             'period' => [
                 ...$period->only(['id', 'code', 'name_ar', 'name_en', 'academic_year', 'instructions_ar', 'instructions_en']),
                 'status' => $period->status->value,
-                'opens_at' => $period->opens_at->format('Y-m-d\TH:i'),
-                'closes_at' => $period->closes_at->format('Y-m-d\TH:i'),
+                'opens_at' => $period->opens_at->tz(ExamPeriod::LOCAL_TIMEZONE)->format('Y-m-d\TH:i'),
+                'closes_at' => $period->closes_at->tz(ExamPeriod::LOCAL_TIMEZONE)->format('Y-m-d\TH:i'),
                 'eligible_branch_codes' => $period->eligible_branch_codes ?? [],
                 'eligible_category_codes' => $period->eligible_category_codes ?? [],
                 'documents' => $period->documentTypes->map(fn (DocumentType $type): array => [
