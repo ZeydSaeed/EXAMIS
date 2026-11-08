@@ -43,12 +43,13 @@ install -d -m 700 /var/backups/examis/weekly
 log "Scripts and units"
 install -m 750 "$HERE/examis-backup.sh" /usr/local/sbin/examis-backup.sh
 install -m 755 "$HERE/examis-backup-pull.sh" /usr/local/sbin/examis-backup-pull.sh
-install -m 644 "$HERE/examis-backup@.service" "$HERE/examis-backup-6h.timer" "$HERE/examis-backup-daily.timer"     "$HERE/examis-backup-request.path" /etc/systemd/system/
+install -m 644 "$HERE/examis-backup@.service" "$HERE/examis-backup-6h.timer" "$HERE/examis-backup-daily.timer" \
+    "$HERE/examis-backup-request.path" "$HERE/examis-backup-delete.path" /etc/systemd/system/
 systemctl daemon-reload
 
 if grep -qE '^age1[0-9a-z]{58}$' /etc/examis-backup/recipients.txt 2>/dev/null; then
-    systemctl enable --now examis-backup-6h.timer examis-backup-daily.timer examis-backup-request.path
-    log "Timers and the manual-request watch enabled"
+    systemctl enable --now examis-backup-6h.timer examis-backup-daily.timer examis-backup-request.path examis-backup-delete.path
+    log "Timers and the request watches enabled"
 else
     log "No age public key in /etc/examis-backup/recipients.txt yet: timers NOT enabled"
 fi

@@ -573,6 +573,12 @@ return [
         'set' => 'Copy',
         'updated' => 'Status updated: :time',
         'last_failed' => 'The last backup failed (:time). Check the server log.',
+        'actions' => 'Actions',
+        'delete' => 'Delete',
+        'delete_title' => 'Delete backup',
+        'delete_text' => 'The copy of :time will be deleted from the server for good. Copies already pulled to your computer are not affected.',
+        'deleting' => 'Deleting…',
+        'kept' => 'Last full copy: kept',
         'never' => 'None yet',
     ],
 ];

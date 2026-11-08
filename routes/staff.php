@@ -105,6 +105,10 @@ Route::middleware(['auth:staff', 'can:admin.access'])
         Route::middleware('can:backups.manage')->group(function () {
             Route::get('backups', [Admin\BackupController::class, 'index'])->name('backups.index');
             Route::post('backups', [Admin\BackupController::class, 'store'])->middleware('throttle:6,1')->name('backups.store');
+            Route::delete('backups/{kind}/{set}', [Admin\BackupController::class, 'destroy'])
+                ->where(['kind' => '6h|daily|manual|weekly', 'set' => '\d{8}T\d{6}Z'])
+                ->middleware('throttle:30,1')
+                ->name('backups.destroy');
         });
 
         Route::middleware('can:reports.view')->group(function () {

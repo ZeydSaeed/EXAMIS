@@ -4,6 +4,7 @@
 #   examis-backup.sh 6h      # database only (every 6 hours)
 #   examis-backup.sh daily   # database, applicant files, .env and .db-owner
 #   examis-backup.sh manual  # as daily, asked for from the staff Backups page
+#   examis-backup.sh delete   # removes the sets the Backups page asked to delete
 #
 # Everything is encrypted with age to the recipients in RECIPIENTS before it
 # touches the disk; the private key never lives on this server. Kept here:
@@ -13,14 +14,15 @@
 set -euo pipefail
 umask 077
 
-KIND="${1:?usage: examis-backup.sh 6h|daily|manual}"
+KIND="${1:?usage: examis-backup.sh 6h|daily|manual|delete}"
 # The overrides are for a trial run before installation (no pull group, no
 # off-server copy, another directory).
 ROOT="${EXAMIS_BACKUP_ROOT:-/var/backups/examis}"
 RECIPIENTS="${EXAMIS_BACKUP_RECIPIENTS:-/etc/examis-backup/recipients.txt}"
 SHARED=/srv/examis/shared
 # Shared with the application (root:examis 1770): the staff Backups page reads
-# status.json and asks for a manual backup by creating "request".
+# status.json, asks for a manual backup by creating "request" and for a
+# deletion by creating "delete-<kind>-<set>".
 STATUS_DIR="${EXAMIS_BACKUP_STATUS_DIR:-$SHARED/storage/app/backup-status}"
 ALLOWED_DATABASES=(examis_staging examis_production)
 PULL_GROUP="${EXAMIS_BACKUP_PULL_GROUP-examis-pull}"
@@ -30,7 +32,7 @@ OFFSITE="examis-offsite:examis-staging-backups"
 log() { printf '[backup %s] %s\n' "$KIND" "$*"; }
 fail() { printf '[backup %s] ERROR: %s\n' "$KIND" "$*" >&2; exit 1; }
 
-[[ "$KIND" == 6h || "$KIND" == daily || "$KIND" == manual ]] || fail "kind must be 6h, daily or manual"
+[[ "$KIND" =~ ^(6h|daily|manual|delete)$ ]] || fail "kind must be 6h, daily, manual or delete"
 [[ "$(id -u)" == 0 ]] || fail "run as root"
 grep -qE '^age1[0-9a-z]{58}$' "$RECIPIENTS" 2>/dev/null || fail "no age recipient in $RECIPIENTS"
 
@@ -42,22 +44,26 @@ DB="$(grep -E '^DB_DATABASE=' "$SHARED/.env" | cut -d= -f2-)"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$ROOT/$KIND/$STAMP"
 
-# The staff page shows each kind's sets and the last run. Written to a new
-# file and renamed, so the application never sees half a file and a planted
-# link is replaced, not followed.
+# The staff page shows each kind's sets and the last backup run (kept in
+# $ROOT/last-run, so a deletion does not replace it). Written to a new file
+# and renamed, so the application never sees half a file and a planted link
+# is replaced, not followed.
 write_status() {
     [[ -d "$STATUS_DIR" ]] || return 0
-    local tmp kind name size first_kind=1 first_set
+    local tmp kind name size first_kind=1 first_set last_kind=null last_stamp=null last_result=null
+    if [[ -s "$ROOT/last-run" ]]; then
+        read -r last_kind last_stamp last_result < "$ROOT/last-run"
+    fi
     tmp="$(mktemp "$STATUS_DIR/.status.XXXXXX")"
     {
-        printf '{"updated_at":"%s","last_run":{"kind":"%s","stamp":"%s","result":"%s"},"kinds":{'             "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$KIND" "$STAMP" "$1"
+        printf '{"updated_at":"%s","last_run":{"kind":"%s","stamp":"%s","result":"%s"},"kinds":{' \
+            "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$last_kind" "$last_stamp" "$last_result"
         for kind in 6h daily manual weekly; do
             [[ -d "$ROOT/$kind" ]] || continue
             ((first_kind)) || printf ','
             first_kind=0
             local names=()
-            mapfile -t names < <(find "$ROOT/$kind" -mindepth 1 -maxdepth 1 -type d -printf '%f
-' | grep -E '^[0-9]{8}T[0-9]{6}Z$' | sort -r)
+            mapfile -t names < <(find "$ROOT/$kind" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -E '^[0-9]{8}T[0-9]{6}Z$' | sort -r)
             printf '"%s":{"count":%d,' "$kind" "${#names[@]}"
             if ((${#names[@]})); then
                 printf '"last":"%s","size":%s,' "${names[0]}" "$(du -sb "$ROOT/$kind/${names[0]}" | cut -f1)"
@@ -74,8 +80,7 @@ write_status() {
             done
             printf ']}'
         done
-        printf '}}
-'
+        printf '}}\n'
     } > "$tmp"
     chmod 640 "$tmp"
     chgrp examis "$tmp" 2>/dev/null || true
@@ -91,9 +96,35 @@ flock -w 3600 9 || fail "another backup is still running"
 finish() {
     local code=$?
     [[ "$KIND" != manual ]] || rm -f "$STATUS_DIR/request"
-    write_status "$([[ $code == 0 ]] && echo ok || echo failed)" || true
+    if [[ "$KIND" != delete ]]; then
+        printf '%s %s %s\n' "$KIND" "$STAMP" "$([[ $code == 0 ]] && echo ok || echo failed)" > "$ROOT/last-run"
+    fi
+    write_status || true
 }
 trap finish EXIT
+
+# Deletions asked for from the Backups page. Only the request's file name is
+# read, and it must name an existing set; the last full set (database and
+# files) is always kept.
+if [[ "$KIND" == delete ]]; then
+    full_sets() { find "$ROOT/daily" "$ROOT/manual" "$ROOT/weekly" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l; }
+    for request in "$STATUS_DIR"/delete-*; do
+        [[ -e "$request" ]] || continue
+        base="$(basename -- "$request")"
+        rm -f -- "$request"
+        if [[ ! "$base" =~ ^delete-(6h|daily|manual|weekly)-([0-9]{8}T[0-9]{6}Z)$ ]]; then
+            log "Ignored request $base"
+        elif [[ ! -d "$ROOT/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}" ]]; then
+            log "No set ${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+        elif [[ "${BASH_REMATCH[1]}" != 6h && "$(full_sets)" -le 1 ]]; then
+            log "Kept ${BASH_REMATCH[1]}/${BASH_REMATCH[2]}: the last full set"
+        else
+            rm -rf -- "${ROOT:?}/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+            log "Deleted ${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+        fi
+    done
+    exit 0
+fi
 mkdir -p "$OUT"
 # The owner's computer pulls daily sets as examis-pull: it may enter these
 # directories and read the encrypted files, nothing else.

@@ -1,6 +1,7 @@
 import { Head, router, setLayoutProps, usePage } from '@inertiajs/react';
-import { DatabaseBackup, LoaderCircle } from 'lucide-react';
+import { DatabaseBackup, LoaderCircle, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import InputError from '@/components/input-error';
@@ -9,6 +10,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import admin from '@/routes/admin';
+
+const KINDS = ['6h', 'daily', 'manual', 'weekly'] as const;
 
 type BackupSet = { name: string; size: number };
 
@@ -29,10 +32,14 @@ type Props = {
         >;
     } | null;
     requestedAt: string | null;
+    /** "<kind>/<set>" of deletions the server has not done yet. */
+    deleting: string[];
+    /** The last full copy, which cannot be deleted. */
+    kept: string | null;
     flash: string | null;
 };
 
-const KINDS = ['6h', 'daily', 'manual', 'weekly'] as const;
+type Kind = (typeof KINDS)[number];
 
 /** 20261108T120000Z → 2026-11-08T12:00:00Z */
 function stampToIso(stamp: string): string {
@@ -42,28 +49,62 @@ function stampToIso(stamp: string): string {
     );
 }
 
-export default function BackupsIndex({ status, requestedAt, flash }: Props) {
+export default function BackupsIndex({
+    status,
+    requestedAt,
+    deleting,
+    kept,
+    flash,
+}: Props) {
     const { t, locale } = useTrans();
     const { errors } = usePage().props;
     const [processing, setProcessing] = useState(false);
+    const [toDelete, setToDelete] = useState<{
+        kind: Kind;
+        name: string;
+    } | null>(null);
+    const [deletingNow, setDeletingNow] = useState(false);
+    const waiting = requestedAt !== null || deleting.length > 0;
 
     setLayoutProps({
         breadcrumbs: [{ title: t('nav.backups'), href: admin.backups.index() }],
     });
 
-    // While a requested backup runs, look again every 10 seconds.
+    // While a requested backup or deletion runs, look again every 5 seconds.
     useEffect(() => {
-        if (requestedAt === null) {
+        if (!waiting) {
             return;
         }
 
         const timer = window.setInterval(
-            () => router.reload({ only: ['status', 'requestedAt'] }),
-            10_000,
+            () =>
+                router.reload({
+                    only: ['status', 'requestedAt', 'deleting', 'kept'],
+                }),
+            5_000,
         );
 
         return () => window.clearInterval(timer);
-    }, [requestedAt]);
+    }, [waiting]);
+
+    const destroy = () => {
+        if (toDelete === null) {
+            return;
+        }
+
+        router.delete(
+            admin.backups.destroy.url({
+                kind: toDelete.kind,
+                set: toDelete.name,
+            }),
+            {
+                preserveScroll: true,
+                onStart: () => setDeletingNow(true),
+                onFinish: () => setDeletingNow(false),
+                onSuccess: () => setToDelete(null),
+            },
+        );
+    };
 
     const runNow = () =>
         router.post(
@@ -221,6 +262,12 @@ export default function BackupsIndex({ status, requestedAt, flash }: Props) {
                                         >
                                             {t('backup.size')}
                                         </th>
+                                        <th
+                                            scope="col"
+                                            className="text-center!"
+                                        >
+                                            {t('backup.actions')}
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -241,6 +288,40 @@ export default function BackupsIndex({ status, requestedAt, flash }: Props) {
                                                     locale,
                                                 )}
                                             </td>
+                                            <td className="text-center!">
+                                                {deleting.includes(
+                                                    `${set.kind}/${set.name}`,
+                                                ) ? (
+                                                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                                                        <LoaderCircle
+                                                            className="size-3.5 animate-spin"
+                                                            aria-hidden
+                                                        />
+                                                        {t('backup.deleting')}
+                                                    </span>
+                                                ) : kept ===
+                                                  `${set.kind}/${set.name}` ? (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {t('backup.kept')}
+                                                    </span>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-destructive hover:text-destructive"
+                                                        onClick={() =>
+                                                            setToDelete({
+                                                                kind: set.kind,
+                                                                name: set.name,
+                                                            })
+                                                        }
+                                                    >
+                                                        <Trash2 aria-hidden />
+                                                        {t('backup.delete')}
+                                                    </Button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -255,6 +336,22 @@ export default function BackupsIndex({ status, requestedAt, flash }: Props) {
                     </>
                 )}
             </PageContainer>
+
+            <ConfirmDialog
+                open={toDelete !== null}
+                onOpenChange={(open) => !open && setToDelete(null)}
+                title={t('backup.delete_title')}
+                description={t('backup.delete_text', {
+                    time: toDelete
+                        ? `${formatDateTime(stampToIso(toDelete.name), locale)} (${t(`backup.kinds.${toDelete.kind}`)})`
+                        : '',
+                })}
+                confirmLabel={t('backup.delete')}
+                destructive
+                processing={deletingNow}
+                onConfirm={destroy}
+                body={<InputError message={errors.backup} />}
+            />
         </>
     );
 }

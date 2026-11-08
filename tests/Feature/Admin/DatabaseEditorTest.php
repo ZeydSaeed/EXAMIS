@@ -252,3 +252,48 @@ it('returns to the applications list after deleting a student from it', function
 
     expect(User::query()->whereKey($student->id)->exists())->toBeFalse();
 });
+
+it('asks the server to delete a backup set but never the last full one', function () {
+    $directory = storage_path('framework/testing/backup-status-delete');
+    config(['examis.backups.status_dir' => $directory]);
+    File::deleteDirectory($directory);
+    File::ensureDirectoryExists($directory);
+    File::put($directory.'/status.json', json_encode([
+        'updated_at' => '2026-11-08T12:00:00Z',
+        'kinds' => [
+            '6h' => ['last' => '20261108T120000Z', 'size' => 10, 'count' => 1, 'sets' => [['name' => '20261108T120000Z', 'size' => 10]]],
+            'daily' => ['last' => '20261108T031500Z', 'size' => 20, 'count' => 1, 'sets' => [['name' => '20261108T031500Z', 'size' => 20]]],
+        ],
+    ]));
+    $admin = staffWith(Role::Administrator);
+
+    $this->actingAs($admin)
+        ->get(route('admin.backups.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('kept', 'daily/20261108T031500Z')->where('deleting', []));
+
+    $this->actingAs($admin)
+        ->delete(route('admin.backups.destroy', ['kind' => 'daily', 'set' => '20261108T031500Z']))
+        ->assertSessionHasErrors('backup');
+
+    $this->actingAs($admin)
+        ->delete(route('admin.backups.destroy', ['kind' => '6h', 'set' => '20250101T000000Z']))
+        ->assertNotFound();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.backups.destroy', ['kind' => '6h', 'set' => '20261108T120000Z']))
+        ->assertSessionHasNoErrors();
+
+    expect(File::exists($directory.'/delete-6h-20261108T120000Z'))->toBeTrue()
+        ->and(File::exists($directory.'/delete-daily-20261108T031500Z'))->toBeFalse()
+        ->and(AuditEvent::query()->where('action', 'backup.delete_requested')->exists())->toBeTrue();
+
+    $this->actingAs($admin)
+        ->get(route('admin.backups.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('deleting', ['6h/20261108T120000Z']));
+
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->delete(route('admin.backups.destroy', ['kind' => '6h', 'set' => '20261108T120000Z']))
+        ->assertForbidden();
+
+    File::deleteDirectory($directory);
+});
