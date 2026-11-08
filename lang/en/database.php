@@ -5,6 +5,7 @@ return [
     'saved' => 'Changes saved.',
     'deleted' => 'Row deleted.',
     'student_deleted' => 'The student was deleted with their applications, files and history. A copy taken before the deletion is kept for 30 days.',
+    'application_deleted' => 'The application was deleted with its documents and history. A copy taken before the deletion is kept for 30 days.',
     'tables' => [
         'users' => 'Users (students and staff)',
         'applications' => 'Applications',
@@ -33,6 +34,9 @@ return [
         'datetime' => 'Enter a valid date and time (UTC), for example 2026-11-08 15:30:00.',
         'date' => 'Enter a valid date, for example 2026-11-08.',
         'binary' => 'This field cannot be edited.',
+        'linked_rows' => 'This row cannot be deleted because rows in “:table” are linked to it. Delete or change those rows first.',
+        'linked_rows_unknown' => 'This row cannot be deleted because other rows are linked to it. Delete them first.',
+        'missing_reference' => 'The value in :column does not exist in “:table”.',
         'write_failed' => 'The database refused the change: :message',
         'self' => 'You cannot delete your own account.',
         'confirm_student' => 'Type the student number exactly to confirm the deletion.',

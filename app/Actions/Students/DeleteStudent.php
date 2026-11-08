@@ -15,9 +15,10 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Deletes a student for good from the staff database screen: the account,
  * every application, uploaded file, history entry, notification, remembered
- * device and session. Before anything is removed, the rows and files are
- * copied to a snapshot on the private disk (kept 30 days, see
- * examis:prune-deleted-students), so a mistake can still be undone by hand.
+ * device and session; or one application the same way. Before anything is
+ * removed, the rows and files are copied to a snapshot on the private disk
+ * (kept 30 days, see examis:prune-deleted-students), so a mistake can still
+ * be undone by hand.
  *
  * Application history is append-only in PostgreSQL; this transaction is the
  * one place allowed to delete from it (examis.allow_history_delete).
@@ -41,9 +42,29 @@ class DeleteStudent
         }
 
         $applications = Application::query()->where('user_id', $student->id)->get();
+
+        return $this->purge($applications, $actor, (string) ($student->student_number ?? $student->id), $student);
+    }
+
+    /**
+     * One application with its uploaded files and history; the student's
+     * account stays.
+     *
+     * @return string The snapshot directory on the local disk.
+     */
+    public function application(Application $application, User $actor): string
+    {
+        return $this->purge(new Collection([$application]), $actor, 'application-'.($application->reference_number ?? $application->id));
+    }
+
+    /**
+     * @param  Collection<int, Application>  $applications
+     */
+    private function purge(Collection $applications, User $actor, string $name, ?User $student = null): string
+    {
         $applicationIds = $applications->modelKeys();
         $documents = ApplicationDocument::query()->whereIn('application_id', $applicationIds)->get();
-        $snapshot = $this->snapshot($student, $applications, $documents);
+        $snapshot = $this->snapshot($name, $student, $applications, $documents);
 
         DB::transaction(function () use ($student, $actor, $applications, $applicationIds, $documents, $snapshot): void {
             if (DB::getDriverName() === 'pgsql') {
@@ -53,6 +74,17 @@ class DeleteStudent
             DB::table('application_events')->whereIn('application_id', $applicationIds)->delete();
             DB::table('application_documents')->whereIn('application_id', $applicationIds)->delete();
             DB::table('applications')->whereIn('id', $applicationIds)->delete();
+
+            if ($student === null) {
+                $this->audit->record('application.deleted', $applications->first(), [
+                    'reference' => $applications->first()?->reference_number,
+                    'documents' => $documents->count(),
+                    'snapshot' => $snapshot,
+                ], $actor);
+
+                return;
+            }
+
             DB::table('notifications')->where('notifiable_type', $student->getMorphClass())->where('notifiable_id', $student->id)->delete();
             DB::table('trusted_devices')->where('user_id', $student->id)->delete();
             DB::table('sessions')->where('user_id', $student->id)->delete();
@@ -83,16 +115,16 @@ class DeleteStudent
      * @param  Collection<int, Application>  $applications
      * @param  Collection<int, ApplicationDocument>  $documents
      */
-    private function snapshot(User $student, Collection $applications, Collection $documents): string
+    private function snapshot(string $name, ?User $student, Collection $applications, Collection $documents): string
     {
         $applicationIds = $applications->modelKeys();
         $disk = Storage::disk('local');
-        $directory = self::SNAPSHOT_DIRECTORY.'/'.now()->utc()->format('Ymd\THis\Z').'-'.($student->student_number ?? $student->id);
+        $directory = self::SNAPSHOT_DIRECTORY.'/'.now()->utc()->format('Ymd\THis\Z').'-'.$name;
         $rows = fn (string $table, string $column, array $ids): array => DB::table($table)->whereIn($column, $ids)->get()
             ->map(fn (object $row): array => $this->tables->withoutSecrets((array) $row))->all();
 
         $disk->put($directory.'/rows.json', (string) json_encode([
-            'users' => $rows('users', 'id', [$student->id]),
+            'users' => $student !== null ? $rows('users', 'id', [$student->id]) : [],
             'applications' => $rows('applications', 'id', $applicationIds),
             'application_documents' => $rows('application_documents', 'application_id', $applicationIds),
             'application_events' => $rows('application_events', 'application_id', $applicationIds),

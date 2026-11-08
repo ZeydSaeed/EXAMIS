@@ -111,7 +111,31 @@ it('shows a refused write as a message instead of a server error', function () {
         ->delete(route('admin.database.destroy', 'exam_periods'), ['key' => rowKey('exam_periods', ['id' => $application->exam_period_id])])
         ->assertSessionHasErrors('database');
 
-    expect(ExamPeriod::query()->whereKey($application->exam_period_id)->exists())->toBeTrue();
+    expect(ExamPeriod::query()->whereKey($application->exam_period_id)->exists())->toBeTrue()
+        ->and(session('errors')->first('database'))->not->toContain('SQLSTATE');
+});
+
+it('deletes an application with its documents and history, and keeps the student', function () {
+    Storage::fake('documents');
+    Storage::fake('local');
+    $admin = staffWith(Role::Administrator);
+    $student = User::factory()->student()->create();
+    $application = Application::factory()->for($student)->create();
+    $document = ApplicationDocument::factory()->for($application)->create(['uploaded_by' => $student->id]);
+    $application->events()->create(['type' => 'created']);
+
+    $this->actingAs($admin)
+        ->delete(route('admin.database.destroy', 'applications'), ['key' => rowKey('applications', ['id' => $application->id])])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('admin.database.table', 'applications'));
+
+    expect(Application::query()->whereKey($application->id)->exists())->toBeFalse()
+        ->and(ApplicationDocument::query()->whereKey($document->id)->exists())->toBeFalse()
+        ->and(User::query()->whereKey($student->id)->exists())->toBeTrue();
+    Storage::disk('documents')->assertMissing($document->path);
+
+    $snapshot = AuditEvent::query()->where('action', 'application.deleted')->firstOrFail()->metadata['snapshot'];
+    Storage::disk('local')->assertExists($snapshot.'/files/'.$document->path);
 });
 
 it('keeps history and access tables read-only', function () {

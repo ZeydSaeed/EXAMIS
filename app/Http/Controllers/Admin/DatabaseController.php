@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Students\DeleteStudent;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Database\TableEditor;
@@ -146,6 +147,14 @@ class DatabaseController extends Controller
             }
         }
 
+        // An application goes with its uploaded files and history, which
+        // cannot exist without it.
+        if ($table === 'applications') {
+            $deleteStudent->application(Application::query()->whereKey($row['id'])->firstOrFail(), $request->user());
+
+            return to_route('admin.database.table', $table)->with('status', __('database.application_deleted'));
+        }
+
         $this->write(function () use ($table, $key): void {
             $this->tables->whereKey($table, $key)->delete();
         });
@@ -242,10 +251,32 @@ class DatabaseController extends Controller
         try {
             DB::transaction($callback);
         } catch (QueryException $exception) {
-            $message = Str::limit(Str::before($exception->getPrevious()?->getMessage() ?? $exception->getMessage(), "\n"), 300);
-
-            throw ValidationException::withMessages(['database' => __('database.errors.write_failed', ['message' => $message])]);
+            throw ValidationException::withMessages(['database' => $this->explain($exception)]);
         }
+    }
+
+    /**
+     * A refused write in words staff can act on: which linked table blocks a
+     * delete, or which value points at a row that does not exist.
+     */
+    private function explain(QueryException $exception): string
+    {
+        $message = $exception->getPrevious()?->getMessage() ?? $exception->getMessage();
+
+        // 23503: foreign key; 23001: a foreign key declared ON DELETE RESTRICT.
+        if (preg_match('/SQLSTATE\[(23503|23001)\]/', $message) === 1 || str_contains($message, 'FOREIGN KEY constraint failed')) {
+            if (preg_match('/Key \(([a-z_]+)\)=.* is not present in table "([a-z_]+)"/', $message, $missing) === 1) {
+                return __('database.errors.missing_reference', ['column' => $missing[1], 'table' => $this->label($missing[2])]);
+            }
+
+            if (preg_match_all('/on table "([a-z_]+)"/', $message, $tables) >= 2) {
+                return __('database.errors.linked_rows', ['table' => $this->label((string) end($tables[1]))]);
+            }
+
+            return __('database.errors.linked_rows_unknown');
+        }
+
+        return __('database.errors.write_failed', ['message' => Str::limit(Str::before($message, "\n"), 300)]);
     }
 
     private function differs(mixed $stored, mixed $new): bool
