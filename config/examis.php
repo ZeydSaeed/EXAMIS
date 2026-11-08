@@ -113,6 +113,14 @@ return [
     |
     */
 
+    /*
+    | Shared with the server's backup job (deploy/backup): it writes
+    | status.json here, and a "request" file here starts a manual backup.
+    */
+    'backups' => [
+        'status_dir' => env('EXAMIS_BACKUP_STATUS_DIR', storage_path('app/backup-status')),
+    ],
+
     'documents' => [
         'disk' => env('DOCUMENTS_DISK', 'documents'),
         'scanner' => env('DOCUMENT_SCANNER', 'structural'),

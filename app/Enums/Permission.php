@@ -20,6 +20,9 @@ enum Permission: string
     case UsersManage = 'users.manage';
     case StaffCredentials = 'staff.credentials';
     case ReportsView = 'reports.view';
+    case DatabaseView = 'database.view';
+    case DatabaseManage = 'database.manage';
+    case BackupsManage = 'backups.manage';
 
     /**
      * Whether a per-staff exception may touch this permission. These three

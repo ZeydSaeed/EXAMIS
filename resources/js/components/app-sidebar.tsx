@@ -3,6 +3,8 @@ import {
     BarChart3,
     CalendarRange,
     ClipboardList,
+    Database,
+    DatabaseBackup,
     FileSpreadsheet,
     FileText,
     HelpCircle,
@@ -102,6 +104,24 @@ export function AppSidebar() {
                       title: t('nav.users'),
                       href: admin.users.index(),
                       icon: Users,
+                  },
+              ]
+            : []),
+        ...(can('database.view')
+            ? [
+                  {
+                      title: t('nav.database'),
+                      href: admin.database.index(),
+                      icon: Database,
+                  },
+              ]
+            : []),
+        ...(can('backups.manage')
+            ? [
+                  {
+                      title: t('nav.backups'),
+                      href: admin.backups.index(),
+                      icon: DatabaseBackup,
                   },
               ]
             : []),

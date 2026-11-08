@@ -89,6 +89,24 @@ Route::middleware(['auth:staff', 'can:admin.access'])
             Route::post('students/{user}/access-code', [Admin\StudentAccessController::class, 'store'])->name('students.access-code');
         });
 
+        Route::middleware('can:database.view')->group(function () {
+            Route::get('database', [Admin\DatabaseController::class, 'index'])->name('database.index');
+            Route::get('database/{table}', [Admin\DatabaseController::class, 'show'])->where('table', '[a-z_]+')->name('database.table');
+            Route::get('database/{table}/row', [Admin\DatabaseController::class, 'edit'])->where('table', '[a-z_]+')->name('database.edit');
+
+            Route::middleware('can:database.manage')->group(function () {
+                Route::get('database/{table}/create', [Admin\DatabaseController::class, 'create'])->where('table', '[a-z_]+')->name('database.create');
+                Route::post('database/{table}', [Admin\DatabaseController::class, 'store'])->where('table', '[a-z_]+')->name('database.store');
+                Route::put('database/{table}/row', [Admin\DatabaseController::class, 'update'])->where('table', '[a-z_]+')->name('database.update');
+                Route::delete('database/{table}/row', [Admin\DatabaseController::class, 'destroy'])->where('table', '[a-z_]+')->name('database.destroy');
+            });
+        });
+
+        Route::middleware('can:backups.manage')->group(function () {
+            Route::get('backups', [Admin\BackupController::class, 'index'])->name('backups.index');
+            Route::post('backups', [Admin\BackupController::class, 'store'])->middleware('throttle:6,1')->name('backups.store');
+        });
+
         Route::middleware('can:reports.view')->group(function () {
             Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');
             Route::get('reports/{period}/export', [Admin\ReportController::class, 'export'])->name('reports.export');

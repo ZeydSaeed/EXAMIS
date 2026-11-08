@@ -14,4 +14,7 @@ return [
     'users.manage' => 'إدارة المستخدمين',
     'staff.credentials' => 'روابط الدخول',
     'reports.view' => 'عرض التقارير',
+    'database.view' => 'قاعدة بيانات الطلبة: عرض',
+    'database.manage' => 'قاعدة بيانات الطلبة: إضافة وتعديل وحذف',
+    'backups.manage' => 'النسخ الاحتياطي',
 ];

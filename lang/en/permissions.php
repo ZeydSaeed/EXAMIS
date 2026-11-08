@@ -14,4 +14,7 @@ return [
     'users.manage' => 'Manage users',
     'staff.credentials' => 'Sign-in links',
     'reports.view' => 'View reports',
+    'database.view' => 'Students database: view',
+    'database.manage' => 'Students database: add, edit and delete',
+    'backups.manage' => 'Backups',
 ];

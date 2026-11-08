@@ -14,7 +14,7 @@ use App\Models\User;
 function reviewedMatrix(): array
 {
     return [
-        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'staff.credentials', 'reports.view'],
+        'administrator' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'periods.manage', 'content.manage', 'users.manage', 'staff.credentials', 'reports.view', 'database.view', 'database.manage', 'backups.manage'],
         'supervisor' => ['admin.access', 'applications.view', 'applications.view_all', 'applications.review', 'applications.decide', 'applications.assign', 'applications.reopen', 'documents.view', 'reports.view'],
         'reviewer' => ['admin.access', 'applications.view', 'applications.review', 'documents.view'],
         'auditor' => ['admin.access', 'applications.view', 'applications.view_all', 'reports.view'],

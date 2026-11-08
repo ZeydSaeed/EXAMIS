@@ -39,6 +39,9 @@ enum Role: string
                 Permission::UsersManage,
                 Permission::StaffCredentials,
                 Permission::ReportsView,
+                Permission::DatabaseView,
+                Permission::DatabaseManage,
+                Permission::BackupsManage,
             ],
             self::Supervisor => [
                 Permission::AdminAccess,
