@@ -70,7 +70,7 @@ export default function BackupsIndex({
         breadcrumbs: [{ title: t('nav.backups'), href: admin.backups.index() }],
     });
 
-    // While a requested backup or deletion runs, look again every 5 seconds.
+    // While a requested backup or deletion runs, look again every 2 seconds.
     useEffect(() => {
         if (!waiting) {
             return;
@@ -81,7 +81,7 @@ export default function BackupsIndex({
                 router.reload({
                     only: ['status', 'requestedAt', 'deleting', 'kept'],
                 }),
-            5_000,
+            2_000,
         );
 
         return () => window.clearInterval(timer);
@@ -117,9 +117,13 @@ export default function BackupsIndex({
             },
         );
 
+    // A set asked to be deleted leaves the list at once; the server removes
+    // it within a second or two.
     const sets = KINDS.flatMap((kind) =>
         (status?.kinds[kind]?.sets ?? []).map((set) => ({ ...set, kind })),
-    ).sort((a, b) => b.name.localeCompare(a.name));
+    )
+        .filter((set) => !deleting.includes(`${set.kind}/${set.name}`))
+        .sort((a, b) => b.name.localeCompare(a.name));
 
     return (
         <>
@@ -289,18 +293,8 @@ export default function BackupsIndex({
                                                 )}
                                             </td>
                                             <td className="text-center!">
-                                                {deleting.includes(
-                                                    `${set.kind}/${set.name}`,
-                                                ) ? (
-                                                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                                                        <LoaderCircle
-                                                            className="size-3.5 animate-spin"
-                                                            aria-hidden
-                                                        />
-                                                        {t('backup.deleting')}
-                                                    </span>
-                                                ) : kept ===
-                                                  `${set.kind}/${set.name}` ? (
+                                                {kept ===
+                                                `${set.kind}/${set.name}` ? (
                                                     <span className="text-xs text-muted-foreground">
                                                         {t('backup.kept')}
                                                     </span>
