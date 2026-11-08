@@ -250,7 +250,6 @@ return [
         'finish_download_confirm' => 'Yes, I have the file',
         'finish_retry' => 'No, try again',
         'print_title' => 'Confirm printing the form and sending the application',
-        'print_text' => 'Printing the form as a PDF is your final confirmation that the application goes to the review committee. The form can then no longer be edited, and once it is printed or downloaded the account closes for good, with no further sign-in. To change or update your details later, you must register a new account.',
         'print_back_text' => 'You can go back to the review page to check your details and correct them before continuing.',
         'print_back' => 'Go back to check and edit',
         'print_accept' => 'I agree, send the application and print the form',

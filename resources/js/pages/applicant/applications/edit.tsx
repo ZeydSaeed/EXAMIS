@@ -941,12 +941,7 @@ export default function EditApplication({
                             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                                 <ConfirmDialog
                                     title={t('applicant.print_title')}
-                                    description={t('applicant.print_text')}
-                                    body={
-                                        <p className="text-sm text-muted-foreground">
-                                            {t('applicant.print_back_text')}
-                                        </p>
-                                    }
+                                    description={t('applicant.print_back_text')}
                                     confirmLabel={t('applicant.print_accept')}
                                     cancelLabel={t('applicant.print_back')}
                                     open={confirmingPrint}
