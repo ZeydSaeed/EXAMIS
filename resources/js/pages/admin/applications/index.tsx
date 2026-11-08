@@ -1,5 +1,6 @@
-import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
-import { Eye, Inbox, Plus } from 'lucide-react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { Eye, Inbox, Pencil, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
@@ -38,6 +39,12 @@ type Row = {
     phone: string | null;
     decisions: { value: string; label: string; requires_reason: boolean }[];
     contact: MessageContact | null;
+    /** Only for staff who may edit the database. */
+    manage: {
+        application_key: string;
+        student_key: string;
+        confirm: string;
+    } | null;
 };
 
 type Template = { id: number; title: string; status: string; body: string };
@@ -289,6 +296,78 @@ function StatusCell({
     );
 }
 
+/**
+ * Deletes the student for good (account, applications, files, history)
+ * after their student number is typed, through the database screen.
+ */
+function DeleteStudentDialog({
+    row,
+    onClose,
+}: {
+    row: Row | null;
+    onClose: () => void;
+}) {
+    const { t } = useTrans();
+    const [typed, setTyped] = useState('');
+    const [error, setError] = useState<string | undefined>();
+    const [processing, setProcessing] = useState(false);
+
+    const close = () => {
+        setTyped('');
+        setError(undefined);
+        onClose();
+    };
+
+    return (
+        <ConfirmDialog
+            open={row !== null}
+            onOpenChange={(open) => !open && close()}
+            title={t('db.delete_student')}
+            description={t('db.delete_student_text', {
+                number: row?.manage?.confirm ?? '',
+            })}
+            confirmLabel={t('db.delete_student')}
+            cancelLabel={t('db.cancel')}
+            destructive
+            processing={processing}
+            onConfirm={() =>
+                router.delete(admin.database.destroy.url('users'), {
+                    data: {
+                        key: row?.manage?.student_key,
+                        confirm: typed,
+                        stay: true,
+                    },
+                    preserveScroll: true,
+                    onStart: () => setProcessing(true),
+                    onFinish: () => setProcessing(false),
+                    onError: (errors) =>
+                        setError(errors.confirm ?? errors.database),
+                    onSuccess: () => {
+                        toast.success(t('admin.student_deleted'));
+                        close();
+                    },
+                })
+            }
+            body={
+                <Field
+                    id="confirm-student-delete"
+                    label={t('db.confirm_label')}
+                    error={error}
+                >
+                    <Input
+                        id="confirm-student-delete"
+                        dir="ltr"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        value={typed}
+                        onChange={(event) => setTyped(event.target.value)}
+                    />
+                </Field>
+            }
+        />
+    );
+}
+
 export default function AdminApplications({
     applications,
     templates,
@@ -299,6 +378,8 @@ export default function AdminApplications({
     const { t } = useTrans();
     // Held here: a decision can take the row out of a filtered list.
     const [sent, setSent] = useState<SentMessage | null>(null);
+    const [deleting, setDeleting] = useState<Row | null>(null);
+    const showActions = applications.data.some((row) => row.manage !== null);
     const { search, setSearch, urlFor, visit, tableArea } = useListQuery({
         url: admin.applications.index.url,
         filters,
@@ -331,6 +412,11 @@ export default function AdminApplications({
                 phone={sent?.phone ?? null}
                 open={sent !== null}
                 onOpenChange={(open) => !open && setSent(null)}
+            />
+
+            <DeleteStudentDialog
+                row={deleting}
+                onClose={() => setDeleting(null)}
             />
 
             <ListHeader
@@ -407,6 +493,14 @@ export default function AdminApplications({
                                         >
                                             {t('admin.preview')}
                                         </th>
+                                        {showActions && (
+                                            <th
+                                                scope="col"
+                                                className="text-center!"
+                                            >
+                                                {t('admin.actions')}
+                                            </th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -480,6 +574,57 @@ export default function AdminApplications({
                                                     </a>
                                                 </Button>
                                             </td>
+                                            {showActions && (
+                                                <td className="text-center!">
+                                                    {row.manage && (
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <Button
+                                                                asChild
+                                                                variant="ghost"
+                                                                size="sm"
+                                                            >
+                                                                <Link
+                                                                    href={admin.database.edit(
+                                                                        'applications',
+                                                                        {
+                                                                            query: {
+                                                                                key: row
+                                                                                    .manage
+                                                                                    .application_key,
+                                                                            },
+                                                                        },
+                                                                    )}
+                                                                >
+                                                                    <Pencil
+                                                                        aria-hidden
+                                                                    />
+                                                                    {t(
+                                                                        'admin.edit_student',
+                                                                    )}
+                                                                </Link>
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-destructive hover:text-destructive"
+                                                                onClick={() =>
+                                                                    setDeleting(
+                                                                        row,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Trash2
+                                                                    aria-hidden
+                                                                />
+                                                                {t(
+                                                                    'admin.delete_student',
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                 </tbody>

@@ -143,7 +143,7 @@ class DatabaseController extends Controller
             if ($row['account_type'] === 'applicant') {
                 $deleteStudent->handle(User::query()->whereKey($row['id'])->firstOrFail(), $request->user());
 
-                return to_route('admin.database.table', $table)->with('status', __('database.student_deleted'));
+                return $this->afterDelete($request, $table, __('database.student_deleted'));
             }
         }
 
@@ -152,7 +152,7 @@ class DatabaseController extends Controller
         if ($table === 'applications') {
             $deleteStudent->application(Application::query()->whereKey($row['id'])->firstOrFail(), $request->user());
 
-            return to_route('admin.database.table', $table)->with('status', __('database.application_deleted'));
+            return $this->afterDelete($request, $table, __('database.application_deleted'));
         }
 
         $this->write(function () use ($table, $key): void {
@@ -161,7 +161,16 @@ class DatabaseController extends Controller
 
         $audit->record('database.row_deleted', null, ['table' => $table, 'key' => $key, 'row' => $this->forAudit($this->tables->withoutSecrets($row))]);
 
-        return to_route('admin.database.table', $table)->with('status', __('database.deleted'));
+        return $this->afterDelete($request, $table, __('database.deleted'));
+    }
+
+    /**
+     * Back to the table, or to the page that asked (the applications list
+     * sends "stay").
+     */
+    private function afterDelete(Request $request, string $table, string $status): RedirectResponse
+    {
+        return ($request->boolean('stay') ? back() : to_route('admin.database.table', $table))->with('status', $status);
     }
 
     /**

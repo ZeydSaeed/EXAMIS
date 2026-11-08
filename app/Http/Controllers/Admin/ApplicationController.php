@@ -15,6 +15,7 @@ use App\Models\ExamPeriod;
 use App\Models\MessageTemplate;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Database\TableEditor;
 use App\Services\ReferenceData;
 use App\Services\Students\StudentIdentity;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,7 +38,7 @@ class ApplicationController extends Controller
      */
     private const ARABIC_FOLDS = ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ى' => 'ي', 'ة' => 'ه'];
 
-    public function index(Request $request, DecideApplication $decide, ReferenceData $referenceData): Response|RedirectResponse
+    public function index(Request $request, DecideApplication $decide, ReferenceData $referenceData, TableEditor $tables): Response|RedirectResponse
     {
         Gate::authorize('viewAny', Application::class);
 
@@ -57,6 +58,8 @@ class ApplicationController extends Controller
             return to_route('admin.applications.show', $scanned);
         }
 
+        $canManage = $user->hasPermission(Permission::DatabaseManage);
+
         $applications = Application::query()
             ->visibleToStaff($user)
             ->with('user:id,student_number')
@@ -71,7 +74,7 @@ class ApplicationController extends Controller
             ->orderBy('id')
             ->paginate((int) ($filters['per_page'] ?? self::PER_PAGE))
             ->withQueryString()
-            ->through(function (Application $application) use ($decide, $user, $referenceData): array {
+            ->through(function (Application $application) use ($decide, $user, $referenceData, $tables, $canManage): array {
                 $decisions = $decide->options($application, $user);
 
                 return [
@@ -90,6 +93,12 @@ class ApplicationController extends Controller
                         'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
                         'phone' => StudentIdentity::internationalPhone($application->phone),
                     ],
+                    // Edit and delete go through the database screen (database.manage).
+                    'manage' => $canManage ? [
+                        'application_key' => $tables->keyToken('applications', ['id' => $application->id]),
+                        'student_key' => $tables->keyToken('users', ['id' => $application->user->id]),
+                        'confirm' => (string) ($application->user->student_number ?? $application->user->id),
+                    ] : null,
                 ];
             });
 

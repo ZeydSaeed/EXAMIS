@@ -221,3 +221,35 @@ it('asks for a manual backup with a request file and shows the server status', f
 
     File::deleteDirectory($directory);
 });
+
+it('offers edit and delete on the applications list only to staff who manage the database', function () {
+    $application = Application::factory()->submitted()->create();
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->get(route('admin.applications.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('applications.data.0.manage.application_key', rowKey('applications', ['id' => $application->id]))
+            ->where('applications.data.0.manage.student_key', rowKey('users', ['id' => $application->user_id])));
+
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->get(route('admin.applications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.manage', null));
+});
+
+it('returns to the applications list after deleting a student from it', function () {
+    Storage::fake('documents');
+    Storage::fake('local');
+    $application = Application::factory()->submitted()->for(User::factory()->student())->create();
+    $student = $application->user;
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->from(route('admin.applications.index'))
+        ->delete(route('admin.database.destroy', 'users'), [
+            'key' => rowKey('users', ['id' => $student->id]),
+            'confirm' => (string) $student->student_number,
+            'stay' => true,
+        ])
+        ->assertRedirect(route('admin.applications.index'));
+
+    expect(User::query()->whereKey($student->id)->exists())->toBeFalse();
+});
