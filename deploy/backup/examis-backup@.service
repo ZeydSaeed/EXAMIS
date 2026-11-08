@@ -1,5 +1,5 @@
 [Unit]
-Description=EXAMIS staging backup (%i)
+Description=EXAMIS backup (%i)
 After=postgresql.service network-online.target
 Wants=network-online.target
 
@@ -16,7 +16,7 @@ MemoryMax=512M
 TimeoutStartSec=2h
 UMask=0077
 ProtectSystem=strict
-ReadWritePaths=/var/backups/examis
+ReadWritePaths=/var/backups/examis -/srv/examis/shared/storage/app/backup-status
 ProtectHome=read-only
 PrivateTmp=true
 PrivateDevices=true

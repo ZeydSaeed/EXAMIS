@@ -34,18 +34,21 @@ chmod 600 /var/lib/examis-pull/.ssh/authorized_keys
 
 log "Directories"
 install -d -m 700 /etc/examis-backup /root/.config/rclone
-install -d -m 750 -g examis-pull /var/backups/examis /var/backups/examis/daily /var/backups/examis/6h
+install -d -m 750 -g examis-pull /var/backups/examis /var/backups/examis/daily /var/backups/examis/6h /var/backups/examis/manual
+# Shared with the application: it reads status.json and creates "request";
+# sticky, so it cannot replace what the backup writes.
+install -d -m 1770 -o root -g examis /srv/examis/shared/storage/app/backup-status
 install -d -m 700 /var/backups/examis/weekly
 
 log "Scripts and units"
 install -m 750 "$HERE/examis-backup.sh" /usr/local/sbin/examis-backup.sh
 install -m 755 "$HERE/examis-backup-pull.sh" /usr/local/sbin/examis-backup-pull.sh
-install -m 644 "$HERE/examis-backup@.service" "$HERE/examis-backup-6h.timer" "$HERE/examis-backup-daily.timer" /etc/systemd/system/
+install -m 644 "$HERE/examis-backup@.service" "$HERE/examis-backup-6h.timer" "$HERE/examis-backup-daily.timer"     "$HERE/examis-backup-request.path" /etc/systemd/system/
 systemctl daemon-reload
 
 if grep -qE '^age1[0-9a-z]{58}$' /etc/examis-backup/recipients.txt 2>/dev/null; then
-    systemctl enable --now examis-backup-6h.timer examis-backup-daily.timer
-    log "Timers enabled"
+    systemctl enable --now examis-backup-6h.timer examis-backup-daily.timer examis-backup-request.path
+    log "Timers and the manual-request watch enabled"
 else
     log "No age public key in /etc/examis-backup/recipients.txt yet: timers NOT enabled"
 fi

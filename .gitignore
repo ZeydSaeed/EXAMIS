@@ -46,3 +46,6 @@ yarn-error.log
 /storage/releases
 /playwright-report
 /test-results
+
+# Encrypted backup sets pulled from the server (deploy/backup/pull-latest.ps1).
+/database/backup/

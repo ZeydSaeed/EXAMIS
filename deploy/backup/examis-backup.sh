@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# EXAMIS staging backup, run as root by examis-backup@<kind>.service:
+# EXAMIS backup, run as root by examis-backup@<kind>.service:
 #
 #   examis-backup.sh 6h      # database only (every 6 hours)
 #   examis-backup.sh daily   # database, applicant files, .env and .db-owner
+#   examis-backup.sh manual  # as daily, asked for from the staff Backups page
 #
 # Everything is encrypted with age to the recipients in RECIPIENTS before it
 # touches the disk; the private key never lives on this server. Kept here:
@@ -12,12 +13,15 @@
 set -euo pipefail
 umask 077
 
-KIND="${1:?usage: examis-backup.sh 6h|daily}"
+KIND="${1:?usage: examis-backup.sh 6h|daily|manual}"
 # The overrides are for a trial run before installation (no pull group, no
 # off-server copy, another directory).
 ROOT="${EXAMIS_BACKUP_ROOT:-/var/backups/examis}"
 RECIPIENTS="${EXAMIS_BACKUP_RECIPIENTS:-/etc/examis-backup/recipients.txt}"
 SHARED=/srv/examis/shared
+# Shared with the application (root:examis 1770): the staff Backups page reads
+# status.json and asks for a manual backup by creating "request".
+STATUS_DIR="${EXAMIS_BACKUP_STATUS_DIR:-$SHARED/storage/app/backup-status}"
 ALLOWED_DATABASES=(examis_staging examis_production)
 PULL_GROUP="${EXAMIS_BACKUP_PULL_GROUP-examis-pull}"
 RCLONE_CONFIG="${EXAMIS_BACKUP_RCLONE_CONFIG:-/root/.config/rclone/rclone.conf}"
@@ -26,7 +30,7 @@ OFFSITE="examis-offsite:examis-staging-backups"
 log() { printf '[backup %s] %s\n' "$KIND" "$*"; }
 fail() { printf '[backup %s] ERROR: %s\n' "$KIND" "$*" >&2; exit 1; }
 
-[[ "$KIND" == 6h || "$KIND" == daily ]] || fail "kind must be 6h or daily"
+[[ "$KIND" == 6h || "$KIND" == daily || "$KIND" == manual ]] || fail "kind must be 6h, daily or manual"
 [[ "$(id -u)" == 0 ]] || fail "run as root"
 grep -qE '^age1[0-9a-z]{58}$' "$RECIPIENTS" 2>/dev/null || fail "no age recipient in $RECIPIENTS"
 
@@ -37,6 +41,59 @@ DB="$(grep -E '^DB_DATABASE=' "$SHARED/.env" | cut -d= -f2-)"
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$ROOT/$KIND/$STAMP"
+
+# The staff page shows each kind's sets and the last run. Written to a new
+# file and renamed, so the application never sees half a file and a planted
+# link is replaced, not followed.
+write_status() {
+    [[ -d "$STATUS_DIR" ]] || return 0
+    local tmp kind name size first_kind=1 first_set
+    tmp="$(mktemp "$STATUS_DIR/.status.XXXXXX")"
+    {
+        printf '{"updated_at":"%s","last_run":{"kind":"%s","stamp":"%s","result":"%s"},"kinds":{'             "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$KIND" "$STAMP" "$1"
+        for kind in 6h daily manual weekly; do
+            [[ -d "$ROOT/$kind" ]] || continue
+            ((first_kind)) || printf ','
+            first_kind=0
+            local names=()
+            mapfile -t names < <(find "$ROOT/$kind" -mindepth 1 -maxdepth 1 -type d -printf '%f
+' | grep -E '^[0-9]{8}T[0-9]{6}Z$' | sort -r)
+            printf '"%s":{"count":%d,' "$kind" "${#names[@]}"
+            if ((${#names[@]})); then
+                printf '"last":"%s","size":%s,' "${names[0]}" "$(du -sb "$ROOT/$kind/${names[0]}" | cut -f1)"
+            else
+                printf '"last":null,"size":null,'
+            fi
+            printf '"sets":['
+            first_set=1
+            for name in "${names[@]}"; do
+                size="$(du -sb "$ROOT/$kind/$name" | cut -f1)"
+                ((first_set)) || printf ','
+                first_set=0
+                printf '{"name":"%s","size":%s}' "$name" "$size"
+            done
+            printf ']}'
+        done
+        printf '}}
+'
+    } > "$tmp"
+    chmod 640 "$tmp"
+    chgrp examis "$tmp" 2>/dev/null || true
+    mv -f "$tmp" "$STATUS_DIR/status.json"
+}
+
+# One backup at a time: a manual request during the 6-hourly run waits.
+exec 9> "$ROOT/.lock"
+flock -w 3600 9 || fail "another backup is still running"
+
+# Whatever happens, a manual request is answered once (so the path unit does
+# not start it again) and the page learns the result.
+finish() {
+    local code=$?
+    [[ "$KIND" != manual ]] || rm -f "$STATUS_DIR/request"
+    write_status "$([[ $code == 0 ]] && echo ok || echo failed)" || true
+}
+trap finish EXIT
 mkdir -p "$OUT"
 # The owner's computer pulls daily sets as examis-pull: it may enter these
 # directories and read the encrypted files, nothing else.
@@ -62,7 +119,7 @@ runuser -u postgres -- psql --dbname="$DB" -AtF' ' -c "
     from pg_class t join pg_namespace n on n.oid = t.relnamespace
     where t.relkind = 'r' and n.nspname = 'public' order by 1" > "$OUT/row-counts.txt"
 
-if [[ "$KIND" == daily ]]; then
+if [[ "$KIND" == daily || "$KIND" == manual ]]; then
     log "Applicant files"
     (cd "$SHARED/storage/app" && find . -type f -print0 | sort -z | xargs -0 -r sha256sum) | encrypt "$OUT/files.sha256.age"
     tar -C "$SHARED/storage" -cf - app | encrypt "$OUT/files.tar.age"
@@ -86,6 +143,7 @@ prune() { find "$ROOT/$1" -mindepth 1 -maxdepth 1 -type d | sort | head -n -"$2"
 [[ -d "$ROOT/6h" ]] && find "$ROOT/6h" -mindepth 1 -maxdepth 1 -type d -mmin +$((48 * 60)) -exec rm -rf -- {} +
 [[ -d "$ROOT/daily" ]] && prune daily 7
 [[ -d "$ROOT/weekly" ]] && prune weekly 4
+[[ -d "$ROOT/manual" ]] && prune manual 10
 
 # Off-server last, after the local set is complete and pruned. The whole kind
 # directory is copied, so sets missed during an outage go up with the next
