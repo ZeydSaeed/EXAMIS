@@ -78,14 +78,21 @@ export function StatusDistributionBar({ rows, colors, className = '' }: Props) {
     );
 }
 
-/** Vertical legend for `StatusDistributionBar`: label and share per status. */
+/**
+ * Vertical legend for `StatusDistributionBar`: label and share for every
+ * status in `statusOrder`, empty ones at 0% too, so the shares read as a
+ * complete list.
+ */
 export function StatusDistributionLegend({
     rows,
     colors,
     className = '',
 }: Props) {
     const { locale } = useTrans();
-    const { segments, total } = useSegments(rows);
+    const { total } = useSegments(rows);
+    const entries = statusOrder
+        .map((status) => rows.find((row) => row.status === status))
+        .filter((row): row is Row => !!row);
 
     if (total === 0) {
         return null;
@@ -96,7 +103,7 @@ export function StatusDistributionLegend({
             className={`flex flex-col gap-2.5 text-xs sm:text-sm ${className}`}
             data-test="status-legend"
         >
-            {segments.map((row) => (
+            {entries.map((row) => (
                 <li
                     key={row.status}
                     className="flex items-center gap-1.5 whitespace-nowrap"

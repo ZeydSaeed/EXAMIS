@@ -170,7 +170,7 @@ export default function AdminDashboard({ statusCounts }: Props) {
                             <StatusDistributionLegend
                                 rows={statusCounts}
                                 colors={statusFill}
-                                className="sm:shrink-0 sm:justify-between"
+                                className="sm:shrink-0"
                             />
 
                             {/* Four columns (two on phones); an incomplete last row is centred. */}
