@@ -410,7 +410,6 @@ return [
         'preview' => 'معاينة',
         'decision_confirm' => 'تأكيد تغيير حالة طلب الطالب :name.',
         'actions' => 'الإجراءات',
-        'edit_student' => 'تعديل',
         'delete_student' => 'حذف',
         'student_deleted' => 'حُذف الطالب نهائياً مع طلباته وملفاته.',
         'applicant_data' => 'بيانات المتقدم',

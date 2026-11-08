@@ -410,7 +410,6 @@ return [
         'preview' => 'Preview',
         'decision_confirm' => 'Confirm the status change for :name.',
         'actions' => 'Actions',
-        'edit_student' => 'Edit',
         'delete_student' => 'Delete',
         'student_deleted' => 'The student was deleted for good with their applications and files.',
         'applicant_data' => 'Applicant data',

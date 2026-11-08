@@ -1,5 +1,5 @@
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
-import { Eye, Inbox, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Eye, Inbox, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
@@ -41,7 +41,6 @@ type Row = {
     contact: MessageContact | null;
     /** Only for staff who may edit the database. */
     manage: {
-        application_key: string;
         student_key: string;
         confirm: string;
     } | null;
@@ -578,31 +577,6 @@ export default function AdminApplications({
                                                 <td className="text-center!">
                                                     {row.manage && (
                                                         <div className="flex items-center justify-center gap-1">
-                                                            <Button
-                                                                asChild
-                                                                variant="ghost"
-                                                                size="sm"
-                                                            >
-                                                                <Link
-                                                                    href={admin.database.edit(
-                                                                        'applications',
-                                                                        {
-                                                                            query: {
-                                                                                key: row
-                                                                                    .manage
-                                                                                    .application_key,
-                                                                            },
-                                                                        },
-                                                                    )}
-                                                                >
-                                                                    <Pencil
-                                                                        aria-hidden
-                                                                    />
-                                                                    {t(
-                                                                        'admin.edit_student',
-                                                                    )}
-                                                                </Link>
-                                                            </Button>
                                                             <Button
                                                                 type="button"
                                                                 variant="ghost"

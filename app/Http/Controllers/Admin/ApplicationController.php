@@ -93,9 +93,8 @@ class ApplicationController extends Controller
                         'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
                         'phone' => StudentIdentity::internationalPhone($application->phone),
                     ],
-                    // Edit and delete go through the database screen (database.manage).
+                    // Delete goes through the database screen (database.manage).
                     'manage' => $canManage ? [
-                        'application_key' => $tables->keyToken('applications', ['id' => $application->id]),
                         'student_key' => $tables->keyToken('users', ['id' => $application->user->id]),
                         'confirm' => (string) ($application->user->student_number ?? $application->user->id),
                     ] : null,

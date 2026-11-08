@@ -222,13 +222,12 @@ it('asks for a manual backup with a request file and shows the server status', f
     File::deleteDirectory($directory);
 });
 
-it('offers edit and delete on the applications list only to staff who manage the database', function () {
+it('offers delete on the applications list only to staff who manage the database', function () {
     $application = Application::factory()->submitted()->create();
 
     $this->actingAs(staffWith(Role::Administrator))
         ->get(route('admin.applications.index'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('applications.data.0.manage.application_key', rowKey('applications', ['id' => $application->id]))
             ->where('applications.data.0.manage.student_key', rowKey('users', ['id' => $application->user_id])));
 
     $this->actingAs(staffWith(Role::Supervisor))
