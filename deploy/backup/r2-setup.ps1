@@ -57,7 +57,9 @@ $conf = Join-Path $env:TEMP ('rclone-' + [guid]::NewGuid() + '.conf')
 @(
     '[examis-offsite]', 'type = s3', 'provider = Cloudflare',
     "access_key_id = $($token.result.id)", "secret_access_key = $secret",
-    "endpoint = https://$account.r2.cloudflarestorage.com", 'acl = private', 'no_check_bucket = true'
+    "endpoint = https://$account.r2.cloudflarestorage.com", 'acl = private', 'no_check_bucket = true',
+    # rclone checks each upload with HEAD ?versionId=, which R2 answers 501.
+    'no_head = true'
 ) | Set-Content -Encoding ascii $conf
 $secret = $null; $token = $null
 try {
