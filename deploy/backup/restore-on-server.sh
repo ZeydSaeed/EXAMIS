@@ -49,14 +49,24 @@ while read -r table; do
     grep -E " TABLE DATA public ${table} " "$WORK/full.list" >> "$WORK/restore.list" || true
 done < <(psql_owner -Atc "with recursive fk as ( select ch.relname::text as child, pa.relname::text as parent from pg_constraint k join pg_class ch on ch.oid = k.conrelid join pg_class pa on pa.oid = k.confrelid where k.contype = 'f' and k.conrelid <> k.confrelid and ch.relnamespace = 'public'::regnamespace ), depth(t, d) as ( select relname::text, 0 from pg_class where relkind = 'r' and relnamespace = 'public'::regnamespace union all select fk.child, depth.d + 1 from fk join depth on fk.parent = depth.t where depth.d < 50 ) select t from depth group by t order by max(d), t")
 grep -E ' SEQUENCE SET public ' "$WORK/full.list" | grep -v ' public migrations_id_seq ' >> "$WORK/restore.list" || true
+# A backup table missing from the current schema would otherwise be skipped
+# without a word.
+wanted="$(grep -E ' TABLE DATA public ' "$WORK/full.list" | grep -vc ' TABLE DATA public migrations ' || true)"
+listed="$(grep -c ' TABLE DATA public ' "$WORK/restore.list" || true)"
+[[ "$wanted" -gt 0 && "$listed" == "$wanted" ]] || fail "only $listed of $wanted backup tables fit the current schema; nothing was changed"
 TABLES="$(psql_owner -Atc "select string_agg(format('public.%I', tablename), ', ') from pg_tables where schemaname = 'public' and tablename <> 'migrations'")"
 
-log "Database $DB: replacing all rows (one transaction)"
+# The whole SQL is written out first: a dump that breaks off part way must
+# fail here, not reach psql as a shorter script that still commits.
 {
     echo "SET lock_timeout = '30s';"
     echo "TRUNCATE $TABLES RESTART IDENTITY CASCADE;"
-    pg_restore --data-only --no-owner --no-privileges -L "$WORK/restore.list" -f - "$WORK/database.dump"
-} | psql_owner -q -1 > /dev/null
+} > "$WORK/data.sql"
+pg_restore --data-only --no-owner --no-privileges -L "$WORK/restore.list" -f - "$WORK/database.dump" >> "$WORK/data.sql" \
+    || fail "the backup could not be read"
+
+log "Database $DB: replacing all rows (one transaction)"
+psql_owner -q -1 -f "$WORK/data.sql" > /dev/null
 
 if [[ -s "$WORK/files.tar" ]]; then
     log "Applicant files"

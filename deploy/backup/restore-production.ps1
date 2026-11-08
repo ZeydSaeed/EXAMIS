@@ -21,7 +21,8 @@ param(
     [switch]$CheckOnly,
     [string]$KeyFile = "$env:USERPROFILE\.examis-backup\examis-backup.agekey",
     [string]$PgBin = 'D:\PostgreSQL\18\bin',
-    [string]$Server = 'examis@178.105.246.187'
+    [string]$Server = 'examis@178.105.246.187',
+    [string]$Key = "$env:USERPROFILE\.ssh\examis_staging"
 )
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -30,6 +31,8 @@ $backups = Join-Path $root 'database\backup'
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')
 $ssh = 'C:\Windows\System32\OpenSSH\ssh.exe'
 $scp = 'C:\Windows\System32\OpenSSH\scp.exe'
+# examis has root's authorized key (provision.sh); there is no default key here.
+$opts = @('-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-i', $Key)
 $run = Get-Date -Format 'yyyyMMddHHmmss'
 $work = Join-Path $env:TEMP "examis-restore-$run"
 $logFile = Join-Path $backups 'restore.log'
@@ -112,12 +115,12 @@ try {
 
     # 5. Safety copy of the site as it is now.
     Say 'Safety backup of the current site'
-    $before = & $ssh -o BatchMode=yes $Server 'cat /srv/examis/shared/storage/app/backup-status/status.json' | Out-String
-    & $ssh -o BatchMode=yes $Server 'd=/srv/examis/shared/storage/app/backup-status; [ -e $d/request ] || date -u +%FT%TZ > $d/request'
+    $before = & $ssh @opts $Server 'cat /srv/examis/shared/storage/app/backup-status/status.json' | Out-String
+    & $ssh @opts $Server 'd=/srv/examis/shared/storage/app/backup-status; [ -e $d/request ] || date -u +%FT%TZ > $d/request'
     $done = $false
     foreach ($i in 1..100) {
         Start-Sleep -Seconds 3
-        $now = & $ssh -o BatchMode=yes $Server 'd=/srv/examis/shared/storage/app/backup-status; [ -e $d/request ] && echo waiting || cat $d/status.json' | Out-String
+        $now = & $ssh @opts $Server 'd=/srv/examis/shared/storage/app/backup-status; [ -e $d/request ] && echo waiting || cat $d/status.json' | Out-String
         if ($now -notmatch '^waiting' -and $now -ne $before) { $done = $true; break }
     }
     if (-not $done -or $now -notmatch '"kind":"manual","stamp":"\d{8}T\d{6}Z","result":"ok"') { Fail 'the safety backup did not finish; nothing was changed' }
@@ -126,16 +129,16 @@ try {
 
     # 6. Restore on the server.
     $remote = "/tmp/examis-restore-$run"
-    & $ssh -o BatchMode=yes $Server "mkdir -m 700 $remote"
+    & $ssh @opts $Server "mkdir -m 700 $remote"
     $upload = @($dump, (Join-Path $here 'restore-on-server.sh'))
     if ($WithFiles) {
         age --decrypt --identity $KeyFile --output (Join-Path $work 'files.tar') (Join-Path $SetDir 'files.tar.age')
         $upload += (Join-Path $work 'files.tar')
     }
-    & $scp -q -o BatchMode=yes @upload "${Server}:$remote/"
+    & $scp -q @opts @upload "${Server}:$remote/"
     if ($LASTEXITCODE -ne 0) { Fail 'upload failed; nothing was changed' }
     Say 'Restoring on the server'
-    $output = & $ssh -o BatchMode=yes $Server "sed -i 's/\r$//' $remote/restore-on-server.sh && mv $remote/restore-on-server.sh /tmp/examis-restore-$run.sh && bash /tmp/examis-restore-$run.sh $remote; code=`$?; rm -f /tmp/examis-restore-$run.sh; exit `$code"
+    $output = & $ssh @opts $Server "sed -i 's/\r$//' $remote/restore-on-server.sh && mv $remote/restore-on-server.sh /tmp/examis-restore-$run.sh && bash /tmp/examis-restore-$run.sh $remote; code=`$?; rm -f /tmp/examis-restore-$run.sh; exit `$code"
     $code = $LASTEXITCODE
     $output | ForEach-Object { Write-Host $_ }
     if ($code -ne 0) { Fail 'the server refused the restore; nothing was changed in the database' }
