@@ -49,3 +49,9 @@ yarn-error.log
 
 # Encrypted backup sets pulled from the server (deploy/backup/pull-latest.ps1).
 /database/backup/
+
+# Keys and recovery codes live in %USERPROFILE%\.examis-backup, never in the
+# repository; these keep a stray copy from being committed.
+*.agekey
+*.age-key
+/database/*.txt
