@@ -7,11 +7,13 @@ use App\Enums\InvitationPurpose;
 use App\Enums\OverrideEffect;
 use App\Enums\Role;
 use App\Exceptions\DomainRuleViolation;
+use App\Jobs\SyncStaffAccess;
 use App\Models\RoleAssignment;
 use App\Models\StaffInvitation;
 use App\Models\StaffPermissionOverride;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Staff\CloudflareAccess;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -23,7 +25,10 @@ use Illuminate\Support\Str;
  */
 class ManageStaffAccess
 {
-    public function __construct(private AuditLogger $audit) {}
+    public function __construct(
+        private AuditLogger $audit,
+        private CloudflareAccess $cloudflareAccess,
+    ) {}
 
     /**
      * Staff accounts are made by an administrator, who sets the password and
@@ -34,7 +39,7 @@ class ManageStaffAccess
      */
     public function create(string $name, string $email, array $roles, ?User $actor, ?string $phone = null, ?string $password = null): User
     {
-        return DB::transaction(function () use ($name, $email, $roles, $actor, $phone, $password): User {
+        $user = DB::transaction(function () use ($name, $email, $roles, $actor, $phone, $password): User {
             $user = new User(['username' => 'staff.'.Str::lower(Str::random(16)), 'name' => $name, 'email' => Str::lower($email), 'password' => $password ?? Str::random(64), 'phone' => $phone]);
             $user->account_type = AccountType::Staff;
             $user->save();
@@ -47,6 +52,11 @@ class ManageStaffAccess
 
             return $user;
         });
+
+        // Their e-mail may now pass Cloudflare Access in front of the portal.
+        $this->syncCloudflareAccess();
+
+        return $user;
     }
 
     /**
@@ -159,7 +169,8 @@ class ManageStaffAccess
         $this->ensureManageable($user, $actor);
 
         $email = Str::lower($email);
-        $signInChanged = $password !== null || $email !== $user->email;
+        $emailChanged = $email !== $user->email;
+        $signInChanged = $password !== null || $emailChanged;
 
         DB::transaction(function () use ($user, $name, $email, $password, $actor): void {
             $changed = array_keys(array_filter([
@@ -183,6 +194,10 @@ class ManageStaffAccess
 
         if ($signInChanged) {
             $this->endSessions($user);
+        }
+
+        if ($emailChanged) {
+            $this->syncCloudflareAccess();
         }
     }
 
@@ -225,6 +240,8 @@ class ManageStaffAccess
         if (! $active) {
             $this->endSessions($user);
         }
+
+        $this->syncCloudflareAccess();
     }
 
     /**
@@ -316,5 +333,18 @@ class ManageStaffAccess
         if (config('session.driver') === 'database') {
             DB::table('staff_sessions')->where('user_id', $user->id)->delete();
         }
+    }
+
+    /**
+     * Sends the active staff e-mails to Cloudflare Access in front of the
+     * portal; the Users page shows "updating" until the job has run.
+     */
+    private function syncCloudflareAccess(): void
+    {
+        if ($this->cloudflareAccess->isConfigured()) {
+            $this->cloudflareAccess->markPending();
+        }
+
+        SyncStaffAccess::dispatch();
     }
 }

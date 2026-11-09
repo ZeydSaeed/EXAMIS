@@ -4,6 +4,7 @@ use App\Actions\Students\DeleteStudent;
 use App\Enums\DocumentStatus;
 use App\Jobs\ScanApplicationDocument;
 use App\Models\ApplicationDocument;
+use App\Services\Staff\CloudflareAccess;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -53,6 +54,33 @@ Artisan::command('examis:prune-deleted-students {--days=30 : Days a snapshot is 
     $this->info("Removed {$count} deleted-student snapshot(s).");
 })->purpose('Remove deleted-student snapshots older than the retention period');
 
+/*
+ * Rewrites the Cloudflare Access list of the staff portal from the active
+ * staff accounts, now and in this process (the hourly run also catches edits
+ * made outside the Users page, such as the database screen).
+ */
+Artisan::command('examis:sync-staff-access', function (CloudflareAccess $access): int {
+    if (! $access->isConfigured()) {
+        $this->warn('Cloudflare Access is not configured (CLOUDFLARE_ACCESS_TOKEN); nothing to do.');
+
+        return 0;
+    }
+
+    try {
+        $count = $access->sync();
+    } catch (Throwable $exception) {
+        $access->remember(false);
+        $this->error('Cloudflare Access sync failed: '.$exception->getMessage());
+
+        return 1;
+    }
+
+    $this->info("Cloudflare Access now allows {$count} staff e-mail(s).");
+
+    return 0;
+})->purpose('Send the active staff e-mails to Cloudflare Access');
+
+Schedule::command('examis:sync-staff-access')->hourly()->withoutOverlapping()->onOneServer();
 Schedule::command('examis:rescan-pending')->everyTenMinutes()->withoutOverlapping()->onOneServer();
 Schedule::command('examis:verify-integrity')->dailyAt('02:30')->withoutOverlapping()->onOneServer();
 Schedule::command('queue:prune-failed --hours=720')->daily()->onOneServer();

@@ -477,6 +477,9 @@ return [
     ],
 
     'users' => [
+        'access_sync_ok' => 'Staff portal protection (Cloudflare) is up to date: :count e-mail(s) allowed, last updated :at. Each staff member gets an e-mail code every 72 hours.',
+        'access_sync_failed' => 'Updating the staff portal protection (Cloudflare) failed at :at; it is retried automatically. A new staff member may not get in until it succeeds.',
+        'access_sync_pending' => 'The staff e-mails are being sent to the portal protection (Cloudflare); this takes about a minute.',
         'create' => 'Add staff member',
         'role' => 'Role',
         'roles' => 'Roles',

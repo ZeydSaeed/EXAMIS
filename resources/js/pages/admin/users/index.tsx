@@ -62,7 +62,48 @@ type Props = {
     permissions: { value: string; label: string }[];
     /** Role => the permissions it grants. */
     rolePermissions: Record<string, string[]>;
+    /** The last send of the staff e-mails to Cloudflare Access; null when it is off. */
+    accessSync: {
+        ok: boolean | null;
+        at: string | null;
+        count: number | null;
+    } | null;
 };
+
+/**
+ * Tells the administrator whether the staff they just added can pass the
+ * Cloudflare Access code page in front of the portal yet.
+ */
+function AccessSyncNotice({
+    status,
+}: {
+    status: NonNullable<Props['accessSync']>;
+}) {
+    const { t, locale } = useTrans();
+    const at = formatDateTime(status.at, locale);
+
+    if (status.ok === false) {
+        return (
+            <p
+                role="status"
+                className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+            >
+                {t('users.access_sync_failed', { at })}
+            </p>
+        );
+    }
+
+    return (
+        <p
+            role="status"
+            className="rounded-md border px-3 py-2 text-sm text-muted-foreground"
+        >
+            {status.ok
+                ? t('users.access_sync_ok', { count: status.count ?? 0, at })
+                : t('users.access_sync_pending')}
+        </p>
+    );
+}
 
 /**
  * One tick per permission: ticked means the staff member has it. The roles
@@ -595,6 +636,7 @@ export default function StaffUsers({
     roles,
     permissions,
     rolePermissions,
+    accessSync,
 }: Props) {
     const { t, locale } = useTrans();
     const currentUserId = usePage().props.auth.user?.id;
@@ -655,6 +697,8 @@ export default function StaffUsers({
 
             <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 p-4 sm:p-6">
                 <h1 className="sr-only">{t('nav.users')}</h1>
+
+                {accessSync && <AccessSyncNotice status={accessSync} />}
 
                 <div ref={tableArea} className="min-h-0 flex-1">
                     {staff.data.length === 0 ? (

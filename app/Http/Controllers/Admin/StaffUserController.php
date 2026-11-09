@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RoleAssignment;
 use App\Models\StaffPermissionOverride;
 use App\Models\User;
+use App\Services\Staff\CloudflareAccess;
 use App\Services\Students\StudentIdentity;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,7 +30,7 @@ class StaffUserController extends Controller
     /**
      * The search term matches part of the name, username or email.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, CloudflareAccess $cloudflareAccess): Response
     {
         $filters = $request->validate([
             'role' => ['nullable', Rule::enum(Role::class)],
@@ -69,6 +70,8 @@ class StaffUserController extends Controller
 
         return Inertia::render('admin/users/index', [
             'staff' => $staff,
+            // Whether the staff e-mails reached Cloudflare Access; null when it is off.
+            'accessSync' => $cloudflareAccess->isConfigured() ? ($cloudflareAccess->status() ?? ['ok' => null, 'at' => null, 'count' => null]) : null,
             'filters' => $filters,
             'roles' => collect(Role::cases())->map(fn (Role $role): array => ['value' => $role->value, 'label' => $role->label()]),
             'permissions' => collect(Permission::cases())
