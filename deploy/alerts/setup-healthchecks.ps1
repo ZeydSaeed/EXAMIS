@@ -17,14 +17,22 @@ $ErrorActionPreference = 'Stop'
 $target = 'EXAMIS/Healthchecks/ApiKey'
 
 if ($StoreKey) {
-    $secure = Read-Host 'Healthchecks.io API key, read-write (input hidden)' -AsSecureString
-    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-    try {
-        $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr).Trim()
-        if ($key.Length -lt 20) { throw 'The key looks too short; nothing was stored.' }
-        [ExamisCred]::Write($target, 'healthchecks.io', $key)
-    } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr); $key = $null }
-    "Stored as '$target'. Run the script again without -StoreKey."
+    # Copy the key on the Healthchecks.io page first: it is read from the
+    # clipboard (then cleared), or typed hidden when the clipboard holds none.
+    $key = "$(Get-Clipboard -Raw)".Trim()
+    if ($key -cnotmatch '^[A-Za-z0-9_-]{20,64}$') {
+        'The clipboard does not hold an API key (copy it on Healthchecks.io > Settings > API Access).'
+        $secure = Read-Host 'Or type/paste the API key here (input hidden)' -AsSecureString
+        $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+        try { $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr).Trim() } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+    }
+    if ($key -cnotmatch '^[A-Za-z0-9_-]{20,64}$') { throw 'That is not an API key (letters and digits only, no spaces); nothing was stored.' }
+    try { $null = Invoke-RestMethod -Uri 'https://healthchecks.io/api/v3/checks/' -Headers @{ 'X-Api-Key' = $key } }
+    catch { throw "Healthchecks.io refused the key ($($_.ErrorDetails.Message)); nothing was stored. Use the read-write key, not the read-only one." }
+    [ExamisCred]::Write($target, 'healthchecks.io', $key)
+    $key = $null
+    Set-Clipboard -Value ' '
+    "Key checked with Healthchecks.io and stored as '$target'. Tell Claude it is stored."
     return
 }
 

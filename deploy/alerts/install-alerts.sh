@@ -20,7 +20,8 @@ fail() { printf '[install-alerts] ERROR: %s\n' "$*" >&2; exit 1; }
 
 [[ "$(id -u)" == 0 ]] || fail "run as root"
 
-lines="$(tr -d '\r' | grep -E '^HC_(HEARTBEAT|BACKUP_6H|BACKUP_DAILY)=https://hc-ping\.com/[0-9a-f-]{36}$' || true)"
+# Windows PowerShell pipes CRLF and may put a UTF-8 BOM in front.
+lines="$(tr -d '\r' | sed 's/^\xef\xbb\xbf//' | grep -E '^HC_(HEARTBEAT|BACKUP_6H|BACKUP_DAILY)=https://hc-ping\.com/[0-9a-f-]{36}$' || true)"
 [[ "$(grep -c . <<<"$lines")" == 3 ]] || fail "expected the three HC_ ping URLs on stdin"
 
 log "Ping URLs"
