@@ -37,6 +37,14 @@ jobs:
           composer install --no-interaction --prefer-dist
           npm ci
 
+      # The route helpers under resources/js/{routes,actions,wayfinder} are
+      # generated, not committed; the build makes them, this job does not build.
+      - name: Generate Wayfinder route helpers
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan wayfinder:generate --with-form
+
       - name: Pint
         run: composer lint:check
 

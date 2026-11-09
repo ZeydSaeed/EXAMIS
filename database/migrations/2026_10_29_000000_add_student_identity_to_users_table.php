@@ -57,7 +57,13 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropUnique(['public_id']);
             $table->dropUnique(['student_number']);
-            $table->dropUnique(['phone']);
+
+            // make_student_accounts_one_time replaced it with a plain index
+            // and does not bring it back.
+            if (Schema::hasIndex('users', ['phone'], 'unique')) {
+                $table->dropUnique(['phone']);
+            }
+
             $table->dropColumn(['public_id', 'student_number', 'phone', 'access_code', 'access_code_issued_at']);
         });
     }
