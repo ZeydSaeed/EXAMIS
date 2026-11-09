@@ -127,9 +127,38 @@ test('unknown identifiers get the same code step so accounts cannot be enumerate
     $this->assertGuest();
 });
 
-test('access code guessing is locked per account', function () {
+/**
+ * The failed-code counter for what selected the account ("account:<id>",
+ * or "number:<typed>" for an unknown identifier), overall or for one IP.
+ */
+function accessCodeLock(string $subject, ?string $ip = null): string
+{
+    return 'student-code|'.hash_hmac('sha256', $subject, (string) config('app.key')).($ip !== null ? '|'.$ip : '');
+}
+
+test('a guesser on one device locks only that device out of the account', function () {
     $user = User::factory()->student()->create();
-    RateLimiter::increment('student-code|'.$user->id, amount: (int) config('examis.students.access_code_attempts_per_hour'));
+    RateLimiter::increment(accessCodeLock('account:'.$user->id, '10.0.0.66'), amount: (int) config('examis.students.access_code_attempts_per_hour'));
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.66'])
+        ->post(route('student.login'), ['identifier' => (string) $user->student_number]);
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.66'])
+        ->post(route('student.verify'), ['access_code' => 'ABCDE-23456'])
+        ->assertSessionHasErrors(['access_code' => __('auth.access_code_locked')]);
+    $this->assertGuest();
+
+    // The student, on their own device, still gets in with their code.
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.7'])
+        ->post(route('student.login'), ['identifier' => (string) $user->student_number]);
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.7'])
+        ->post(route('student.verify'), ['access_code' => 'ABCDE-23456'])
+        ->assertSessionHasNoErrors();
+    $this->assertAuthenticatedAs($user, 'web');
+});
+
+test('guessing spread over many devices still locks the account', function () {
+    $user = User::factory()->student()->create();
+    RateLimiter::increment(accessCodeLock('account:'.$user->id), amount: (int) config('examis.students.access_code_attempts_per_hour_total'));
 
     $this->post(route('student.login'), ['identifier' => (string) $user->student_number]);
 
@@ -137,6 +166,40 @@ test('access code guessing is locked per account', function () {
         ->assertSessionHasErrors(['access_code' => __('auth.access_code_locked')]);
 
     $this->assertGuest();
+});
+
+test('each unknown identifier locks on its own, so a lock tells nothing about other numbers', function () {
+    RateLimiter::increment(accessCodeLock('number:999998'), amount: (int) config('examis.students.access_code_attempts_per_hour_total'));
+    $known = User::factory()->student()->create();
+
+    $this->post(route('student.login'), ['identifier' => '999998']);
+    $this->post(route('student.verify'), ['access_code' => 'WRONG-CODE9'])
+        ->assertSessionHasErrors(['access_code' => __('auth.access_code_locked')]);
+
+    // Before, every unknown number shared one counter: once it was spent,
+    // "locked" meant unknown and "wrong code" meant a real account.
+    foreach (['999997', (string) $known->student_number] as $identifier) {
+        $this->post(route('student.login'), ['identifier' => $identifier]);
+        $this->post(route('student.verify'), ['access_code' => 'WRONG-CODE9'])
+            ->assertSessionHasErrors(['access_code' => __('auth.access_code_failed')]);
+    }
+
+    $this->assertGuest();
+});
+
+test('the counters count every wrong code against the device and the account', function () {
+    $user = User::factory()->student()->create();
+
+    $this->post(route('student.login'), ['identifier' => (string) $user->student_number]);
+    $this->post(route('student.verify'), ['access_code' => 'WRONG-CODE9']);
+    $this->post(route('student.verify'), ['access_code' => 'WRONG-CODE8']);
+
+    expect(RateLimiter::attempts(accessCodeLock('account:'.$user->id, '127.0.0.1')))->toBe(2)
+        ->and(RateLimiter::attempts(accessCodeLock('account:'.$user->id)))->toBe(2);
+
+    $this->post(route('student.verify'), ['access_code' => 'ABCDE-23456'])->assertSessionHasNoErrors();
+
+    expect(RateLimiter::attempts(accessCodeLock('account:'.$user->id)))->toBe(0);
 });
 
 test('a remembered device of another account does not open this one', function () {

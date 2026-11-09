@@ -93,7 +93,10 @@ return [
 
     'students' => [
         'trusted_device_days' => (int) env('EXAMIS_TRUSTED_DEVICE_DAYS', 180),
+        // Per device (IP) and account, so a guesser locks out only themselves;
+        // the total across all devices still stops spread-out guessing.
         'access_code_attempts_per_hour' => (int) env('EXAMIS_ACCESS_CODE_ATTEMPTS_PER_HOUR', 10),
+        'access_code_attempts_per_hour_total' => (int) env('EXAMIS_ACCESS_CODE_ATTEMPTS_PER_HOUR_TOTAL', 100),
         'student_number_min' => 100000,
         'student_number_max' => 999999,
     ],
