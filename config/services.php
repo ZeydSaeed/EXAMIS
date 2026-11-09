@@ -42,6 +42,16 @@ return [
         'always_allow' => array_values(array_filter(array_map('trim', explode(',', (string) env('CLOUDFLARE_ACCESS_ALWAYS_ALLOW', ''))))),
     ],
 
+    /*
+    | Healthchecks.io ping URLs for the scheduled jobs (routes/console.php).
+    | Each run pings its URL, or <url>/fail when it fails; a run that never
+    | happens is noticed by Healthchecks.io. Empty = no ping.
+    */
+    'healthchecks' => [
+        'staff_access_sync' => env('HEALTHCHECK_STAFF_ACCESS_SYNC_URL'),
+        'verify_integrity' => env('HEALTHCHECK_VERIFY_INTEGRITY_URL'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

@@ -28,6 +28,7 @@ ALLOWED_DATABASES=(examis_staging examis_production)
 PULL_GROUP="${EXAMIS_BACKUP_PULL_GROUP-examis-pull}"
 RCLONE_CONFIG="${EXAMIS_BACKUP_RCLONE_CONFIG:-/root/.config/rclone/rclone.conf}"
 OFFSITE="examis-offsite:examis-staging-backups"
+ALERTS_ENV="${EXAMIS_BACKUP_ALERTS_ENV:-/etc/examis-alerts/healthchecks.env}"
 
 log() { printf '[backup %s] %s\n' "$KIND" "$*"; }
 fail() { printf '[backup %s] ERROR: %s\n' "$KIND" "$*" >&2; exit 1; }
@@ -91,6 +92,17 @@ write_status() {
 exec 9> "$ROOT/.lock"
 flock -w 3600 9 || fail "another backup is still running"
 
+# The scheduled kinds report to Healthchecks.io (deploy/alerts): "start", then
+# success or "fail". A backup that never runs sends nothing, and Healthchecks.io
+# alerts on that silence too.
+PING_URL=""
+case "$KIND" in
+    6h) PING_URL="$(grep -E '^HC_BACKUP_6H=https://' "$ALERTS_ENV" 2>/dev/null | head -1 | cut -d= -f2-)" ;;
+    daily) PING_URL="$(grep -E '^HC_BACKUP_DAILY=https://' "$ALERTS_ENV" 2>/dev/null | head -1 | cut -d= -f2-)" ;;
+esac
+ping_hc() { [[ -z "$PING_URL" ]] || curl -fsS -m 10 --retry 3 -o /dev/null --data-raw "${2:-}" "${PING_URL}$1" || true; }
+ping_hc /start
+
 # Whatever happens, a manual request is answered once (so the path unit does
 # not start it again) and the page learns the result.
 finish() {
@@ -100,6 +112,11 @@ finish() {
         printf '%s %s %s\n' "$KIND" "$STAMP" "$([[ $code == 0 ]] && echo ok || echo failed)" > "$ROOT/last-run"
     fi
     write_status || true
+    if [[ $code == 0 ]]; then
+        ping_hc "" "$KIND $STAMP ok"
+    else
+        ping_hc /fail "$KIND $STAMP failed (exit $code); journalctl -u examis-backup@$KIND.service"
+    fi
 }
 trap finish EXIT
 

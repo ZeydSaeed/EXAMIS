@@ -80,8 +80,15 @@ Artisan::command('examis:sync-staff-access', function (CloudflareAccess $access)
     return 0;
 })->purpose('Send the active staff e-mails to Cloudflare Access');
 
-Schedule::command('examis:sync-staff-access')->hourly()->withoutOverlapping()->onOneServer();
+// Healthchecks.io hears from these two after every run (config/services.php).
+$ping = fn (string $check): string => (string) config("services.healthchecks.{$check}");
+
+Schedule::command('examis:sync-staff-access')->hourly()->withoutOverlapping()->onOneServer()
+    ->pingOnSuccessIf($ping('staff_access_sync') !== '', $ping('staff_access_sync'))
+    ->pingOnFailureIf($ping('staff_access_sync') !== '', $ping('staff_access_sync').'/fail');
 Schedule::command('examis:rescan-pending')->everyTenMinutes()->withoutOverlapping()->onOneServer();
-Schedule::command('examis:verify-integrity')->dailyAt('02:30')->withoutOverlapping()->onOneServer();
+Schedule::command('examis:verify-integrity')->dailyAt('02:30')->withoutOverlapping()->onOneServer()
+    ->pingOnSuccessIf($ping('verify_integrity') !== '', $ping('verify_integrity'))
+    ->pingOnFailureIf($ping('verify_integrity') !== '', $ping('verify_integrity').'/fail');
 Schedule::command('queue:prune-failed --hours=720')->daily()->onOneServer();
 Schedule::command('examis:prune-deleted-students')->dailyAt('03:00')->withoutOverlapping()->onOneServer();

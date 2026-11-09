@@ -1,0 +1,19 @@
+[Unit]
+Description=EXAMIS heartbeat to Healthchecks.io
+After=network-online.target
+Wants=network-online.target
+
+# Root, because it asks systemctl and PostgreSQL; it changes nothing.
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/examis-heartbeat.sh
+TimeoutStartSec=2min
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+NoNewPrivileges=false
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
