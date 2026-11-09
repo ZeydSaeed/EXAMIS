@@ -121,7 +121,25 @@ jobs:
           php artisan migrate --force
 
       - name: Pest
-        run: php artisan test --compact
+        run: php artisan test --compact --log-junit storage/logs/junit.xml
+
+      # Failing tests as annotations, readable on the pull request without
+      # opening the log.
+      - name: Report failing tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          try:
+              root = ET.parse('storage/logs/junit.xml').getroot()
+          except Exception as error:
+              print(f'::error::No JUnit report ({error})')
+              raise SystemExit(0)
+          for case in root.iter('testcase'):
+              for problem in list(case.findall('failure')) + list(case.findall('error')):
+                  text = (problem.text or problem.get('message') or '').strip().replace('%', '%25').replace('\r', '').replace('\n', '%0A')
+                  print(f"::error title={case.get('name', '')[:120]}::{case.get('file', '')}%0A{text[:1500]}")
+          PY
 
   e2e:
     name: Playwright (Chromium)
