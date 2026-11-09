@@ -28,6 +28,8 @@ type Props = {
     columns: DatabaseColumn[];
     row: Record<string, string | null> | null;
     rowKey: string | null;
+    /** The row as it was read; a save based on an older copy is refused. */
+    fingerprint?: string | null;
     student: { student_number: string } | null;
 };
 
@@ -36,6 +38,7 @@ export default function DatabaseRow({
     columns,
     row,
     rowKey,
+    fingerprint = null,
     student,
 }: Props) {
     const { t } = useTrans();
@@ -50,12 +53,17 @@ export default function DatabaseRow({
 
     const form = useForm<{
         key: string | null;
+        fingerprint: string | null;
         values: Record<string, string>;
     }>({
         key: rowKey,
+        fingerprint,
         values: Object.fromEntries(
             columns
-                .filter((column) => !column.secret)
+                .filter(
+                    (column) =>
+                        !column.secret && !(column.protected && row !== null),
+                )
                 .map((column) => [column.name, row?.[column.name] ?? '']),
         ),
     });
@@ -106,6 +114,10 @@ export default function DatabaseRow({
             return t('db.key_column');
         }
 
+        if (column.protected && isEditing) {
+            return t('db.protected_column');
+        }
+
         const parts = [
             column.kind === 'datetime' ? t('db.utc_hint') : null,
             column.kind === 'boolean' ? t('db.boolean_hint') : null,
@@ -123,11 +135,11 @@ export default function DatabaseRow({
         const id = `col-${column.name}`;
         const locked = !canManage || column.secret || (column.key && isEditing);
 
-        if (column.secret) {
+        if (column.secret || (column.protected && isEditing)) {
             return (
                 <Input
                     id={id}
-                    dir="ltr"
+                    dir="auto"
                     value={row?.[column.name] ?? ''}
                     disabled
                 />

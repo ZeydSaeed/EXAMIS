@@ -540,6 +540,7 @@ return [
         'null' => 'empty',
         'secret' => 'Secret: not shown or edited here',
         'key_column' => 'Key: cannot be changed',
+        'protected_column' => 'Changed only on its own screen (applications, users, document scan), not here',
         'auto_hint' => 'Filled in automatically when left empty',
         'utc_hint' => 'Date and time in UTC (Baghdad = UTC + 3)',
         'json_hint' => 'JSON',

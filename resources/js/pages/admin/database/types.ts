@@ -14,6 +14,8 @@ export type DatabaseColumn = {
     has_default: boolean;
     auto: boolean;
     secret: boolean;
+    /** Changed only by the application's own actions; shown, never written. */
+    protected: boolean;
     key: boolean;
 };
 

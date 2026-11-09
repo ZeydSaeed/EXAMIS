@@ -19,6 +19,18 @@ function rowKey(string $table, array $key): string
     return app(TableEditor::class)->keyToken($table, $key);
 }
 
+/**
+ * The fingerprint the edit page hands the form for this row as it is now.
+ *
+ * @param  array<string, mixed>  $key
+ */
+function rowFingerprint(string $table, array $key): string
+{
+    $tables = app(TableEditor::class);
+
+    return $tables->fingerprint($table, (array) $tables->find($table, $key));
+}
+
 it('lets administrators list tables but hides infrastructure tables', function () {
     $this->actingAs(staffWith(Role::Administrator))
         ->get(route('admin.database.index'))
@@ -59,14 +71,14 @@ it('masks secret columns and never writes them', function () {
             ->where('row.phone', $student->phone));
 
     $this->actingAs($admin)
-        ->put(route('admin.database.update', 'users'), ['key' => $token, 'values' => ['access_code' => 'HACKED', 'name' => 'اسم جديد']])
+        ->put(route('admin.database.update', 'users'), ['key' => $token, 'fingerprint' => rowFingerprint('users', ['id' => $student->id]), 'values' => ['access_code' => 'HACKED', 'name' => 'اسم جديد']])
         ->assertSessionHasNoErrors();
 
     $student->refresh();
     expect($student->name)->toBe('اسم جديد')
         ->and($student->access_code)->toBe('ABCDE-23456')
-        ->and(AuditEvent::query()->where('action', 'database.row_updated')->first()->metadata['changes'])
-        ->toHaveKey('name')->not->toHaveKey('access_code');
+        ->and(AuditEvent::query()->where('action', 'database.row_updated')->first()->metadata['changed'])
+        ->toBe(['name']);
 });
 
 it('edits, adds and deletes rows with typed values', function () {
@@ -79,7 +91,7 @@ it('edits, adds and deletes rows with typed values', function () {
         ->assertSessionHasErrors('max_size_kb');
 
     $this->actingAs($admin)
-        ->put(route('admin.database.update', 'document_types'), ['key' => $token, 'values' => ['max_size_kb' => '2048', 'is_photo' => 'true']])
+        ->put(route('admin.database.update', 'document_types'), ['key' => $token, 'fingerprint' => rowFingerprint('document_types', ['id' => $type->id]), 'values' => ['max_size_kb' => '2048', 'is_photo' => 'true']])
         ->assertSessionHasNoErrors();
 
     expect($type->fresh())->max_size_kb->toBe(2048)->is_photo->toBeTrue();
@@ -296,4 +308,110 @@ it('asks the server to delete a backup set but never the last full one', functio
         ->assertForbidden();
 
     File::deleteDirectory($directory);
+});
+
+it('never writes the columns only the application itself may change', function () {
+    $admin = staffWith(Role::Administrator);
+    $application = Application::factory()->complete()->submitted()->create(['national_id_number' => '199012345678']);
+    $document = ApplicationDocument::factory()->create(['application_id' => $application->id]);
+    $before = [$application->status, $application->reference_number, $application->lock_version];
+
+    $this->actingAs($admin)
+        ->put(route('admin.database.update', 'applications'), [
+            'key' => rowKey('applications', ['id' => $application->id]),
+            'fingerprint' => rowFingerprint('applications', ['id' => $application->id]),
+            'values' => ['status' => 'accepted', 'reference_number' => 'X-1', 'lock_version' => '99', 'school_name' => 'مدرسة أخرى'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $application->refresh();
+    expect([$application->status, $application->reference_number, $application->lock_version])->toBe($before)
+        ->and($application->school_name)->toBe('مدرسة أخرى');
+
+    $this->actingAs($admin)
+        ->put(route('admin.database.update', 'application_documents'), [
+            'key' => rowKey('application_documents', ['id' => $document->id]),
+            'fingerprint' => rowFingerprint('application_documents', ['id' => $document->id]),
+            'values' => ['status' => 'verified', 'path' => 'someone-else/file'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($document->fresh())->status->toBe($document->status)->path->toBe($document->path);
+
+    $this->actingAs($admin)
+        ->get(route('admin.database.edit', ['table' => 'applications', 'key' => rowKey('applications', ['id' => $application->id])]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('columns', fn ($columns) => collect($columns)->firstWhere('name', 'status')['protected'] === true
+                && collect($columns)->firstWhere('name', 'school_name')['protected'] === false));
+});
+
+it('adds no applications, documents or accounts behind the student form', function (string $table) {
+    $this->actingAs(staffWith(Role::Administrator))
+        ->get(route('admin.database.create', $table))
+        ->assertForbidden();
+
+    $this->actingAs(staffWith(Role::Administrator))
+        ->post(route('admin.database.store', $table), ['values' => ['status' => 'verified']])
+        ->assertForbidden();
+})->with(['applications', 'application_documents', 'users']);
+
+it('refuses a save based on a copy someone else has changed since', function () {
+    $admin = staffWith(Role::Administrator);
+    $period = ExamPeriod::factory()->create(['name_ar' => 'الأصل']);
+    $key = ['id' => $period->id];
+    $stale = rowFingerprint('exam_periods', $key);
+
+    $period->forceFill(['name_ar' => 'عدّله غيرك'])->save();
+
+    $this->actingAs($admin)
+        ->put(route('admin.database.update', 'exam_periods'), ['key' => rowKey('exam_periods', $key), 'fingerprint' => $stale, 'values' => ['name_ar' => 'تعديلي']])
+        ->assertSessionHasErrors('database');
+
+    $this->actingAs($admin)
+        ->put(route('admin.database.update', 'exam_periods'), ['key' => rowKey('exam_periods', $key), 'values' => ['name_ar' => 'بلا بصمة']])
+        ->assertSessionHasErrors('database');
+
+    expect($period->fresh()->name_ar)->toBe('عدّله غيرك')
+        ->and(AuditEvent::query()->where('action', 'database.row_updated')->exists())->toBeFalse();
+});
+
+it('keeps personal data out of the audit trail of edits and deletes', function () {
+    $admin = staffWith(Role::Administrator);
+    $application = Application::factory()->complete()->create(['national_id_number' => '199012345678', 'phone' => '07701234567']);
+    $key = ['id' => $application->id];
+
+    $this->actingAs($admin)
+        ->put(route('admin.database.update', 'applications'), [
+            'key' => rowKey('applications', $key),
+            'fingerprint' => rowFingerprint('applications', $key),
+            'values' => ['national_id_number' => '200098765432', 'phone' => '07809876543'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $type = DocumentType::factory()->create(['name_ar' => 'وثيقة سرية']);
+    $this->actingAs($admin)
+        ->delete(route('admin.database.destroy', 'document_types'), ['key' => rowKey('document_types', ['id' => $type->id])])
+        ->assertSessionHasNoErrors();
+
+    $trail = AuditEvent::query()->whereIn('action', ['database.row_updated', 'database.row_deleted'])->get();
+    $json = $trail->toJson(JSON_UNESCAPED_UNICODE);
+
+    expect($trail)->toHaveCount(2)
+        ->and($trail->firstWhere('action', 'database.row_updated')->metadata['changed'])->toEqualCanonicalizing(['national_id_number', 'phone'])
+        ->and($json)->not->toContain('199012345678')->not->toContain('200098765432')
+        ->not->toContain('0770123')->not->toContain('0780987')->not->toContain('وثيقة سرية');
+});
+
+it('keeps raw database writes with the administrator role, whatever the exceptions say', function () {
+    $supervisor = staffWith(Role::Supervisor);
+    $supervisor->permissionOverrides()->create(['permission' => Permission::DatabaseView, 'effect' => OverrideEffect::Grant]);
+    $supervisor->permissionOverrides()->create(['permission' => Permission::DatabaseManage, 'effect' => OverrideEffect::Grant]);
+    $period = ExamPeriod::factory()->create();
+
+    expect($supervisor->fresh()->hasPermission(Permission::DatabaseManage))->toBeFalse()
+        ->and(Permission::DatabaseManage->isOverridable())->toBeFalse();
+
+    $this->actingAs($supervisor)
+        ->put(route('admin.database.update', 'exam_periods'), ['key' => rowKey('exam_periods', ['id' => $period->id]), 'values' => ['name_ar' => 'x']])
+        ->assertForbidden();
 });

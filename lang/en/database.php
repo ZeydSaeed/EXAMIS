@@ -27,6 +27,7 @@ return [
     ],
     'errors' => [
         'required' => 'This field is required.',
+        'changed' => 'Someone else changed this row after you opened it, so nothing was saved. Reopen the row to see the current values, then edit again.',
         'integer' => 'Enter a whole number.',
         'decimal' => 'Enter a number.',
         'boolean' => 'Enter true or false.',

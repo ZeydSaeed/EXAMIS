@@ -86,7 +86,7 @@ class DatabaseController extends Controller
             DB::table($table)->insert($values);
         });
 
-        $audit->record('database.row_created', null, ['table' => $table, 'values' => $this->forAudit($values)]);
+        $audit->record('database.row_created', null, ['table' => $table, 'columns' => array_keys($values)]);
 
         return to_route('admin.database.table', $table)->with('status', __('database.created'));
     }
@@ -99,6 +99,7 @@ class DatabaseController extends Controller
             ...$this->tableProps($table),
             'row' => $this->tables->present($table, $row),
             'rowKey' => $this->tables->keyToken($table, $key),
+            'fingerprint' => $this->tables->fingerprint($table, $row),
             'student' => $table === 'users' && $row['account_type'] === 'applicant'
                 ? ['student_number' => $row['student_number'] !== null ? (string) $row['student_number'] : (string) $row['id']]
                 : null,
@@ -107,25 +108,33 @@ class DatabaseController extends Controller
 
     public function update(Request $request, string $table, AuditLogger $audit): RedirectResponse
     {
-        [$key, $row] = $this->row($request, $table);
+        [$key] = $this->row($request, $table);
         abort_unless($this->tables->isWritable($table), 403);
 
         $values = $this->tables->values($table, (array) $request->input('values', []), false);
-        $changed = array_filter($values, fn (mixed $value, string $column): bool => $this->differs($row[$column] ?? null, $value), ARRAY_FILTER_USE_BOTH);
+        $fingerprint = (string) $request->input('fingerprint', '');
+        $changed = [];
 
-        if ($changed !== []) {
-            $this->write(function () use ($table, $key, $changed): void {
+        // Compared under a row lock: a save based on a stale copy fails
+        // instead of silently undoing what someone else just changed.
+        $this->write(function () use ($table, $key, $values, $fingerprint, &$changed): void {
+            $current = (array) $this->tables->whereKey($table, $key)->lockForUpdate()->first();
+
+            if (! hash_equals($this->tables->fingerprint($table, $current), $fingerprint)) {
+                throw ValidationException::withMessages(['database' => __('database.errors.changed')]);
+            }
+
+            $changed = array_filter($values, fn (mixed $value, string $column): bool => $this->differs($current[$column] ?? null, $value), ARRAY_FILTER_USE_BOTH);
+
+            if ($changed !== []) {
                 $this->tables->whereKey($table, $key)->update($changed);
-            });
+            }
+        });
 
-            $audit->record('database.row_updated', null, [
-                'table' => $table,
-                'key' => $key,
-                'changes' => collect($changed)->map(fn (mixed $value, string $column): array => [
-                    'from' => $this->forAudit([$column => $row[$column] ?? null])[$column] ?? null,
-                    'to' => $this->forAudit([$column => $value])[$column] ?? null,
-                ])->all(),
-            ]);
+        // Which columns changed, never their values: rows hold personal data
+        // and the audit trail is append-only.
+        if ($changed !== []) {
+            $audit->record('database.row_updated', null, ['table' => $table, 'key' => $key, 'changed' => array_keys($changed)]);
         }
 
         return to_route('admin.database.edit', ['table' => $table, 'key' => $this->tables->keyToken($table, $key)])
@@ -159,7 +168,7 @@ class DatabaseController extends Controller
             $this->tables->whereKey($table, $key)->delete();
         });
 
-        $audit->record('database.row_deleted', null, ['table' => $table, 'key' => $key, 'row' => $this->forAudit($this->tables->withoutSecrets($row))]);
+        $audit->record('database.row_deleted', null, ['table' => $table, 'key' => $key]);
 
         return $this->afterDelete($request, $table, __('database.deleted'));
     }
@@ -299,17 +308,5 @@ class DatabaseController extends Controller
         }
 
         return (string) $stored !== (string) $new;
-    }
-
-    /**
-     * @param  array<string, mixed>  $values
-     * @return array<string, mixed>
-     */
-    private function forAudit(array $values): array
-    {
-        return array_map(
-            fn (mixed $value): mixed => is_string($value) ? Str::limit($value, 200) : $value,
-            $this->tables->withoutSecrets($values),
-        );
     }
 }

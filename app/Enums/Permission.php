@@ -25,13 +25,13 @@ enum Permission: string
     case BackupsManage = 'backups.manage';
 
     /**
-     * Whether a per-staff exception may touch this permission. These three
-     * stay with roles, so no exception can make someone an administrator or
-     * lock them out of the area.
+     * Whether a per-staff exception may touch this permission. These stay
+     * with roles, so no exception can make someone an administrator, lock them
+     * out of the area, or hand out raw writes to every table.
      */
     public function isOverridable(): bool
     {
-        return ! in_array($this, [self::AdminAccess, self::UsersManage, self::StaffCredentials], true);
+        return ! in_array($this, [self::AdminAccess, self::UsersManage, self::StaffCredentials, self::DatabaseManage], true);
     }
 
     public function label(): string

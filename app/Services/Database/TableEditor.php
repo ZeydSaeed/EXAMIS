@@ -15,11 +15,14 @@ use Throwable;
  * application's tables and reads, inserts, updates and deletes their rows
  * through the query builder, so the database's own constraints still apply.
  *
- * Three limits keep it from becoming a way around the rest of the system:
+ * Four limits keep it from becoming a way around the rest of the system:
  * infrastructure tables (sessions, cache, queue, reset tokens) are hidden;
  * history and access-control tables are read-only, because history is
- * append-only and roles and permissions change on the Users page; and secret
- * columns (password hashes, tokens, codes) are never shown or written.
+ * append-only and roles and permissions change on the Users page; secret
+ * columns (password hashes, tokens, codes) are never shown or written; and
+ * protected columns, which only the application's own actions may change
+ * (an application's status and numbering, a document's scan result and
+ * file, an account's type and state), are shown but never written.
  */
 class TableEditor
 {
@@ -36,15 +39,44 @@ class TableEditor
     ];
 
     /**
-     * Rows here are added elsewhere: staff on the Users page, students by registering.
+     * Rows here are added elsewhere: staff on the Users page, students by
+     * registering, applications and documents through the student's form.
      *
      * @var list<string>
      */
-    private const NO_INSERT = ['users'];
+    private const NO_INSERT = ['users', 'applications', 'application_documents'];
+
+    /**
+     * Columns written only by the application's own actions: the status
+     * through TransitionApplication and SubmitApplication, the scan result
+     * through the scanner, account state through the Users page.
+     *
+     * @var array<string, list<string>>
+     */
+    private const PROTECTED = [
+        'applications' => [
+            'user_id', 'exam_period_id', 'reference_number', 'status', 'lock_version',
+            'declaration_accepted_at', 'submitted_at', 'last_submitted_at', 'decided_at', 'withdrawn_at',
+            'assigned_to', 'assigned_at',
+        ],
+        'application_documents' => [
+            'application_id', 'document_type_id', 'uploaded_by', 'disk', 'path', 'mime_type', 'size_bytes',
+            'sha256', 'status', 'rejection_reason', 'scanned_at', 'replaced_at',
+        ],
+        'users' => ['account_type', 'public_id', 'student_number', 'deactivated_at', 'closed_at', 'last_login_at'],
+        'exam_periods' => ['code', 'last_sequence'],
+    ];
+
+    /**
+     * Protected in every table.
+     *
+     * @var list<string>
+     */
+    private const PROTECTED_EVERYWHERE = ['uuid', 'created_at'];
 
     private const SECRET_PATTERN = '/(password|secret|token|recovery_codes|access_code|credential|public_key)/';
 
-    /** @var array<string, list<array{name: string, type: string, kind: string, nullable: bool, has_default: bool, auto: bool, secret: bool, key: bool}>> */
+    /** @var array<string, list<array{name: string, type: string, kind: string, nullable: bool, has_default: bool, auto: bool, secret: bool, protected: bool, key: bool}>> */
     private array $columns = [];
 
     /**
@@ -88,14 +120,41 @@ class TableEditor
         return preg_match(self::SECRET_PATTERN, $column) === 1;
     }
 
+    public function isProtected(string $table, string $column): bool
+    {
+        return in_array($column, self::PROTECTED_EVERYWHERE, true)
+            || in_array($column, self::PROTECTED[$table] ?? [], true);
+    }
+
     /**
-     * @return list<array{name: string, type: string, kind: string, nullable: bool, has_default: bool, auto: bool, secret: bool, key: bool}>
+     * A digest of the row as it was read, sent back with the edit form, so a
+     * save fails instead of overwriting a change someone made in between.
+     * Secrets stay out of it; keyed with the application key.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    public function fingerprint(string $table, array $row): string
+    {
+        $values = [];
+
+        foreach ($this->columns($table) as $column) {
+            if (! $column['secret']) {
+                $value = $row[$column['name']] ?? null;
+                $values[$column['name']] = is_resource($value) ? null : (is_bool($value) ? (int) $value : $value);
+            }
+        }
+
+        return hash_hmac('sha256', $table.'|'.json_encode($values), (string) config('app.key'));
+    }
+
+    /**
+     * @return list<array{name: string, type: string, kind: string, nullable: bool, has_default: bool, auto: bool, secret: bool, protected: bool, key: bool}>
      */
     public function columns(string $table): array
     {
         $key = $this->primaryKey($table);
 
-        return $this->columns[$table] ??= array_map(function (array $column) use ($key): array {
+        return $this->columns[$table] ??= array_map(function (array $column) use ($table, $key): array {
             $name = (string) $column['name'];
 
             return [
@@ -106,6 +165,7 @@ class TableEditor
                 'has_default' => $column['default'] !== null,
                 'auto' => (bool) $column['auto_increment'] || ($column['generation'] ?? null) !== null,
                 'secret' => $this->isSecret($name),
+                'protected' => $this->isProtected($table, $name),
                 'key' => in_array($name, $key, true),
             ];
         }, Schema::getColumns($table));
@@ -260,7 +320,7 @@ class TableEditor
         foreach ($this->columns($table) as $column) {
             $name = $column['name'];
 
-            if ($column['secret'] || ($column['key'] && ! $inserting) || ! array_key_exists($name, $input)) {
+            if ($column['secret'] || (($column['protected'] || $column['key']) && ! $inserting) || ! array_key_exists($name, $input)) {
                 continue;
             }
 
