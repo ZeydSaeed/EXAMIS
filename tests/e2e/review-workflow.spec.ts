@@ -59,7 +59,8 @@ test('the header arrows move back and forward through page history', async ({
     await staffLogin(page, 'supervisor');
     await page.goto(`${staffURL}/admin`);
 
-    await page.getByTestId('stat-submitted').click();
+    // The dashboard's cards follow the five statuses staff see (no "submitted").
+    await page.getByTestId('stat-under_review').click();
     await expect(page).toHaveURL(/\/admin\/applications/);
 
     await page.getByTestId('history-back').click();
@@ -105,8 +106,11 @@ test('the applications list shows the agreed columns and decides in place', asyn
     expect(contentType).toContain('application/pdf');
 
     const status = staffPage.getByTestId(`status-${studentNumber}`);
+    // A sent application shows as "under review"; staff may start the review
+    // or decide straight away.
     await expect(status.locator('option')).toHaveText([
-        'مُرسل',
+        'قيد التدقيق',
+        'بدء التدقيق',
         'مقبول',
         'مرفوض',
         'وجود نقص بالمعاملة',

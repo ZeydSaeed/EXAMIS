@@ -59,6 +59,8 @@ export default defineConfig({
     reporter: [
         ['list'],
         ['html', { outputFolder: 'storage/e2e/report', open: 'never' }],
+        // On CI, failures also become annotations on the pull request.
+        ...(process.env.CI ? [['github'] as ['github']] : []),
     ],
     globalSetup: './tests/e2e/global-setup.ts',
     globalTeardown: './tests/e2e/global-teardown.ts',
