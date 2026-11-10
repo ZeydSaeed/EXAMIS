@@ -6,7 +6,13 @@ use App\Enums\Role;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\AuditEvent;
+use App\Models\DocumentType;
+use App\Models\ExamPeriod;
+use App\Services\Documents\DocumentScanner;
+use App\Services\Documents\PhotoNormalizer;
+use App\Services\Documents\ScanResult;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -48,6 +54,49 @@ describe('uploading', function () {
             ->and($document->sha256)->toBe(hash('sha256', pdfBytes('BT (ok) Tj ET')));
 
         Storage::disk('documents')->assertExists($document->path);
+    });
+
+    it('verifies during the upload without waiting for a queue worker', function () {
+        config(['queue.default' => 'database']);
+        [$application, $type] = draftWithRequiredDocument();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Verified)
+            ->and(DB::table('jobs')->count())->toBe(0);
+    });
+
+    it('leaves a slow scanner to the queue when inline scanning is off', function () {
+        config(['queue.default' => 'database', 'examis.documents.scan_inline' => false]);
+        [$application, $type] = draftWithRequiredDocument();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Pending)
+            ->and(DB::table('jobs')->count())->toBe(1);
+    });
+
+    it('falls back to the queue when the scan fails during the upload', function () {
+        config(['queue.default' => 'database']);
+        [$application, $type] = draftWithRequiredDocument();
+        app()->bind(DocumentScanner::class, fn () => new class implements DocumentScanner
+        {
+            public function scan(string $contents, string $declaredMimeType): ScanResult
+            {
+                throw new RuntimeException('Scanner unavailable.');
+            }
+        });
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), ['document_type' => $type->code, 'file' => uploadedPdf()])
+            ->assertSessionHasNoErrors();
+
+        expect(ApplicationDocument::query()->sole()->status)->toBe(DocumentStatus::Pending)
+            ->and(DB::table('jobs')->count())->toBe(1);
     });
 
     it('keeps the replaced document in the history', function () {
@@ -152,7 +201,7 @@ describe('downloading', function () {
         $document = ApplicationDocument::factory()->verified()->create(['application_id' => $application->id]);
         $reviewer = staffWith(Role::Reviewer);
 
-        $this->actingAs($reviewer)->get(route('documents.show', $document))->assertOk();
+        $this->actingAs($reviewer)->get(route('admin.documents.show', $document))->assertOk();
 
         expect(AuditEvent::query()->where('action', 'document.viewed')->where('actor_id', $reviewer->id)->exists())->toBeTrue();
     });
@@ -161,18 +210,66 @@ describe('downloading', function () {
         $application = Application::factory()->submitted()->create();
         $document = ApplicationDocument::factory()->verified()->create(['application_id' => $application->id]);
 
-        $this->actingAs(staffWith(Role::Auditor))->get(route('documents.show', $document))->assertNotFound();
+        $this->actingAs(staffWith(Role::Auditor))->get(route('admin.documents.show', $document))->assertNotFound();
     });
 
     it('hides draft documents from staff', function () {
         $document = ApplicationDocument::factory()->verified()->create();
 
-        $this->actingAs(staffWith(Role::Supervisor))->get(route('documents.show', $document))->assertNotFound();
+        $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.documents.show', $document))->assertNotFound();
     });
 
     it('requires authentication', function () {
         $document = ApplicationDocument::factory()->verified()->create();
 
-        $this->get(route('documents.show', $document))->assertRedirect(route('login'));
+        $this->get(route('documents.show', $document))->assertRedirect(route('apply.terms'));
+    });
+});
+
+describe('personal photo', function () {
+    function photoDraft(): array
+    {
+        $type = DocumentType::factory()->photo()->create();
+        $period = ExamPeriod::factory()->requiring($type)->create();
+
+        return [Application::factory()->create(['exam_period_id' => $period->id]), $type];
+    }
+
+    it('stores the photo re-encoded as a JPEG no larger than the print needs', function () {
+        [$application, $type] = photoDraft();
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), [
+                'document_type' => $type->code,
+                'file' => realUpload('me.png', pngBytes(1600, 1200)),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $document = ApplicationDocument::query()->sole();
+        $stored = (string) Storage::disk('documents')->get($document->path);
+        [$width, $height, $kind] = getimagesizefromstring($stored);
+
+        expect($document->status)->toBe(DocumentStatus::Verified)
+            ->and($document->mime_type)->toBe('image/jpeg')
+            ->and($kind)->toBe(IMAGETYPE_JPEG)
+            ->and([$width, $height])->toBe([PhotoNormalizer::MAX_SIDE, 900])
+            ->and($document->size_bytes)->toBe(strlen($stored))
+            ->and($document->sha256)->toBe(hash('sha256', $stored));
+    });
+
+    it('drops anything appended after the image data', function () {
+        [$application, $type] = photoDraft();
+        $payload = "<?php system('id'); ?>";
+
+        $this->actingAs($application->user)
+            ->post(route('applications.documents.store', $application), [
+                'document_type' => $type->code,
+                'file' => realUpload('me.png', pngBytes(300, 400).$payload),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $stored = (string) Storage::disk('documents')->get(ApplicationDocument::query()->sole()->path);
+
+        expect($stored)->not->toContain($payload);
     });
 });

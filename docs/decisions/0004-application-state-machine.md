@@ -4,7 +4,7 @@
 
 ## States
 
-`draft`, `submitted`, `under_review`, `requires_correction`, `resubmitted`, `accepted`, `rejected`, `withdrawn`
+`draft`, `submitted`, `under_review`, `requires_correction`, `resubmitted`, `accepted`, `rejected`, `withdrawn`, `fees_paid` (fees paid, final acceptance; added 2026-11-08)
 
 ## Transitions
 
@@ -17,9 +17,12 @@
 | under_review                          | accepted              | staff with `applications.decide`                                                 | no              |
 | under_review                          | rejected              | staff with `applications.decide`                                                 | **yes**         |
 | draft, submitted, requires_correction | withdrawn             | owner                                                                            | optional        |
-| accepted, rejected                    | under_review (reopen) | staff with `applications.reopen`                                                 | **yes**         |
+| accepted                              | fees_paid             | staff with `applications.decide`                                                 | no              |
+| accepted, rejected, fees_paid         | under_review (reopen) | staff with `applications.reopen`                                                 | **yes**         |
 
 The authoritative table is `App\Enums\ApplicationStatus::transitions()`. A unit test pins it.
+
+Staff and students see five statuses: under review, accepted, rejected, requires correction and fees paid. `submitted` and `resubmitted` are shown and filtered as under review (`ApplicationStatus::shownAs()`); they stay separate in storage because the review queue depends on them.
 
 ## Rules
 

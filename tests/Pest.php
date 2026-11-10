@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
 /*
@@ -25,6 +26,9 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+// Real commits between real connections, so no wrapping transaction here.
+pest()->extend(TestCase::class)->in('Concurrency');
 
 /*
 |--------------------------------------------------------------------------
@@ -119,4 +123,43 @@ function pngBytes(int $width = 40, int $height = 40): string
 function uploadedPdf(string $name = 'id-card.pdf', ?string $body = null): UploadedFile
 {
     return UploadedFile::fake()->createWithContent($name, pdfBytes($body ?? 'BT (ok) Tj ET'));
+}
+
+/**
+ * Text as a reader would extract it: Arabic presentation forms normalised
+ * back to base letters and whitespace collapsed. Times New Roman maps some
+ * joined forms to their Persian code points (ی, ھ, ک), folded back here.
+ */
+function extractPdfText(string $pdf): string
+{
+    $text = (new Parser)->parseContent($pdf)->getText();
+    $text = Normalizer::normalize($text, Normalizer::FORM_KC) ?: $text;
+    $text = strtr($text, ['ی' => 'ي', 'ھ' => 'ه', 'ک' => 'ك']);
+
+    return (string) preg_replace('/\s+/u', ' ', $text);
+}
+
+/**
+ * Whether the form prints in Times New Roman, as in production. The font is
+ * licensed with Windows and cannot ship with the repository, so the Linux CI
+ * prints with the DejaVu fallback, whose Arabic text extracts differently;
+ * checks of the extracted Arabic run only where the real font is.
+ */
+function receiptFontInstalled(): bool
+{
+    $directory = rtrim((string) config('examis.receipt.font_dir'), '/\\');
+
+    return $directory !== '' && is_file($directory.'/times.ttf') && is_file($directory.'/timesbd.ttf');
+}
+
+/**
+ * PDF stores right-to-left runs in visual order; viewers reorder them for
+ * display and selection. Reverse an expected phrase to find it in raw text.
+ */
+function visualOrder(string $logical): string
+{
+    // The lam-alef ligature is one glyph, so it comes out of the PDF in logical order.
+    preg_match_all('/ل[اأإآ]|./us', $logical, $glyphs);
+
+    return implode('', array_reverse($glyphs[0]));
 }

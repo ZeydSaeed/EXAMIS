@@ -4,6 +4,7 @@ use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\ContentPage;
 use App\Models\ExamPeriod;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -21,14 +22,6 @@ it('lists only periods that are open right now on the home page', function () {
             ->where('direction', 'rtl'));
 });
 
-it('switches the interface to English and back', function () {
-    $this->post(route('locale.update'), ['locale' => 'en'])->assertRedirect();
-
-    $this->get(route('home'))->assertInertia(fn (Assert $page) => $page->where('locale', 'en')->where('direction', 'ltr'));
-
-    $this->post(route('locale.update'), ['locale' => 'fr'])->assertSessionHasErrors('locale');
-});
-
 it('shows published content pages and hides unpublished ones', function () {
     ContentPage::factory()->create(['slug' => 'faq', 'body_ar' => '<script>alert(1)</script> نص']);
     ContentPage::factory()->create(['slug' => 'draft-page', 'is_published' => false]);
@@ -41,29 +34,45 @@ it('shows published content pages and hides unpublished ones', function () {
 });
 
 describe('tracking without signing in', function () {
-    it('shows the status for a matching reference and birth date', function () {
-        $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create(['birth_date' => '2006-03-15']);
+    it('shows the status for a reference number alone', function () {
+        $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
         $this->from(route('track.create'))
-            ->post(route('track.store'), ['reference_number' => strtolower((string) $application->reference_number), 'birth_date' => '2006-03-15'])
+            ->post(route('track.store'), ['reference_number' => strtolower((string) $application->reference_number)])
             ->assertRedirect(route('track.create'))
             ->assertSessionHas('track_result.status', 'under_review');
     });
 
-    it('reveals nothing when the birth date does not match', function () {
-        $application = Application::factory()->submitted()->create(['birth_date' => '2006-03-15']);
-
-        $this->post(route('track.store'), ['reference_number' => $application->reference_number, 'birth_date' => '2006-03-16'])
+    it('reveals nothing for an unknown number', function () {
+        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019'])
             ->assertSessionHasErrors(['reference_number' => __('applications.track.not_found')])
+            ->assertSessionMissing('track_result');
+    });
+
+    it('never hands out the form', function () {
+        $application = Application::factory()->submitted()->create();
+
+        $this->post(route('track.store'), ['reference_number' => $application->reference_number]);
+
+        expect(session('track_result'))->not->toHaveKey('form_url');
+        $this->get('/track/'.$application->uuid.'/form')->assertNotFound();
+    });
+
+    it('stops once the account has closed', function () {
+        $application = Application::factory()->submitted()->create();
+        $application->user->forceFill(['closed_at' => now()])->save();
+
+        $this->post(route('track.store'), ['reference_number' => $application->reference_number])
+            ->assertSessionHasErrors(['reference_number' => __('applications.track.closed')])
             ->assertSessionMissing('track_result');
     });
 
     it('is rate limited', function () {
         foreach (range(1, 10) as $attempt) {
-            $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019', 'birth_date' => '2000-01-01']);
+            $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019']);
         }
 
-        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019', 'birth_date' => '2000-01-01'])->assertTooManyRequests();
+        $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019'])->assertTooManyRequests();
     });
 });
 
@@ -102,7 +111,7 @@ it('sends security headers with a nonce-based script policy', function () {
 });
 
 it('marks authenticated responses as not cacheable', function () {
-    $this->actingAs(applicant())->get(route('dashboard'))->assertHeader('Cache-Control', 'no-store, private');
+    $this->actingAs(applicant())->get(route('apply.specialization'))->assertHeader('Cache-Control', 'no-store, private');
 });
 
 it('reports readiness without revealing dependency details', function () {
@@ -111,10 +120,20 @@ it('reports readiness without revealing dependency details', function () {
         ->assertExactJson(['status' => 'ready']);
 });
 
+it('answers liveness with a status only, without a page or third-party script', function () {
+    $response = $this->get('/up');
+
+    $response->assertOk()
+        ->assertExactJson(['status' => 'up'])
+        ->assertHeader('X-Content-Type-Options', 'nosniff');
+    expect($response->headers->get('Cache-Control'))->toContain('no-store')
+        ->and($response->getContent())->not->toContain('<script');
+});
+
 it('never shares the full user model with the browser', function () {
     $user = applicant();
 
-    $this->actingAs($user)->get(route('dashboard'))
+    $this->actingAs($user)->get(route('apply.specialization'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.username', $user->username)
             ->missing('auth.user.password')
@@ -124,13 +143,25 @@ it('never shares the full user model with the browser', function () {
 });
 
 it('encrypts page history and rotates the key at logout', function () {
+    URL::forceScheme('https');
     $user = applicant();
 
-    $this->actingAs($user)->get(route('dashboard'))
-        ->assertInertia(fn (Assert $page) => $page->component('applicant/dashboard'));
-    expect($this->get(route('dashboard'))->viewData('page')['encryptHistory'] ?? false)->toBeTrue();
+    $this->actingAs($user)->get(route('apply.specialization'))
+        ->assertInertia(fn (Assert $page) => $page->component('apply/specialization'));
+    expect($this->get(route('apply.specialization'))->viewData('page')['encryptHistory'] ?? false)->toBeTrue();
 
-    $this->post(route('logout'))->assertRedirect('/');
+    $this->post(route('student.logout'))->assertRedirect(route('start'));
 
     expect($this->get('/')->viewData('page')['clearHistory'] ?? false)->toBeTrue();
+});
+
+it('opens on the standalone start page with both logos, and keeps the portal home at /portal', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('start'));
+
+    expect(route('home', absolute: false))->toBe('/portal')
+        ->and(public_path('images/moe-iraq-logo.webp'))->toBeFile()
+        ->and(public_path('images/vocational-education-logo.webp'))->toBeFile();
 });

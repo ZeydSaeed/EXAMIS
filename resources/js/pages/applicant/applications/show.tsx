@@ -8,6 +8,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
@@ -17,6 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import { dashboard } from '@/routes';
 import applications from '@/routes/applications';
@@ -47,8 +49,7 @@ export default function ShowApplication({
         breadcrumbs: [
             { title: t('nav.my_applications'), href: dashboard() },
             {
-                title:
-                    application.reference_number ?? t('applicant.application'),
+                title: t('applicant.application'),
                 href: applications.show(application.uuid),
             },
         ],
@@ -57,6 +58,11 @@ export default function ShowApplication({
     const submitted = (
         flash as { submitted?: { reference_number: string | null } }
     ).submitted;
+    const nextStep = (
+        ['submitted', 'resubmitted', 'under_review'] as string[]
+    ).includes(application.status)
+        ? t(`applicant.next_step.${application.status}`)
+        : null;
     const latestReason = [...(application.events ?? [])]
         .reverse()
         .find((event) => event.reason)?.reason;
@@ -65,11 +71,7 @@ export default function ShowApplication({
 
     return (
         <>
-            <Head
-                title={
-                    application.reference_number ?? t('applicant.application')
-                }
-            />
+            <Head title={t('applicant.application')} />
             <PageContainer className="max-w-4xl">
                 {submitted && (
                     <Alert
@@ -80,16 +82,14 @@ export default function ShowApplication({
                         <AlertTitle className="text-base">
                             {t('applicant.submitted_title')}
                         </AlertTitle>
-                        <AlertDescription>
-                            <p>{t('applicant.submitted_text')}</p>
-                            <p
-                                className="mt-2 text-2xl font-bold tracking-wide text-foreground"
-                                dir="ltr"
-                                data-test="reference-number"
+                        {nextStep && (
+                            <AlertDescription
+                                className="text-foreground"
+                                data-test="submission-next-step"
                             >
-                                {submitted.reference_number}
-                            </p>
-                        </AlertDescription>
+                                {nextStep}
+                            </AlertDescription>
+                        )}
                     </Alert>
                 )}
 
@@ -99,19 +99,9 @@ export default function ShowApplication({
                         t('applicant.application')
                     }
                     description={
-                        application.reference_number ? (
-                            <>
-                                {t('track.reference_number')}:{' '}
-                                <bdi
-                                    dir="ltr"
-                                    className="font-semibold text-foreground"
-                                >
-                                    {application.reference_number}
-                                </bdi>
-                            </>
-                        ) : (
-                            t('applicant.not_submitted_yet')
-                        )
+                        application.reference_number
+                            ? undefined
+                            : t('applicant.not_submitted_yet')
                     }
                     actions={
                         <>
@@ -135,9 +125,7 @@ export default function ShowApplication({
                                             ? t(
                                                   'applicant.continue_application',
                                               )
-                                            : t(
-                                                  'applicant.respond_to_correction',
-                                              )}
+                                            : t('applicant.edit_correction')}
                                     </Link>
                                 </Button>
                             )}
@@ -197,56 +185,19 @@ export default function ShowApplication({
                             <h2 id="summary" className="mb-4 font-semibold">
                                 {t('applicant.summary')}
                             </h2>
-                            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                                {(
+                            <ApplicationSummaryTable
+                                caption={t('applicant.summary')}
+                                rows={[
+                                    ...applicationSummary(application, t),
                                     [
-                                        [
-                                            'fields.full_name_ar',
-                                            application.form.full_name_ar,
-                                        ],
-                                        [
-                                            'fields.mother_name_ar',
-                                            application.form.mother_name_ar,
-                                        ],
-                                        [
-                                            'fields.birth_date',
-                                            application.form.birth_date,
-                                        ],
-                                        [
-                                            'fields.governorate',
-                                            application.labels.governorate,
-                                        ],
-                                        [
-                                            'fields.school_name',
-                                            application.form.school_name,
-                                        ],
-                                        [
-                                            'fields.branch',
-                                            application.labels.branch,
-                                        ],
-                                        [
-                                            'fields.category',
-                                            application.labels.category,
-                                        ],
-                                        [
-                                            'applications.submitted_at',
-                                            formatDateTime(
-                                                application.submitted_at,
-                                                locale,
-                                            ),
-                                        ],
-                                    ] as const
-                                ).map(([label, value]) => (
-                                    <div key={label}>
-                                        <dt className="text-muted-foreground">
-                                            {t(label)}
-                                        </dt>
-                                        <dd className="font-medium" dir="auto">
-                                            {value ?? '—'}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
+                                        t('applications.submitted_at'),
+                                        formatDateTime(
+                                            application.submitted_at,
+                                            locale,
+                                        ),
+                                    ],
+                                ]}
+                            />
                         </section>
 
                         <section

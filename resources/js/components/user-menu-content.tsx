@@ -12,6 +12,7 @@ import { useTrans } from '@/hooks/use-trans';
 import { clearServiceWorkerCaches } from '@/lib/pwa';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
+import student from '@/routes/student';
 import type { User } from '@/types';
 
 type Props = {
@@ -35,25 +36,33 @@ export function UserMenuContent({ user }: Props) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link
-                        className="block w-full cursor-pointer"
-                        href={edit()}
-                        prefetch
-                        onClick={cleanup}
-                    >
-                        <Settings className="me-2" />
-                        {t('nav.settings')}
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
+            {user.account_type === 'staff' && (
+                <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                className="block w-full cursor-pointer"
+                                href={edit()}
+                                prefetch
+                                onClick={cleanup}
+                            >
+                                <Settings className="me-2" />
+                                {t('nav.settings')}
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link
                     className="block w-full cursor-pointer"
-                    href={logout()}
+                    href={
+                        user.account_type === 'staff'
+                            ? logout()
+                            : student.logout()
+                    }
                     as="button"
                     onClick={handleLogout}
                     data-test="logout-button"

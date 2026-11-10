@@ -1,0 +1,11 @@
+run_id=2026-11-07-submit-20-after
+script=submission-flow.js
+settings=QE_VUS=20 QE_MAX_VUS=20 QE_STUDENT_OFFSET=200
+commit=df72817
+app_release=/srv/examis/releases/20261106142707
+started=2026-11-06T21:33:06+00:00
+host=examis-staging-1 4 vCPU 7729 MB
+k6=k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/arm64)
+caps=k6 CPUQuota=100% MemoryMax=1536M
+finished=2026-11-06T21:33:26+00:00
+k6_exit=0

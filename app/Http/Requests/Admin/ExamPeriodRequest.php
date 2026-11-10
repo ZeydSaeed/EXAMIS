@@ -7,6 +7,7 @@ use App\Enums\Permission;
 use App\Enums\ReferenceType;
 use App\Models\ExamPeriod;
 use App\Services\ReferenceData;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -48,7 +49,8 @@ class ExamPeriodRequest extends FormRequest
     }
 
     /**
-     * An empty eligibility list means "everyone"; store it as null.
+     * An empty eligibility list means "everyone"; store it as null. The
+     * window comes in as Iraq wall-clock time and is stored in UTC.
      *
      * @return array<string, mixed>
      */
@@ -58,6 +60,10 @@ class ExamPeriodRequest extends FormRequest
 
         foreach (['eligible_branch_codes', 'eligible_category_codes'] as $key) {
             $attributes[$key] = empty($attributes[$key]) ? null : array_values($attributes[$key]);
+        }
+
+        foreach (['opens_at', 'closes_at'] as $key) {
+            $attributes[$key] = CarbonImmutable::parse($attributes[$key], ExamPeriod::LOCAL_TIMEZONE)->utc();
         }
 
         return $attributes;

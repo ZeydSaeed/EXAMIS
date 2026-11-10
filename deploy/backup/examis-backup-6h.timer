@@ -1,0 +1,11 @@
+[Unit]
+Description=EXAMIS database backup every 6 hours
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:00:00
+RandomizedDelaySec=300
+Persistent=true
+Unit=examis-backup@6h.service
+
+[Install]
+WantedBy=timers.target

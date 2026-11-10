@@ -30,37 +30,11 @@ class UserFactory extends Factory
             'username' => Str::lower(fake()->unique()->bothify('user.????##')),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'account_type' => AccountType::Applicant,
             'locale' => 'ar',
             'remember_token' => Str::random(10),
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
         ];
-    }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
-    }
-
-    /**
-     * Indicate that the model has two-factor authentication configured.
-     */
-    public function withTwoFactor(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => encrypt('secret'),
-            'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
-            'two_factor_confirmed_at' => now(),
-        ]);
     }
 
     /**
@@ -75,6 +49,25 @@ class UserFactory extends Factory
                 $user->roleAssignments()->create(['role' => $role]);
             }
         });
+    }
+
+    /**
+     * A password-less student account (ADR-0010) with no username, a phone
+     * number, QR id,
+     * student number and the access code "ABCDE-23456".
+     */
+    public function student(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'username' => null,
+            'email' => null,
+            'password' => null,
+            'phone' => '0770'.fake()->unique()->numerify('#######'),
+            'public_id' => (string) Str::uuid(),
+            'student_number' => fake()->unique()->numberBetween(100000, 999999),
+            'access_code' => 'ABCDE-23456',
+            'access_code_issued_at' => now(),
+        ]);
     }
 
     public function deactivated(): static

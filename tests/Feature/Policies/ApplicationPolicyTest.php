@@ -78,8 +78,8 @@ test('decision permissions by role', function (Role $role, ApplicationStatus $ta
     [Role::Reviewer, ApplicationStatus::Accepted, false],
     [Role::Supervisor, ApplicationStatus::Accepted, true],
     [Role::Supervisor, ApplicationStatus::Rejected, true],
-    [Role::Administrator, ApplicationStatus::Accepted, false],
-    [Role::Administrator, ApplicationStatus::RequiresCorrection, false],
+    [Role::Administrator, ApplicationStatus::Accepted, true],
+    [Role::Administrator, ApplicationStatus::RequiresCorrection, true],
     [Role::Auditor, ApplicationStatus::RequiresCorrection, false],
 ]);
 

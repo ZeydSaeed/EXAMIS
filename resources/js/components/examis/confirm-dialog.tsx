@@ -14,13 +14,15 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 
 /**
- * Confirmation for consequential actions. `children` is the trigger;
- * `body` can hold extra inputs (e.g. a reason) that belong to the action.
+ * Confirmation for consequential actions. `children` is the trigger, left
+ * out when `open` is driven from code; `body` can hold extra inputs (e.g. a
+ * reason) that belong to the action.
  */
 export function ConfirmDialog({
     title,
     description,
     confirmLabel,
+    cancelLabel,
     destructive = false,
     processing = false,
     open,
@@ -32,19 +34,20 @@ export function ConfirmDialog({
     title: string;
     description?: string;
     confirmLabel: string;
+    cancelLabel?: string;
     destructive?: boolean;
     processing?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
     onConfirm: () => void;
     body?: ReactNode;
-    children: ReactNode;
+    children?: ReactNode;
 }) {
     const { t } = useTrans();
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+            {children && <DialogTrigger asChild>{children}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader className="text-start">
                     <DialogTitle>{title}</DialogTitle>
@@ -56,7 +59,7 @@ export function ConfirmDialog({
                 <DialogFooter className="gap-2">
                     <DialogClose asChild>
                         <Button variant="outline" disabled={processing}>
-                            {t('common.cancel')}
+                            {cancelLabel ?? t('common.cancel')}
                         </Button>
                     </DialogClose>
                     <Button

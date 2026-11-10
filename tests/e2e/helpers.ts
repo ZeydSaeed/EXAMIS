@@ -1,42 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-
-/**
- * Browser projects share one database per run, so each project gets its own
- * block of synthetic applicants (seeded by EndToEndSeeder).
- */
-const PROJECT_OFFSETS: Record<string, number> = {
-    chromium: 0,
-    'mobile-chromium': 30,
-    firefox: 60,
-    webkit: 90,
-};
-
-function projectOffset(): number {
-    return PROJECT_OFFSETS[test.info().project.name] ?? 0;
-}
-
-export const applicant = (number: number) =>
-    `e2e.applicant${String(number + projectOffset()).padStart(3, '0')}`;
-
-/** Display name seeded for the applicant with the same number. */
-export const applicantName = (number: number) =>
-    `طالب اختبار ${number + projectOffset()}`;
-
-/** A username unique to the current browser project, for registration tests. */
-export const uniqueUsername = (base: string) =>
-    `${base}.${test.info().project.name.replace(/[^a-z]/g, '')}`;
-
-export const PASSWORD = 'password';
+import { e2eEnv, staffURL, studentsURL } from '../../playwright.config';
 
 export const BIRTH_DATE = '2006-03-15';
 
-export function pdfFile(name = 'document.pdf') {
-    const body =
-        '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n';
-
-    return { name, mimeType: 'application/pdf', buffer: Buffer.from(body) };
-}
+export const STAFF_PASSWORD = 'password';
 
 export function pngFile(name = 'photo.png') {
     const onePixel =
@@ -49,51 +18,114 @@ export function pngFile(name = 'photo.png') {
     };
 }
 
-export async function login(
+/** Runs an artisan command on the test database and returns its output. */
+export function artisan(...args: string[]): string {
+    return execFileSync('php', ['artisan', ...args, '--no-ansi'], {
+        env: { ...process.env, ...e2eEnv },
+        encoding: 'utf8',
+    });
+}
+
+export function invitationLinkFrom(output: string): string {
+    const link = output.match(/http\S+\/staff\/invitation#\S+/)?.[0];
+
+    if (link === undefined) {
+        throw new Error('The command printed no invitation link.');
+    }
+
+    return link;
+}
+
+export async function staffPassword(
     page: Page,
-    username: string,
-    password = PASSWORD,
+    email: string,
+    password = STAFF_PASSWORD,
 ): Promise<void> {
-    await page.goto('/login');
-    await page.locator('#username').fill(username);
+    await page.goto(`${staffURL}/staff/login`);
+    await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
     await page.getByTestId('login-button').click();
-    await expect(page).not.toHaveURL(/\/login/);
 }
 
-export async function logout(page: Page): Promise<void> {
-    await page.getByTestId('sidebar-menu-button').click();
-    await page.getByTestId('logout-button').click();
-    await expect(page).toHaveURL(/\/$/);
+/** Signs in a seeded staff account. */
+export async function staffLogin(
+    page: Page,
+    username: 'admin' | 'supervisor' | 'reviewer' | 'auditor',
+): Promise<void> {
+    await staffPassword(page, `${username}@examis.test`);
+    await expect(page).toHaveURL(/\/admin\/home/);
 }
 
-/**
- * Fills the form wizard with valid synthetic data and uploads every
- * required document, ending on the review step.
- */
-export async function completeApplicationForm(page: Page): Promise<void> {
-    await page.locator('#full_name_ar').fill('سارة علي حسين الجبوري');
-    await page.locator('#mother_name_ar').fill('زينب كاظم جواد');
-    await page.locator('#full_name_en').fill('Sara Ali Hussein');
-    await page.locator('#birth_date').fill(BIRTH_DATE);
-    await page.locator('#gender').selectOption('female');
-    await page.locator('#national_id_number').fill('199812345678');
+/** Terms, then a mobile number: the only way a student account starts. */
+export async function registerStudent(page: Page): Promise<void> {
+    await page.goto(`${studentsURL}/apply/terms`);
+    await page.getByTestId('accept-terms').click();
+    await page.getByTestId('terms-next').click();
+    await expect(page).toHaveURL(/\/register/);
+    await page.locator('#phone').fill('07701234567');
+    await page.getByTestId('register-user-button').click();
+    await expect(page).toHaveURL(/\/apply\/specialization/);
+}
+
+/** From a fresh registration to the first step of the form. */
+export async function startApplication(page: Page): Promise<void> {
+    await registerStudent(page);
+
+    const branch = page.getByTestId('branch-select');
+    await branch.selectOption({ index: 1 });
+
+    const specialization = page.getByTestId('specialization-select');
+    await specialization.selectOption({ index: 1 });
+
+    await page.getByTestId('specialization-next').click();
+    await expect(page).toHaveURL(/\/applications\/[0-9a-f-]+\/edit/);
+}
+
+/** Fills the first three steps, ending on the documents step. */
+export async function fillUpToDocuments(page: Page): Promise<void> {
+    await page.locator('#student_name').fill('سارة');
+    await page.locator('#father_name').fill('علي');
+    await page.locator('#grandfather_name').fill('حسين');
+    await page.locator('#great_grandfather_name').fill('كاظم');
+    await page.locator('#mother_first_name').fill('زينب');
+    await page.locator('#mother_father_name').fill('كاظم');
+    await page.locator('#mother_grandfather_name').fill('جواد');
+    const [year, month, day] = BIRTH_DATE.split('-');
+    await page.locator('#birth_date').selectOption(day);
+    await page.locator('#birth_date_month').selectOption(month);
+    await page.locator('#birth_date_year').selectOption(year);
+    await page.locator('select#birth_place_code').selectOption({ index: 1 });
+
+    // Some specializations fix the gender, which then shows but cannot change.
+    if (await page.locator('#gender').isEnabled()) {
+        await page.locator('#gender').selectOption('female');
+    }
+
     await page.getByTestId('next-step').click();
 
-    await expect(page.locator('#phone')).toBeVisible();
-    await page.locator('#phone').fill('07701234567');
-    await page.locator('#governorate_code').selectOption('BGD');
+    await expect(page.locator('#district')).toBeVisible();
+    await page.locator('#district').fill('حي الحسين');
+    await page.locator('#mahalla').fill('630');
+    await page.locator('#alley').fill('44');
+    await page.locator('#house_number').fill('164');
+    // The mobile number is the account's and read-only on the form.
     await page.getByTestId('next-step').click();
 
     await expect(page.locator('#school_name')).toBeVisible();
     await page.locator('#school_name').fill('إعدادية الفردوس للبنات');
-    await page.locator('#branch_code').selectOption('SCI');
-    await page.locator('#category_code').selectOption('EXTERNAL');
+    await page.locator('#school_governorate_code').selectOption('KRB');
+    // The branch and specialization are chosen on their own page.
     await page.getByTestId('next-step').click();
 
+    await expect(page.getByTestId('file-personal_photo')).toBeAttached();
+}
+
+/** The whole form, ending on the review step. */
+export async function completeApplicationForm(page: Page): Promise<void> {
+    await fillUpToDocuments(page);
+
+    // Only the personal photo is uploaded; the rest go in the paper file.
     await uploadDocument(page, 'personal_photo', pngFile());
-    await uploadDocument(page, 'national_id', pdfFile('id.pdf'));
-    await uploadDocument(page, 'school_certificate', pdfFile('school.pdf'));
 
     await page.getByTestId('next-step').click();
     await expect(page.getByTestId('submit-application')).toBeVisible();
@@ -102,7 +134,7 @@ export async function completeApplicationForm(page: Page): Promise<void> {
 export async function uploadDocument(
     page: Page,
     type: string,
-    file: ReturnType<typeof pdfFile>,
+    file: ReturnType<typeof pngFile>,
 ): Promise<void> {
     await page.getByTestId(`file-${type}`).setInputFiles(file);
     await expect(
@@ -111,24 +143,31 @@ export async function uploadDocument(
 }
 
 /**
- * Logs in as the given applicant and submits a complete application.
- * Returns the issued reference number and the application URL.
+ * Registers a student and sends a complete application. Returns the student
+ * number, which staff scan or type to open the application.
  */
-export async function submitApplicationAs(
-    page: Page,
-    username: string,
-): Promise<{ reference: string; url: string }> {
-    await login(page, username);
-    await page.getByTestId('start-application').first().click();
-    await expect(page).toHaveURL(/\/applications\/[0-9a-f-]+\/edit/);
+export async function submitApplication(page: Page): Promise<string> {
+    await startApplication(page);
     await completeApplicationForm(page);
+    await sendCompletedForm(page);
+
+    return (
+        (
+            await page
+                .getByTestId('printed-confirmation')
+                .locator('bdi')
+                .textContent()
+        )?.trim() ?? ''
+    );
+}
+
+/** The declaration, then confirming in the print dialog. */
+export async function sendCompletedForm(page: Page): Promise<void> {
     await page.locator('#declaration').check();
     await page.getByTestId('submit-application').click();
-    await expect(page.getByTestId('submission-confirmed')).toBeVisible();
-
-    const reference =
-        (await page.getByTestId('reference-number').textContent())?.trim() ??
-        '';
-
-    return { reference, url: page.url() };
+    await page.getByTestId('confirm-action').click();
+    // Sending builds the PDF form, which is slow on the single PHP test server.
+    await expect(page.getByTestId('printed-confirmation')).toBeVisible({
+        timeout: 45_000,
+    });
 }

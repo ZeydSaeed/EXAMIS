@@ -1,38 +1,28 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Enums\Role;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Models\AuditEvent;
+use App\Models\DocumentType;
+use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 
 beforeEach(function () {
     seedReferenceData();
 });
 
-/**
- * Text as a reader would extract it: Arabic presentation forms normalised
- * back to base letters and whitespace collapsed.
- */
-function extractPdfText(string $pdf): string
-{
-    $text = (new Parser)->parseContent($pdf)->getText();
-    $text = Normalizer::normalize($text, Normalizer::FORM_KC) ?: $text;
-
-    return (string) preg_replace('/\s+/u', ' ', $text);
-}
-
-/**
- * PDF stores right-to-left runs in visual order; viewers reorder them for
- * display and selection. Reverse an expected phrase to find it in raw text.
- */
-function visualOrder(string $logical): string
-{
-    return implode('', array_reverse(mb_str_split($logical)));
-}
-
 it('renders an A4 receipt whose Arabic text can be extracted', function () {
     $application = Application::factory()->submitted()->create([
-        'full_name_ar' => 'عبد الرحمن محمد عبد الكريم الساعدي',
+        'student_name' => 'عبد الرحمن',
+        'father_name' => 'محمد',
+        'grandfather_name' => 'عبد الكريم',
+        'great_grandfather_name' => 'جاسم',
+        'mother_first_name' => 'زهراء',
+        'mother_father_name' => 'كاظم',
+        'school_governorate_code' => 'BGD',
+        'last_grade' => 'الرابع',
         'reference_number' => 'EX2027-0000019',
     ]);
 
@@ -43,13 +33,103 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
     expect($pdf)->toStartWith('%PDF-')
         ->and($pdf)->toContain('/MediaBox [0 0 595.280 841.890]');
 
+    if (! receiptFontInstalled()) {
+        $this->markTestIncomplete('Times New Roman is not installed here (EXAMIS_RECEIPT_FONT_DIR): the A4 PDF is checked, its Arabic text is not.');
+    }
+
     $text = extractPdfText($pdf);
-    expect($text)->toContain('EX2027-0000019')
-        ->and($text)->toContain(visualOrder('عبد الرحمن محمد عبد الكريم الساعدي'))
-        ->and($text)->toContain(visualOrder('بغداد'))
-        ->and($text)->toContain(visualOrder('العلمي'))
-        ->and($text)->toContain('(2026-2027)')
+    expect($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
+        ->and($text)->toContain(visualOrder('عبد الرحمن'))
+        ->and($text)->toContain(visualOrder('عبد الكريم'))
+        ->and($text)->toContain(visualOrder('زهراء'))
+        ->and($text)->toContain(visualOrder('كاظم'))
+        ->and($text)->toContain(visualOrder('حي الحسين'))
+        ->and($text)->toContain(visualOrder('الرابع'))
+        ->and($text)->toContain('2027-2026')
         ->and(preg_match('/[\x{E000}-\x{F8FF}]/u', $text))->toBe(0);
+});
+
+it('names the form after the student and their student number', function () {
+    $application = Application::factory()->submitted()->create([
+        'student_name' => 'علي',
+        'father_name' => 'حسن',
+        'grandfather_name' => 'كاظم',
+        'great_grandfather_name' => 'جاسم',
+        'reference_number' => 'EX2027-0000020',
+    ]);
+    $application->user->forceFill(['student_number' => 12345])->save();
+
+    $response = $this->actingAs($application->user)->get(route('applications.receipt', $application));
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Disposition'))
+        ->toContain('filename=receipt-EX2027-0000020.pdf')
+        ->toContain("filename*=utf-8''".rawurlencode('علي حسن كاظم جاسم_12345.pdf'))
+        ->and((new Parser)->parseContent((string) $response->getContent())->getDetails()['Title'])
+        ->toBe('علي حسن كاظم جاسم_12345');
+});
+
+it('follows the form with the request letter, the information form, the required documents and the pledge', function () {
+    $application = Application::factory()->submitted()->create(['branch_code' => 'COM', 'category_code' => 'COM_ACC']);
+
+    $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+    $user = $application->user->refresh();
+
+    $text = extractPdfText($pdf);
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(5)
+        ->and($text)->toContain(visualOrder('بواسطة السيد مدير قسم'))
+        ->and($text)->toContain(visualOrder('استمارة معلومات الطالب الخاصة بالتقديم'))
+        ->and($text)->toContain(visualOrder('المستمسكات المطلوبة'))
+        ->and($text)->toContain(visualOrder('وثيقة الدراسة المتوسطة'))
+        ->and($text)->not->toContain(visualOrder('استمارة اختبار'))
+        ->and($text)->not->toContain(visualOrder('بطاقة الطالب'))
+        ->and($user->student_number)->not->toBeNull()
+        ->and($text)->toContain((string) $user->student_number);
+});
+
+it('adds the test form with the centre of the specialization', function (string $branch, string $category, string $centre) {
+    $application = Application::factory()->submitted()->create(['branch_code' => $branch, 'category_code' => $category]);
+
+    $pdf = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+
+    $text = extractPdfText($pdf);
+    expect((new Parser)->parseContent($pdf)->getPages())->toHaveCount(6)
+        ->and($text)->toContain(visualOrder('استمارة اختبار'))
+        ->and($text)->toContain(visualOrder($centre));
+})->with([
+    ['CIT', 'CIT_HW', 'إعدادية العباس المهنية'],
+    ['IND', 'IND_CON', 'إعدادية نينوى المهنية'],
+    ['IND', 'IND_ELC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_MEC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_HVAC', 'إعدادية التحرير المهنية'],
+    ['IND', 'IND_ECT', 'إعدادية ابن البيطار المهنية'],
+    ['IND', 'IND_PET', 'إعدادية ابن البيطار المهنية'],
+    ['TOU', 'TOU_HSK', 'إعدادية كربلاء للسياحة والفندقة'],
+]);
+
+it('prints the verified personal photo in the photo box', function () {
+    Storage::fake('documents');
+    $application = Application::factory()->submitted()->create();
+    $photo = ApplicationDocument::factory()->verified()->create([
+        'application_id' => $application->id,
+        'document_type_id' => DocumentType::factory()->create(['is_photo' => true])->id,
+        'disk' => 'documents',
+        'path' => 'photos/student.png',
+    ]);
+    Storage::disk('documents')->put($photo->path, (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='));
+
+    $withPhoto = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+    $photo->forceFill(['status' => DocumentStatus::Pending])->save();
+    $withoutVerifiedPhoto = (string) $this->actingAs($application->user)->get(route('applications.receipt', $application))->getContent();
+
+    // The authority logo (when provided) is an image too, so compare counts.
+    expect(substr_count($withPhoto, '/Subtype /Image'))
+        ->toBeGreaterThan(substr_count($withoutVerifiedPhoto, '/Subtype /Image'));
+
+    // Without a verified photo the box keeps its label (Arabic text: see receiptFontInstalled).
+    if (receiptFontInstalled()) {
+        expect(extractPdfText($withoutVerifiedPhoto))->toContain(visualOrder('الصورة الشخصية'));
+    }
 });
 
 it('encodes only the verification link in the QR code, not personal data', function () {
@@ -83,5 +163,5 @@ it('answers 404 to other applicants', function () {
 it('lets staff who can see the application reprint the receipt', function () {
     $application = Application::factory()->submitted()->create();
 
-    $this->actingAs(staffWith(Role::Reviewer))->get(route('applications.receipt', $application))->assertOk();
+    $this->actingAs(staffWith(Role::Reviewer))->get(route('admin.applications.receipt', $application))->assertOk();
 });

@@ -11,6 +11,9 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="Concurrency">
+            <directory>tests/Concurrency</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
@@ -18,12 +21,18 @@
         </include>
     </source>
     <php>
+        <!-- The whole suite runs in one process and outgrows PHP's 128M default. -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_URL" value="http://students.examis.test"/>
+        <env name="EXAMIS_STUDENTS_HOST" value="students.examis.test"/>
+        <env name="EXAMIS_STAFF_HOST" value="staff.examis.test"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="EXAMIS_FORM_CACHE" value="false"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>

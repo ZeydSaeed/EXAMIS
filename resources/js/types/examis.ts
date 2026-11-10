@@ -6,24 +6,38 @@ export type ApplicationStatus =
     | 'resubmitted'
     | 'accepted'
     | 'rejected'
-    | 'withdrawn';
+    | 'withdrawn'
+    | 'fees_paid';
 
+/** Fields of the official student status form (استمارة واقع حال). */
 export type ApplicationForm = {
-    full_name_ar: string | null;
-    full_name_en: string | null;
-    mother_name_ar: string | null;
+    student_name: string | null;
+    father_name: string | null;
+    grandfather_name: string | null;
+    great_grandfather_name: string | null;
+    mother_first_name: string | null;
+    mother_father_name: string | null;
+    mother_grandfather_name: string | null;
     birth_date: string | null;
+    birth_place_code: string | null;
+    birth_place_other: string | null;
     gender: 'male' | 'female' | null;
     national_id_number: string | null;
     phone: string | null;
-    contact_email: string | null;
-    address: string | null;
-    governorate_code: string | null;
-    directorate_code: string | null;
+    district: string | null;
+    mahalla: string | null;
+    alley: string | null;
+    house_number: string | null;
+    /** The last school attended. */
     school_name: string | null;
+    school_governorate_code: string | null;
+    school_governorate_other: string | null;
+    /** The last grade the student attended. */
+    last_grade: string | null;
     branch_code: string | null;
+    /** The specialization within the branch. */
     category_code: string | null;
-    previous_exam_year: number | null;
+    other_info: string | null;
 };
 
 export type ApplicationDocument = {
@@ -65,10 +79,14 @@ export type Application = {
         closes_at: string;
         is_accepting: boolean;
     };
+    /** Composed from the name parts; read-only. */
+    full_name: string | null;
+    mother_name: string | null;
     form: ApplicationForm;
     labels: {
         governorate: string | null;
-        directorate: string | null;
+        school_governorate: string | null;
+        birth_place: string | null;
         branch: string | null;
         category: string | null;
         gender: string | null;
@@ -122,11 +140,4 @@ export type Paginated<T> = {
     links: PaginationLink[];
     prev_page_url: string | null;
     next_page_url: string | null;
-};
-
-export type CursorPaginated<T> = {
-    data: T[];
-    per_page: number;
-    next_page_url: string | null;
-    prev_page_url: string | null;
 };

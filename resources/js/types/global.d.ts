@@ -20,7 +20,6 @@ declare module '@inertiajs/core' {
             [key: string]: unknown;
         };
         flashDataType: {
-            toast?: { type: 'success' | 'error'; message: string };
             submitted?: { reference_number: string | null };
         };
     }

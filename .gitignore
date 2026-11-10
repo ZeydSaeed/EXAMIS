@@ -43,5 +43,15 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 /storage/e2e
+/storage/releases
 /playwright-report
 /test-results
+
+# Encrypted backup sets pulled from the server (deploy/backup/pull-latest.ps1).
+/database/backup/
+
+# Keys and recovery codes live in %USERPROFILE%\.examis-backup, never in the
+# repository; these keep a stray copy from being committed.
+*.agekey
+*.age-key
+/database/*.txt

@@ -1,17 +1,37 @@
-import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
-import { ShieldCheck, ShieldOff, UserPlus } from 'lucide-react';
+import {
+    Head,
+    router,
+    setLayoutProps,
+    useForm,
+    usePage,
+} from '@inertiajs/react';
+import { UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
+import { EmptyState } from '@/components/examis/empty-state';
 import { Field } from '@/components/examis/field';
-import { PageContainer, PageHeader } from '@/components/examis/page-header';
-import { Pagination } from '@/components/examis/pagination';
+import { Highlight } from '@/components/examis/highlight';
+import {
+    HeaderButton,
+    HeaderFilter,
+    ListHeader,
+} from '@/components/examis/list-header';
+import { NumberedPagination } from '@/components/examis/pagination';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useListQuery } from '@/hooks/use-list-query';
 import { useTrans } from '@/hooks/use-trans';
 import { formatDateTime } from '@/lib/format';
 import admin from '@/routes/admin';
@@ -22,16 +42,345 @@ type StaffRow = {
     username: string;
     name: string;
     email: string;
+    phone: string | null;
     roles: string[];
+    overrides: Record<string, 'grant' | 'deny'>;
     is_active: boolean;
-    two_factor_enabled: boolean;
+    invitation_pending: boolean;
     last_login_at: string | null;
 };
 
 type Props = {
     staff: Paginated<StaffRow>;
+    filters: {
+        role?: string;
+        state?: string;
+        q?: string;
+        per_page?: string | number;
+    };
     roles: { value: string; label: string }[];
+    permissions: { value: string; label: string }[];
+    /** Role => the permissions it grants. */
+    rolePermissions: Record<string, string[]>;
+    /** The last send of the staff e-mails to Cloudflare Access; null when it is off. */
+    accessSync: {
+        ok: boolean | null;
+        at: string | null;
+        count: number | null;
+    } | null;
 };
+
+/**
+ * Tells the administrator whether the staff they just added can pass the
+ * Cloudflare Access code page in front of the portal yet.
+ */
+function AccessSyncNotice({
+    status,
+}: {
+    status: NonNullable<Props['accessSync']>;
+}) {
+    const { t, locale } = useTrans();
+    const at = formatDateTime(status.at, locale);
+
+    if (status.ok === false) {
+        return (
+            <p
+                role="status"
+                className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+            >
+                {t('users.access_sync_failed', { at })}
+            </p>
+        );
+    }
+
+    return (
+        <p
+            role="status"
+            className="rounded-md border px-3 py-2 text-sm text-muted-foreground"
+        >
+            {status.ok
+                ? t('users.access_sync_ok', { count: status.count ?? 0, at })
+                : t('users.access_sync_pending')}
+        </p>
+    );
+}
+
+/**
+ * One tick per permission: ticked means the staff member has it. The roles
+ * decide what is ticked to begin with; a tick that differs from the roles is
+ * saved as a grant or a withdrawal.
+ */
+function PermissionGrants({
+    user,
+    permissions,
+    rolePermissions,
+}: {
+    user: StaffRow;
+    permissions: Props['permissions'];
+    rolePermissions: Props['rolePermissions'];
+}) {
+    const { t } = useTrans();
+    const [open, setOpen] = useState(false);
+    const fromRoles = new Set(
+        user.roles.flatMap((role) => rolePermissions[role] ?? []),
+    );
+    const holds = (permission: string) =>
+        user.overrides[permission] === 'grant' ||
+        (fromRoles.has(permission) && user.overrides[permission] !== 'deny');
+    const [granted, setGranted] = useState(() =>
+        permissions
+            .map((permission) => permission.value)
+            .filter((permission) => holds(permission)),
+    );
+    const form = useForm({ overrides: user.overrides });
+
+    form.transform(() => ({
+        overrides: Object.fromEntries(
+            permissions.flatMap(({ value }) => {
+                const ticked = granted.includes(value);
+
+                if (ticked === fromRoles.has(value)) {
+                    return [];
+                }
+
+                return [[value, ticked ? 'grant' : 'deny']];
+            }),
+        ),
+    }));
+
+    return (
+        <>
+            <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+                {t('users.permission_grants')}
+            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader className="text-start">
+                        <DialogTitle>
+                            {t('users.permission_grants')}: {user.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t('users.permission_grants_text')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="grid gap-3"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.put(admin.users.permissions.url(user.id), {
+                                preserveScroll: true,
+                                onSuccess: () => setOpen(false),
+                            });
+                        }}
+                    >
+                        {permissions.map((permission) => (
+                            <div
+                                key={permission.value}
+                                className="flex items-center gap-2"
+                            >
+                                <Checkbox
+                                    id={`grant-${user.id}-${permission.value}`}
+                                    checked={granted.includes(permission.value)}
+                                    onCheckedChange={(checked) =>
+                                        setGranted((current) =>
+                                            checked === true
+                                                ? [...current, permission.value]
+                                                : current.filter(
+                                                      (value) =>
+                                                          value !==
+                                                          permission.value,
+                                                  ),
+                                        )
+                                    }
+                                />
+                                <Label
+                                    htmlFor={`grant-${user.id}-${permission.value}`}
+                                    className="font-normal"
+                                >
+                                    {permission.label}
+                                </Label>
+                            </div>
+                        ))}
+                        <InputError message={form.errors.overrides} />
+                        <Button type="submit" disabled={form.processing}>
+                            {t('common.save')}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+/**
+ * Name, sign-in email and password, set by the administrator. The password
+ * stays as it is while its field is empty.
+ */
+function AccountEditor({ user }: { user: StaffRow }) {
+    const { t } = useTrans();
+    const [open, setOpen] = useState(false);
+    const form = useForm({
+        name: user.name,
+        email: user.email,
+        password: '',
+        password_confirmation: '',
+    });
+
+    return (
+        <>
+            <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+                {t('users.edit_account')}
+            </Button>
+            <Dialog
+                open={open}
+                onOpenChange={(next) => {
+                    setOpen(next);
+
+                    if (!next) {
+                        form.reset();
+                        form.clearErrors();
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader className="text-start">
+                        <DialogTitle>{t('users.edit_account')}</DialogTitle>
+                        <DialogDescription>
+                            {t('users.edit_account_text')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="grid gap-4"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.put(admin.users.account.url(user.id), {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    setOpen(false);
+                                    form.reset(
+                                        'password',
+                                        'password_confirmation',
+                                    );
+                                },
+                            });
+                        }}
+                    >
+                        <Field
+                            id={`account-name-${user.id}`}
+                            label={t('auth.full_name')}
+                            error={form.errors.name}
+                            required
+                        >
+                            <Input
+                                id={`account-name-${user.id}`}
+                                value={form.data.name}
+                                onChange={(event) =>
+                                    form.setData('name', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-email-${user.id}`}
+                            label={t('auth.email')}
+                            error={form.errors.email}
+                            required
+                        >
+                            <Input
+                                id={`account-email-${user.id}`}
+                                type="email"
+                                dir="ltr"
+                                value={form.data.email}
+                                onChange={(event) =>
+                                    form.setData('email', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-password-${user.id}`}
+                            label={t('users.new_password')}
+                            hint={t('users.new_password_hint')}
+                            error={form.errors.password}
+                        >
+                            <Input
+                                id={`account-password-${user.id}`}
+                                type="password"
+                                dir="ltr"
+                                autoComplete="new-password"
+                                value={form.data.password}
+                                onChange={(event) =>
+                                    form.setData('password', event.target.value)
+                                }
+                            />
+                        </Field>
+                        <Field
+                            id={`account-password-confirmation-${user.id}`}
+                            label={t('users.password_confirmation')}
+                        >
+                            <Input
+                                id={`account-password-confirmation-${user.id}`}
+                                type="password"
+                                dir="ltr"
+                                autoComplete="new-password"
+                                value={form.data.password_confirmation}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'password_confirmation',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </Field>
+                        <Button type="submit" disabled={form.processing}>
+                            {t('common.save')}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+function PhoneEditor({ user }: { user: StaffRow }) {
+    const { t } = useTrans();
+    const form = useForm({ phone: user.phone ?? '' });
+
+    return (
+        <form
+            className="flex items-center gap-2"
+            onSubmit={(event) => {
+                event.preventDefault();
+                form.put(admin.users.phone.url(user.id), {
+                    preserveScroll: true,
+                });
+            }}
+        >
+            <div className="grid gap-1">
+                <Input
+                    type="tel"
+                    dir="ltr"
+                    aria-label={`${t('auth.mobile')}: ${user.name}`}
+                    autoComplete="off"
+                    className="h-8 w-36 text-sm"
+                    value={form.data.phone}
+                    onChange={(event) =>
+                        form.setData('phone', event.target.value)
+                    }
+                />
+                <InputError message={form.errors.phone} />
+            </div>
+            {form.isDirty && (
+                <Button
+                    type="submit"
+                    size="sm"
+                    variant="outline"
+                    disabled={form.processing}
+                >
+                    {t('common.save')}
+                </Button>
+            )}
+        </form>
+    );
+}
 
 function RoleEditor({
     user,
@@ -42,6 +391,7 @@ function RoleEditor({
 }) {
     const { t } = useTrans();
     const form = useForm({ roles: user.roles });
+    const isSelf = usePage().props.auth.user?.id === user.id;
 
     return (
         <form
@@ -57,6 +407,7 @@ function RoleEditor({
                 <div key={role.value} className="flex items-center gap-1.5">
                     <Checkbox
                         id={`role-${user.id}-${role.value}`}
+                        disabled={isSelf}
                         checked={form.data.roles.includes(role.value)}
                         onCheckedChange={(checked) =>
                             form.setData(
@@ -92,18 +443,30 @@ function RoleEditor({
     );
 }
 
-export default function StaffUsers({ staff, roles }: Props) {
-    const { t, locale } = useTrans();
-    const [showCreate, setShowCreate] = useState(false);
+function CreateStaffDialog({
+    open,
+    onOpenChange,
+    roles,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    roles: Props['roles'];
+}) {
+    const { t } = useTrans();
     const create = useForm<{
-        username: string;
         name: string;
         email: string;
+        phone: string;
+        password: string;
+        password_confirmation: string;
         roles: string[];
-    }>({ username: '', name: '', email: '', roles: [] });
-
-    setLayoutProps({
-        breadcrumbs: [{ title: t('nav.users'), href: admin.users.index() }],
+    }>({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        password_confirmation: '',
+        roles: [],
     });
 
     const submit = (event: FormEvent) => {
@@ -112,241 +475,416 @@ export default function StaffUsers({ staff, roles }: Props) {
             preserveScroll: true,
             onSuccess: () => {
                 create.reset();
-                setShowCreate(false);
+                onOpenChange(false);
             },
+            onError: () => create.reset('password', 'password_confirmation'),
         });
     };
 
     return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-2xl">
+                <DialogHeader className="text-start">
+                    <DialogTitle>{t('users.create')}</DialogTitle>
+                    <DialogDescription>
+                        {t('users.create_hint')}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
+                    <Field
+                        id="new-name"
+                        label={t('auth.full_name')}
+                        error={create.errors.name}
+                        required
+                    >
+                        <Input
+                            id="new-name"
+                            value={create.data.name}
+                            onChange={(event) =>
+                                create.setData('name', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-email"
+                        label={t('auth.email')}
+                        error={create.errors.email}
+                        required
+                    >
+                        <Input
+                            id="new-email"
+                            type="email"
+                            dir="ltr"
+                            value={create.data.email}
+                            onChange={(event) =>
+                                create.setData('email', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-phone"
+                        label={t('auth.mobile')}
+                        error={create.errors.phone}
+                        required
+                    >
+                        <Input
+                            id="new-phone"
+                            type="tel"
+                            dir="ltr"
+                            autoComplete="off"
+                            value={create.data.phone}
+                            onChange={(event) =>
+                                create.setData('phone', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-password"
+                        label={t('auth.password')}
+                        error={create.errors.password}
+                        required
+                    >
+                        <Input
+                            id="new-password"
+                            type="password"
+                            dir="ltr"
+                            autoComplete="new-password"
+                            value={create.data.password}
+                            onChange={(event) =>
+                                create.setData('password', event.target.value)
+                            }
+                        />
+                    </Field>
+                    <Field
+                        id="new-password-confirmation"
+                        label={t('users.password_confirmation')}
+                        required
+                    >
+                        <Input
+                            id="new-password-confirmation"
+                            type="password"
+                            dir="ltr"
+                            autoComplete="new-password"
+                            value={create.data.password_confirmation}
+                            onChange={(event) =>
+                                create.setData(
+                                    'password_confirmation',
+                                    event.target.value,
+                                )
+                            }
+                        />
+                    </Field>
+                    <fieldset className="sm:col-span-2">
+                        <legend className="mb-2 text-sm font-medium">
+                            {t('users.roles')}
+                        </legend>
+                        <div className="flex flex-wrap gap-4">
+                            {roles.map((role) => (
+                                <div
+                                    key={role.value}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Checkbox
+                                        id={`new-role-${role.value}`}
+                                        checked={create.data.roles.includes(
+                                            role.value,
+                                        )}
+                                        onCheckedChange={(checked) =>
+                                            create.setData(
+                                                'roles',
+                                                checked === true
+                                                    ? [
+                                                          ...create.data.roles,
+                                                          role.value,
+                                                      ]
+                                                    : create.data.roles.filter(
+                                                          (value) =>
+                                                              value !==
+                                                              role.value,
+                                                      ),
+                                            )
+                                        }
+                                    />
+                                    <Label
+                                        htmlFor={`new-role-${role.value}`}
+                                        className="font-normal"
+                                    >
+                                        {role.label}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <InputError message={create.errors.roles} />
+                    </fieldset>
+                    <Button
+                        type="submit"
+                        disabled={create.processing}
+                        className="sm:col-start-2"
+                    >
+                        {t('users.create')}
+                    </Button>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export default function StaffUsers({
+    staff,
+    filters,
+    roles,
+    permissions,
+    rolePermissions,
+    accessSync,
+}: Props) {
+    const { t, locale } = useTrans();
+    const currentUserId = usePage().props.auth.user?.id;
+    const [showCreate, setShowCreate] = useState(false);
+    const { search, setSearch, urlFor, visit, tableArea } = useListQuery({
+        url: admin.users.index.url,
+        filters,
+        paginator: staff,
+    });
+
+    setLayoutProps({
+        breadcrumbs: [{ title: t('nav.users'), href: admin.users.index() }],
+    });
+
+    return (
         <>
             <Head title={t('nav.users')} />
-            <PageContainer>
-                <PageHeader
-                    title={t('nav.users')}
-                    description={t('users.description')}
-                    actions={
-                        <Button
-                            onClick={() => setShowCreate((value) => !value)}
-                            aria-expanded={showCreate}
-                        >
-                            <UserPlus className="size-4" aria-hidden />
-                            {t('users.create')}
-                        </Button>
-                    }
-                />
 
-                {showCreate && (
-                    <form
-                        onSubmit={submit}
-                        className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3"
+            <ListHeader
+                search={search}
+                onSearchChange={setSearch}
+                onSearchSubmit={() => visit({ q: search.trim(), page: 1 })}
+                placeholder={t('users.search_placeholder')}
+                compactSearch
+                actions={
+                    <HeaderButton
+                        onClick={() => setShowCreate(true)}
+                        aria-haspopup="dialog"
+                        aria-label={t('users.create')}
+                        title={t('users.create')}
                     >
-                        <Field
-                            id="new-username"
-                            label={t('auth.username')}
-                            error={create.errors.username}
-                            required
-                        >
-                            <Input
-                                id="new-username"
-                                dir="ltr"
-                                value={create.data.username}
-                                onChange={(event) =>
-                                    create.setData(
-                                        'username',
-                                        event.target.value,
-                                    )
-                                }
-                            />
-                        </Field>
-                        <Field
-                            id="new-name"
-                            label={t('auth.full_name')}
-                            error={create.errors.name}
-                            required
-                        >
-                            <Input
-                                id="new-name"
-                                value={create.data.name}
-                                onChange={(event) =>
-                                    create.setData('name', event.target.value)
-                                }
-                            />
-                        </Field>
-                        <Field
-                            id="new-email"
-                            label={t('auth.email')}
-                            error={create.errors.email}
-                            required
-                        >
-                            <Input
-                                id="new-email"
-                                type="email"
-                                dir="ltr"
-                                value={create.data.email}
-                                onChange={(event) =>
-                                    create.setData('email', event.target.value)
-                                }
-                            />
-                        </Field>
-                        <fieldset className="sm:col-span-3">
-                            <legend className="mb-2 text-sm font-medium">
-                                {t('users.roles')}
-                            </legend>
-                            <div className="flex flex-wrap gap-4">
-                                {roles.map((role) => (
-                                    <div
-                                        key={role.value}
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Checkbox
-                                            id={`new-role-${role.value}`}
-                                            checked={create.data.roles.includes(
-                                                role.value,
-                                            )}
-                                            onCheckedChange={(checked) =>
-                                                create.setData(
-                                                    'roles',
-                                                    checked === true
-                                                        ? [
-                                                              ...create.data
-                                                                  .roles,
-                                                              role.value,
-                                                          ]
-                                                        : create.data.roles.filter(
-                                                              (value) =>
-                                                                  value !==
-                                                                  role.value,
-                                                          ),
-                                                )
-                                            }
-                                        />
-                                        <Label
-                                            htmlFor={`new-role-${role.value}`}
-                                            className="font-normal"
-                                        >
-                                            {role.label}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </div>
-                            <InputError message={create.errors.roles} />
-                        </fieldset>
-                        <p className="text-xs text-muted-foreground sm:col-span-2">
-                            {t('users.password_link_hint')}
-                        </p>
-                        <Button type="submit" disabled={create.processing}>
-                            {t('users.create')}
-                        </Button>
-                    </form>
-                )}
-
-                <DataTableFrame>
-                    <table className="min-w-[52rem]">
-                        <thead>
-                            <tr>
-                                <th scope="col">{t('auth.full_name')}</th>
-                                <th scope="col">{t('users.roles')}</th>
-                                <th scope="col">{t('users.security')}</th>
-                                <th scope="col">{t('users.last_login')}</th>
-                                <th scope="col">
-                                    <span className="sr-only">
-                                        {t('admin.actions')}
-                                    </span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {staff.data.map((user) => (
-                                <tr
-                                    key={user.id}
-                                    className={
-                                        user.is_active ? '' : 'opacity-60'
-                                    }
-                                >
-                                    <td>
-                                        <p className="font-medium">
-                                            {user.name}
-                                        </p>
-                                        <p
-                                            className="text-xs text-muted-foreground"
-                                            dir="ltr"
-                                        >
-                                            {user.username} · {user.email}
-                                        </p>
-                                    </td>
-                                    <td>
-                                        <RoleEditor user={user} roles={roles} />
-                                    </td>
-                                    <td>
-                                        <span className="flex items-center gap-1.5">
-                                            {user.two_factor_enabled ? (
-                                                <ShieldCheck
-                                                    className="size-4 text-success"
-                                                    aria-hidden
-                                                />
-                                            ) : (
-                                                <ShieldOff
-                                                    className="size-4 text-warning"
-                                                    aria-hidden
-                                                />
-                                            )}
-                                            {user.two_factor_enabled
-                                                ? t('users.two_factor_on')
-                                                : t('users.two_factor_off')}
-                                        </span>
-                                    </td>
-                                    <td className="text-muted-foreground">
-                                        {formatDateTime(
-                                            user.last_login_at,
-                                            locale,
-                                        )}
-                                    </td>
-                                    <td>
-                                        <ConfirmDialog
-                                            title={
-                                                user.is_active
-                                                    ? t('users.deactivate')
-                                                    : t('users.reactivate')
-                                            }
-                                            description={
-                                                user.is_active
-                                                    ? t('users.deactivate_text')
-                                                    : undefined
-                                            }
-                                            confirmLabel={
-                                                user.is_active
-                                                    ? t('users.deactivate')
-                                                    : t('users.reactivate')
-                                            }
-                                            destructive={user.is_active}
-                                            onConfirm={() =>
-                                                router.put(
-                                                    admin.users.status.url(
-                                                        user.id,
-                                                    ),
-                                                    { active: !user.is_active },
-                                                    { preserveScroll: true },
-                                                )
-                                            }
-                                        >
-                                            <Button variant="ghost" size="sm">
-                                                {user.is_active
-                                                    ? t('users.deactivate')
-                                                    : t('users.reactivate')}
-                                            </Button>
-                                        </ConfirmDialog>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </DataTableFrame>
-
-                <Pagination
-                    prev={staff.prev_page_url}
-                    next={staff.next_page_url}
+                        <UserPlus aria-hidden />
+                    </HeaderButton>
+                }
+            >
+                <HeaderFilter
+                    label={t('users.role')}
+                    value={filters.role ?? ''}
+                    options={roles}
+                    onChange={(role) => visit({ role, page: 1 })}
                 />
-            </PageContainer>
+                <HeaderFilter
+                    label={t('users.state')}
+                    value={filters.state ?? ''}
+                    options={[
+                        { value: 'active', label: t('users.active') },
+                        { value: 'inactive', label: t('users.inactive') },
+                    ]}
+                    onChange={(state) => visit({ state, page: 1 })}
+                />
+            </ListHeader>
+
+            <CreateStaffDialog
+                open={showCreate}
+                onOpenChange={setShowCreate}
+                roles={roles}
+            />
+
+            <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 p-4 sm:p-6">
+                <h1 className="sr-only">{t('nav.users')}</h1>
+
+                {accessSync && <AccessSyncNotice status={accessSync} />}
+
+                <div ref={tableArea} className="min-h-0 flex-1">
+                    {staff.data.length === 0 ? (
+                        <EmptyState
+                            icon={Users}
+                            title={t('admin.no_results')}
+                        />
+                    ) : (
+                        <DataTableFrame className="examis-data-table--plain max-h-full">
+                            <table className="min-w-272">
+                                <caption className="sr-only">
+                                    {t('nav.users')}
+                                </caption>
+                                <thead>
+                                    <tr>
+                                        <th
+                                            scope="col"
+                                            className="w-12 text-center!"
+                                        >
+                                            #
+                                        </th>
+                                        <th scope="col">
+                                            {t('auth.full_name')}
+                                        </th>
+                                        <th scope="col">{t('auth.mobile')}</th>
+                                        <th scope="col">{t('users.roles')}</th>
+                                        <th scope="col">
+                                            {t('users.last_login')}
+                                        </th>
+                                        <th scope="col">
+                                            <span className="sr-only">
+                                                {t('admin.actions')}
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {staff.data.map((user, index) => (
+                                        <tr
+                                            key={user.id}
+                                            className={
+                                                user.is_active
+                                                    ? ''
+                                                    : 'opacity-60'
+                                            }
+                                        >
+                                            <td className="text-center! text-muted-foreground tabular-nums">
+                                                {(staff.from ?? 1) + index}
+                                            </td>
+                                            <td className="whitespace-nowrap">
+                                                <p className="font-medium">
+                                                    <Highlight
+                                                        text={user.name}
+                                                        query={filters.q}
+                                                    />
+                                                </p>
+                                                <p
+                                                    className="text-xs text-muted-foreground"
+                                                    dir="ltr"
+                                                >
+                                                    <Highlight
+                                                        text={user.email}
+                                                        query={filters.q}
+                                                    />
+                                                </p>
+                                                {user.invitation_pending && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {t(
+                                                            'users.invitation_pending',
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <PhoneEditor
+                                                    key={user.phone}
+                                                    user={user}
+                                                />
+                                            </td>
+                                            <td>
+                                                <RoleEditor
+                                                    key={user.roles.join()}
+                                                    user={user}
+                                                    roles={roles}
+                                                />
+                                            </td>
+                                            <td className="whitespace-nowrap text-muted-foreground">
+                                                {formatDateTime(
+                                                    user.last_login_at,
+                                                    locale,
+                                                )}
+                                            </td>
+                                            <td className="whitespace-nowrap">
+                                                {user.id !== currentUserId &&
+                                                    !user.roles.includes(
+                                                        'administrator',
+                                                    ) && (
+                                                        <PermissionGrants
+                                                            key={`${user.roles.join()}|${JSON.stringify(
+                                                                user.overrides,
+                                                            )}`}
+                                                            user={user}
+                                                            permissions={
+                                                                permissions
+                                                            }
+                                                            rolePermissions={
+                                                                rolePermissions
+                                                            }
+                                                        />
+                                                    )}
+                                                {user.id !== currentUserId &&
+                                                    user.is_active && (
+                                                        <AccountEditor
+                                                            key={`${user.name}|${user.email}`}
+                                                            user={user}
+                                                        />
+                                                    )}
+                                                <ConfirmDialog
+                                                    title={
+                                                        user.is_active
+                                                            ? t(
+                                                                  'users.deactivate',
+                                                              )
+                                                            : t(
+                                                                  'users.reactivate',
+                                                              )
+                                                    }
+                                                    description={
+                                                        user.is_active
+                                                            ? t(
+                                                                  'users.deactivate_text',
+                                                              )
+                                                            : undefined
+                                                    }
+                                                    confirmLabel={
+                                                        user.is_active
+                                                            ? t(
+                                                                  'users.deactivate',
+                                                              )
+                                                            : t(
+                                                                  'users.reactivate',
+                                                              )
+                                                    }
+                                                    destructive={user.is_active}
+                                                    onConfirm={() =>
+                                                        router.put(
+                                                            admin.users.status.url(
+                                                                user.id,
+                                                            ),
+                                                            {
+                                                                active: !user.is_active,
+                                                            },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
+                                                        )
+                                                    }
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
+                                                        {user.is_active
+                                                            ? t(
+                                                                  'users.deactivate',
+                                                              )
+                                                            : t(
+                                                                  'users.reactivate',
+                                                              )}
+                                                    </Button>
+                                                </ConfirmDialog>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </DataTableFrame>
+                    )}
+                </div>
+
+                <NumberedPagination
+                    current={staff.current_page}
+                    last={staff.last_page}
+                    hrefFor={(page) => urlFor({ page })}
+                />
+            </div>
         </>
     );
 }

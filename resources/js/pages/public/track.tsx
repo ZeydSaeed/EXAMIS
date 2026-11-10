@@ -37,7 +37,6 @@ export default function TrackApplication({ result }: Props) {
                 <Form
                     {...store.form()}
                     className="space-y-5 rounded-xl border bg-card p-5"
-                    resetOnSuccess={['birth_date']}
                 >
                     {({ processing, errors }) => (
                         <>
@@ -54,19 +53,6 @@ export default function TrackApplication({ result }: Props) {
                                     required
                                     autoCapitalize="characters"
                                     placeholder="EX2027-0000019"
-                                />
-                            </Field>
-                            <Field
-                                id="birth_date"
-                                label={t('track.birth_date')}
-                                error={errors.birth_date}
-                                required
-                            >
-                                <Input
-                                    id="birth_date"
-                                    name="birth_date"
-                                    type="date"
-                                    required
                                 />
                             </Field>
                             <Button

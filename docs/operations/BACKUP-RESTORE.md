@@ -37,7 +37,7 @@ Documents are written to storage **before** their row is committed, and orphan f
 4. Apply configuration and secrets from the secret manager (`APP_KEY` must match the original; otherwise encrypted 2FA secrets and sessions are unusable).
 5. `php artisan migrate:status` (schema matches code) → `php artisan examis:verify-integrity --hashes`.
 6. Compare counts with the backup manifest (`COUNTS.txt`).
-7. Functional checks: staff login with 2FA; open a restored application; download a document; issue a receipt; verify its QR; submit a test application in a test period.
+7. Functional checks: staff login; open a restored application; download a document; issue a receipt; verify its QR; submit a test application in a test period.
 8. Record duration and any data gap; switch traffic (real recovery) or drop the drill database.
 
 ## 5. Scenarios covered by drills
@@ -48,7 +48,7 @@ Documents are written to storage **before** their row is committed, and orphan f
 | Corrupt latest backup      | `backup.sh` validates with `pg_restore --list`; drill uses checksums; fall back to the previous backup or PITR base                                                                               |
 | Documents lost / deleted   | Restore bucket versions; `verify-integrity` lists any remaining gaps by count; affected applicants asked to re-upload via "requires correction"                                                   |
 | Redis lost                 | No durable state in Redis (sessions/queues in DB locally; in production, queued notifications may be lost → re-send from `application_events` if needed); `examis:rescan-pending` re-queues scans |
-| Queue worker down          | Jobs accumulate; operations page shows queue age; restart workers; scans re-queued by schedule                                                                                                    |
+| Queue worker down          | Jobs accumulate in `jobs`; restart workers; scans re-queued by schedule                                                                                                                           |
 | Notification provider down | Notifications retry with backoff (5 tries); in-app notifications unaffected                                                                                                                       |
 | PDF generation failure     | Receipts are generated on demand; no stored state to lose; fix and re-download                                                                                                                    |
 | Bad release                | Roll back to the previous release directory (`OPERATIONS.md` §5); migrations are additive and backward compatible                                                                                 |

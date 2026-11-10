@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\ApplicationStatus;
 use App\Enums\Gender;
 use App\Enums\Permission;
+use App\Enums\ReferenceType;
+use App\Services\ReferenceData;
 use Carbon\CarbonImmutable;
 use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,20 +27,37 @@ use Illuminate\Support\Str;
  * @property ApplicationStatus $status
  * @property int $lock_version
  * @property string|null $full_name_ar
+ * @property string|null $student_name
+ * @property string|null $father_name
+ * @property string|null $grandfather_name
+ * @property string|null $great_grandfather_name
  * @property string|null $full_name_en
  * @property string|null $mother_name_ar
+ * @property string|null $mother_first_name
+ * @property string|null $mother_father_name
+ * @property string|null $mother_grandfather_name
  * @property CarbonImmutable|null $birth_date
+ * @property string|null $birth_place_code
+ * @property string|null $birth_place_other
  * @property Gender|null $gender
  * @property string|null $national_id_number
  * @property string|null $phone
  * @property string|null $contact_email
  * @property string|null $address
+ * @property string|null $district
+ * @property string|null $mahalla
+ * @property string|null $alley
+ * @property string|null $house_number
  * @property string|null $governorate_code
  * @property string|null $directorate_code
  * @property string|null $school_name
+ * @property string|null $school_governorate_code
+ * @property string|null $school_governorate_other
+ * @property string|null $last_grade
  * @property string|null $branch_code
  * @property string|null $category_code
  * @property int|null $previous_exam_year
+ * @property string|null $other_info
  * @property CarbonImmutable|null $declaration_accepted_at
  * @property CarbonImmutable|null $submitted_at
  * @property CarbonImmutable|null $last_submitted_at
@@ -60,22 +79,58 @@ class Application extends Model
     use HasFactory;
 
     /**
-     * Form fields an applicant may write. Status, numbering, ownership,
-     * assignment and timestamps are never mass assignable.
+     * Applicants apply to the vocational education department in Karbala and
+     * must hold a Karbala residence card, so the governorate is fixed.
+     */
+    public const GOVERNORATE_CODE = 'KRB';
+
+    /**
+     * Form fields an applicant may write: the official student status form
+     * (استمارة واقع حال) plus the national ID number. `school_name` is the
+     * last school attended and `category_code` the specialization within
+     * the branch. The student's and mother's names are entered part by part;
+     * `full_name_ar` and `mother_name_ar` are composed from them. `phone` is
+     * always the account's mobile number (see SaveApplicationRequest).
+     * Status, numbering, ownership, assignment and timestamps are never mass
+     * assignable.
      */
     public const FORM_FIELDS = [
-        'full_name_ar', 'full_name_en', 'mother_name_ar', 'birth_date', 'gender',
-        'national_id_number', 'phone', 'contact_email', 'address', 'governorate_code',
-        'directorate_code', 'school_name', 'branch_code', 'category_code', 'previous_exam_year',
+        'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+        'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+        'gender', 'national_id_number',
+        'phone', 'district', 'mahalla', 'alley', 'house_number',
+        'school_name', 'school_governorate_code', 'school_governorate_other', 'last_grade', 'branch_code', 'category_code', 'other_info',
     ];
 
     /**
      * Fields that must be filled before the application can be submitted.
      */
     public const REQUIRED_FOR_SUBMISSION = [
-        'full_name_ar', 'mother_name_ar', 'birth_date', 'gender', 'national_id_number',
-        'phone', 'governorate_code', 'school_name', 'branch_code', 'category_code',
+        'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+        'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code',
+        'gender',
+        'phone', 'district',
+        'school_name', 'school_governorate_code', 'branch_code', 'category_code',
     ];
+
+    /**
+     * The form's steps with fields of their own; documents and the review
+     * follow. The form has no way back, so each step must be complete before
+     * the next one opens.
+     */
+    public const STEP_FIELDS = [
+        1 => [
+            'student_name', 'father_name', 'grandfather_name', 'great_grandfather_name',
+            'mother_first_name', 'mother_father_name', 'mother_grandfather_name', 'birth_date', 'birth_place_code', 'birth_place_other',
+            'gender',
+        ],
+        2 => ['phone', 'district'],
+        3 => ['school_name', 'school_governorate_code', 'school_governorate_other', 'branch_code', 'category_code'],
+    ];
+
+    public const STEP_DOCUMENTS = 4;
+
+    public const STEP_REVIEW = 5;
 
     /**
      * @var list<string>
@@ -88,7 +143,27 @@ class Application extends Model
     protected $attributes = [
         'status' => 'draft',
         'lock_version' => 1,
+        'governorate_code' => self::GOVERNORATE_CODE,
     ];
+
+    /**
+     * The name parts in form order, joined into the stored full names.
+     */
+    public const NAME_PARTS = ['student_name', 'father_name', 'grandfather_name', 'great_grandfather_name'];
+
+    public const MOTHER_NAME_PARTS = ['mother_first_name', 'mother_father_name', 'mother_grandfather_name'];
+
+    /**
+     * `birth_place_code` value for a place outside the governorate list;
+     * the place is then written in `birth_place_other`.
+     */
+    public const BIRTH_PLACE_OTHER = 'OTHER';
+
+    /**
+     * `school_governorate_code` value for a governorate outside the list;
+     * it is then written in `school_governorate_other`.
+     */
+    public const SCHOOL_GOVERNORATE_OTHER = 'OTHER';
 
     protected static function booted(): void
     {
@@ -96,6 +171,31 @@ class Application extends Model
             $application->uuid ??= (string) Str::uuid7();
             $application->verification_token ??= (string) Str::uuid();
         });
+
+        // Staff search, lists and reports read the composed names. The form
+        // only sends parts; a name set directly (imports, tests) is kept.
+        static::saving(function (Application $application): void {
+            if ($application->isDirty(self::NAME_PARTS) && ! $application->isDirty('full_name_ar')) {
+                $application->full_name_ar = self::joinParts($application, self::NAME_PARTS);
+            }
+
+            if ($application->isDirty(self::MOTHER_NAME_PARTS) && ! $application->isDirty('mother_name_ar')) {
+                $application->mother_name_ar = self::joinParts($application, self::MOTHER_NAME_PARTS);
+            }
+        });
+    }
+
+    /**
+     * @param  list<string>  $fields
+     */
+    private static function joinParts(Application $application, array $fields): ?string
+    {
+        $parts = array_filter(array_map(
+            fn (string $field): string => trim((string) $application->getAttribute($field)),
+            $fields,
+        ), fn (string $part): bool => $part !== '');
+
+        return $parts === [] ? null : implode(' ', $parts);
     }
 
     /**
@@ -227,10 +327,7 @@ class Application extends Model
      */
     public function missingRequirements(): array
     {
-        $missingFields = array_values(array_filter(
-            self::REQUIRED_FOR_SUBMISSION,
-            fn (string $field): bool => blank($this->getAttribute($field)),
-        ));
+        $missingFields = $this->missingFields();
 
         $verifiedTypeIds = $this->currentDocuments
             ->reject(fn (ApplicationDocument $document): bool => $document->isRejected())
@@ -244,6 +341,82 @@ class Application extends Model
             ->all();
 
         return ['fields' => $missingFields, 'documents' => array_values($missingDocuments)];
+    }
+
+    /**
+     * The last step this application may open: the first one still missing
+     * something, or the review when nothing is missing.
+     */
+    public function furthestStep(): int
+    {
+        ['fields' => $fields, 'documents' => $documents] = $this->missingRequirements();
+
+        foreach (self::STEP_FIELDS as $step => $stepFields) {
+            if (array_intersect($fields, $stepFields) !== []) {
+                return $step;
+            }
+        }
+
+        return $documents === [] ? self::STEP_REVIEW : self::STEP_DOCUMENTS;
+    }
+
+    /**
+     * Required fields still blank, including the written place of birth when
+     * "other" is chosen.
+     *
+     * @return list<string>
+     */
+    public function missingFields(): array
+    {
+        $missing = array_values(array_filter(
+            self::REQUIRED_FOR_SUBMISSION,
+            fn (string $field): bool => blank($this->getAttribute($field)),
+        ));
+
+        if ($this->birth_place_code === self::BIRTH_PLACE_OTHER && blank($this->birth_place_other)) {
+            $missing[] = 'birth_place_other';
+        }
+
+        if ($this->school_governorate_code === self::SCHOOL_GOVERNORATE_OTHER && blank($this->school_governorate_other)) {
+            $missing[] = 'school_governorate_other';
+        }
+
+        return $missing;
+    }
+
+    /**
+     * The place of birth for display: the governorate name, or the place
+     * written in when "other" was chosen.
+     */
+    public function birthPlace(): ?string
+    {
+        if ($this->birth_place_code === self::BIRTH_PLACE_OTHER) {
+            return $this->birth_place_other;
+        }
+
+        return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->birth_place_code);
+    }
+
+    /**
+     * The last school's governorate for display: its name, or the one
+     * written in when "other" was chosen.
+     */
+    public function schoolGovernorate(): ?string
+    {
+        if ($this->school_governorate_code === self::SCHOOL_GOVERNORATE_OTHER) {
+            return $this->school_governorate_other;
+        }
+
+        return app(ReferenceData::class)->name(ReferenceType::Governorate, $this->school_governorate_code);
+    }
+
+    /**
+     * The student still has something to do here, so printing the form does
+     * not end their account (ADR-0010).
+     */
+    public function waitsOnStudent(): bool
+    {
+        return in_array($this->status, [ApplicationStatus::RequiresCorrection, ApplicationStatus::Withdrawn], true);
     }
 
     public function isReadyForSubmission(): bool

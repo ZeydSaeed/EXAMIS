@@ -1,0 +1,11 @@
+[Unit]
+Description=EXAMIS full backup every day
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+RandomizedDelaySec=300
+Persistent=true
+Unit=examis-backup@daily.service
+
+[Install]
+WantedBy=timers.target

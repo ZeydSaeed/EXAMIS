@@ -1,49 +1,33 @@
 import { expect, test } from '@playwright/test';
-import {
-    applicant,
-    applicantName,
-    login,
-    logout,
-    submitApplicationAs,
-} from './helpers';
+import { registerStudent, submitApplication } from './helpers';
 
 test.describe('security boundaries', () => {
-    test('another applicant gets 404 for an application URL', async ({
+    test('another student gets 404 for an application URL', async ({
+        browser,
         page,
     }) => {
-        const { url } = await submitApplicationAs(page, applicant(4));
-        await logout(page);
+        test.setTimeout(120_000);
 
-        await login(page, applicant(5));
-        const response = await page.goto(url);
+        await submitApplication(page);
+        const url = page.url();
+
+        const other = await (await browser.newContext()).newPage();
+        await registerStudent(other);
+
+        const response = await other.goto(url);
         expect(response?.status()).toBe(404);
     });
 
-    test('guests are sent to the login page', async ({ page }) => {
+    test('guests are sent to the terms page', async ({ page }) => {
         await page.goto('/dashboard');
-        await expect(page).toHaveURL(/\/login/);
-    });
-
-    test('nothing personal is shown after logging out and going back', async ({
-        page,
-    }) => {
-        await login(page, applicant(6));
-        await expect(
-            page.getByText(applicantName(6), { exact: true }).first(),
-        ).toBeVisible();
-        await logout(page);
-
-        await page.goBack();
-        await expect(
-            page.getByText(applicantName(6), { exact: true }),
-        ).toHaveCount(0);
+        await expect(page).toHaveURL(/\/apply\/terms/);
     });
 
     test('private pages are not cacheable and carry a strict CSP', async ({
         page,
     }) => {
-        await login(page, applicant(7));
-        const response = await page.goto('/dashboard');
+        await registerStudent(page);
+        const response = await page.goto('/apply/specialization');
 
         expect(response?.headers()['cache-control']).toContain('no-store');
         expect(response?.headers()['content-security-policy']).toMatch(
@@ -53,11 +37,10 @@ test.describe('security boundaries', () => {
     });
 
     test('the service worker never stores private pages', async ({ page }) => {
-        await login(page, applicant(8));
-        await page.goto('/dashboard');
+        await registerStudent(page);
         await page.evaluate(async () => navigator.serviceWorker?.ready);
         await page.reload();
-        await page.goto('/notifications');
+        await page.goto('/apply/specialization');
 
         const cachedUrls = await page.evaluate(async () => {
             const urls: string[] = [];

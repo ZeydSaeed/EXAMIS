@@ -26,7 +26,7 @@ Initial targets: **RPO 15 minutes, RTO 4 hours**. These are design targets until
 4. Deploy the last known-good release against the restored data. Load configuration from the secret manager.
 5. `php artisan migrate:status`; `php artisan examis:verify-integrity --hashes`.
 6. If counters are behind (only if the restore point is earlier than some issued numbers): set `exam_periods.last_sequence = max(issued sequence)`, then re-run integrity.
-7. Smoke tests: staff login with 2FA, open an application, download a document, issue a receipt, submit a test application in a test period.
+7. Smoke tests: staff login, open an application, download a document, issue a receipt, submit a test application in a test period.
 8. `php artisan up`. Monitor error rate and queue depth closely for 1 hour.
 9. **Data gap handling**: applications submitted between the recovery point and the incident are lost from the database. Identify affected applicants from mail/notification provider logs (reference numbers sent), contact them, and ask them to resubmit. Their receipts remain verifiable only if resubmitted.
 

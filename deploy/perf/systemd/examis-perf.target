@@ -1,0 +1,3 @@
+[Unit]
+Description=EXAMIS perf environment (load-test copy on 127.0.0.1:8443), one test session
+Wants=postgresql@16-perf.service examis-perf-redis.service examis-perf-fpm.service examis-perf-queue.service

@@ -19,9 +19,10 @@ test('the transition table matches ADR-0004', function () {
         'under_review' => ['requires_correction', 'accepted', 'rejected'],
         'requires_correction' => ['resubmitted', 'withdrawn'],
         'resubmitted' => ['under_review'],
-        'accepted' => ['under_review'],
+        'accepted' => ['under_review', 'fees_paid'],
         'rejected' => ['under_review'],
         'withdrawn' => [],
+        'fees_paid' => ['under_review'],
     ]);
 });
 
@@ -53,8 +54,8 @@ test('transitions map to the permission that authorizes them', function (S $from
     'reopen' => [S::Accepted, S::UnderReview, Permission::ApplicationsReopen],
 ]);
 
-test('only drafts and correction requests are editable by the applicant', function () {
+test('applicants edit only drafts and applications sent back for correction', function () {
     $editable = array_values(array_filter(S::cases(), fn (S $status) => $status->isEditableByApplicant()));
 
-    expect($editable)->toBe([S::Draft, S::RequiresCorrection]);
+    expect($editable)->toEqualCanonicalizing([S::Draft, S::RequiresCorrection]);
 });

@@ -1,0 +1,11 @@
+# PHP-FPM errors for the EXAMIS pool. Laravel rotates its own daily logs.
+/srv/examis/shared/storage/logs/php-fpm.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su examis examis
+}

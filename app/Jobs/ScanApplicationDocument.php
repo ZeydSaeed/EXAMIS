@@ -12,6 +12,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 /**
  * Verifies a stored document before it becomes downloadable. Safe to retry:
@@ -80,5 +81,18 @@ class ScanApplicationDocument implements ShouldBeUnique, ShouldQueue
             Storage::disk($document->disk)->delete($document->path);
             Log::warning('Application document rejected by scanner.', ['document' => $document->uuid, 'reason' => $result->reason]);
         }
+    }
+
+    /**
+     * Every try failed. The document stays pending, so it is not downloadable,
+     * and the scheduled rescan sends it through again; this makes the failure
+     * visible instead of leaving it only in failed_jobs.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('Application document scan failed after every retry.', [
+            'document_id' => $this->documentId,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

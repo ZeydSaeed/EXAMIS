@@ -10,7 +10,7 @@
 | PostgreSQL 16+                                                    | See `docs/database/SCHEMA.md` for settings and roles                                                                                                                         |
 | Redis 7                                                           | Cache and queue in production (`maxmemory-policy allkeys-lru` for the cache DB; `noeviction` for the queue DB, or separate instances)                                        |
 | Object storage                                                    | Private bucket, block public access, versioning plus object lock, server-side encryption                                                                                     |
-| Mail/SMS provider                                                 | Through Laravel mail/notification channels; credentials in the secret manager                                                                                                |
+| Mail/SMS provider                                                 | Optional. Staff links are handed over by administrators (ADR-0011); never run production with `MAIL_MAILER=log` if mail is added                                             |
 
 ## 2. Deployment (zero-downtime release directories)
 
@@ -25,9 +25,11 @@ ln -sfn releases/<sha> current && sudo systemctl reload php8.4-fpm
 php artisan queue:restart            # workers pick up new code after their current job
 ```
 
+**Administrators:** after the first deployment, run `php artisan examis:create-admin "Name" email` once for the primary and once for the backup administrator, two different people. Each opens their own link and sets a password. If no administrator can sign in, `php artisan examis:recover-admin email` prints a new password link, and is audited.
+
 **Rollback:** point `current` back at the previous release, reload PHP-FPM, run `queue:restart`. Migrations are not rolled back in production. Write forward fixes instead (`docs/database/SCHEMA.md` §2). A release whose migration is not backward compatible must say so in its notes and needs a maintenance window.
 
-Production `.env` essentials: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`, `EXAMIS_REQUIRE_STAFF_2FA=true`, `DOCUMENTS_DISK=<private s3 disk>`, `DOCUMENT_SCANNER=<av scanner>`, `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `LOG_LEVEL=warning`, `LOG_CHANNEL=daily` or `stderr` to a log shipper.
+Production `.env` essentials: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`, `EXAMIS_STUDENTS_HOST=<student host>`, `EXAMIS_STAFF_HOST=<staff host>`, `DOCUMENTS_DISK=<private s3 disk>`, `DOCUMENT_SCANNER=<av scanner>`, `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `LOG_LEVEL=warning`, `LOG_CHANNEL=daily` or `stderr` to a log shipper.
 
 ## 3. Capacity planning (initial: 1000 concurrent users — to be validated by k6)
 
@@ -52,10 +54,10 @@ More workers do not mean more throughput once CPU or database connections satura
 | Availability            | external check on `/up` (liveness) and `/health/ready` (readiness: DB, cache, storage) | 2 consecutive failures                             |
 | Error rate              | access logs / APM (5xx share)                                                          | > 1% for 5 min                                     |
 | Latency                 | access logs / APM p95                                                                  | reads > 1 s or writes > 2 s for 10 min             |
-| Queue backlog           | Admin → Operations (`pending_jobs`, `oldest_pending_seconds`) or `queue:monitor`       | oldest job > 5 min                                 |
+| Queue backlog           | `queue:monitor` or the age of the oldest row in `jobs`                                 | oldest job > 5 min                                 |
 | Failed jobs             | `failed_jobs` count                                                                    | any increase in 15 min                             |
-| Documents awaiting scan | Operations page                                                                        | > 50 for 15 min                                    |
-| Auth anomalies          | `audit_events` `auth.failed` / `auth.lockout` per hour (Operations page)               | > 5× baseline                                      |
+| Documents awaiting scan | `application_documents` with status `pending` and no `replaced_at`                     | > 50 for 15 min                                    |
+| Auth anomalies          | `audit_events` `auth.failed` / `auth.lockout` per hour                                 | > 5× baseline                                      |
 | Rate-limit hits         | 429s in access logs                                                                    | sustained spike (possible attack or limit too low) |
 | CPU / RAM / disk        | node exporter                                                                          | CPU > 85% for 10 min, RAM > 90%, disk > 80%        |
 | PostgreSQL              | `pg_stat_activity`, locks, replication lag, connections                                | waiting locks > 30 s, connections > 80% of pool    |
@@ -65,7 +67,7 @@ More workers do not mean more throughput once CPU or database connections satura
 
 Logs are structured, and every request carries `X-Request-Id`, which is also stored on audit rows. Never log passwords, OTPs, tokens or document contents. The application does not do this, and log shippers must not add request bodies.
 
-Public endpoints reveal no versions, dependency names or connection details. Details are on the admin Operations page (permission `operations.view`).
+Public endpoints reveal no versions, dependency names or connection details. Failure details go to the application log.
 
 ## 5. External service outages — expected behavior
 

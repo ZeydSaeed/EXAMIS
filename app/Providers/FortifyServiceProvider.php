@@ -2,24 +2,26 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Responses\LogoutResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    /**
+     * A bcrypt hash of a discarded random value, checked when no account
+     * matched so that case takes as long as a wrong password.
+     */
+    private const UNUSABLE_HASH = '$2y$12$HxPf28n8172LkwiS.REQDulRTzalpsxyH3zVG/4/AhMxjIY/S0En.';
+
     /**
      * Register any application services.
      */
@@ -33,35 +35,24 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureActions();
         $this->configureAuthentication();
         $this->configureViews();
         $this->configureRateLimiting();
     }
 
     /**
-     * Configure Fortify actions.
-     */
-    private function configureActions(): void
-    {
-        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::createUsersUsing(CreateNewUser::class);
-    }
-
-    /**
-     * Authenticate by username. Deactivated accounts fail with the same
-     * generic message as a wrong password, so account state is not leaked.
+     * Authenticate staff by email (ADR-0011). Student, unknown and deactivated
+     * accounts fail like a wrong password, and with the same cost, so nothing
+     * about an account is leaked.
      */
     private function configureAuthentication(): void
     {
         Fortify::authenticateUsing(function (Request $request): ?User {
-            $user = User::query()->where('username', Str::lower((string) $request->input('username')))->first();
+            $user = User::query()->staff()->whereRaw('lower(email) = ?', [Str::lower(trim((string) $request->input('email')))])->first();
 
-            if ($user === null || ! $user->isActive() || ! Hash::check((string) $request->input('password'), $user->password)) {
-                return null;
-            }
+            $passwordMatches = Hash::check((string) $request->input('password'), $user->password ?? self::UNUSABLE_HASH);
 
-            return $user;
+            return $passwordMatches && $user?->isActive() ? $user : null;
         });
     }
 
@@ -70,21 +61,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            'canResetPassword' => Route::has('password.request'),
-            'canRegister' => Route::has('register'),
-            'status' => $request->session()->get('status'),
-        ]));
-
-        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
-            'status' => $request->session()->get('status'),
-        ]));
-
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]));
-
-        Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
+        // The form lives at /staff/login; Fortify's own /login only leads there.
+        Fortify::loginView(fn () => to_route('staff.login'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
     }
@@ -94,10 +72,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
-
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
 
@@ -107,10 +81,18 @@ class FortifyServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('passkeys', function (Request $request) {
-            return Limit::perMinute(10)->by(
-                ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
-            );
+        RateLimiter::for('student-login', function (Request $request) {
+            return [
+                Limit::perMinute(10)->by('student-login|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('student-code', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by('student-code|'.$request->session()->getId().'|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+            ];
         });
 
         RateLimiter::for('registration', function (Request $request) {
@@ -120,10 +102,10 @@ class FortifyServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('password-reset', function (Request $request) {
+        RateLimiter::for('staff-invitation', function (Request $request) {
             return [
-                Limit::perMinute(3)->by('reset|'.Str::lower((string) $request->input('username')).'|'.$request->ip()),
-                Limit::perHour(20)->by('reset-ip|'.$request->ip()),
+                Limit::perMinute(10)->by('staff-invitation|'.$request->ip()),
+                Limit::perHour(60)->by('staff-invitation-hour|'.$request->ip()),
             ];
         });
     }

@@ -2,14 +2,18 @@
 
 namespace App\Services\Applications;
 
+use App\Models\Application;
 use App\Models\ExamPeriod;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
 /**
- * Issues reference numbers of the form `<PERIOD>-<6-digit sequence><check digit>`.
- * Must run inside the submission transaction: the period's counter row is
- * locked so concurrent submissions never receive the same number.
+ * Issues reference numbers of the form `<PERIOD>-<8 random digits><check digit>`.
+ * The digits are random because the number alone opens a student's form on
+ * the tracking page: a sequence would let anyone walk through all of them.
+ * Must run inside the submission transaction: the period's row is locked, so
+ * concurrent submissions cannot pick the same number. `last_sequence` counts
+ * the numbers issued.
  */
 class ReferenceNumberGenerator
 {
@@ -20,13 +24,15 @@ class ReferenceNumberGenerator
         }
 
         $locked = ExamPeriod::query()->whereKey($period->getKey())->lockForUpdate()->firstOrFail();
-        $sequence = $locked->last_sequence + 1;
 
-        ExamPeriod::query()->whereKey($period->getKey())->update(['last_sequence' => $sequence]);
+        ExamPeriod::query()->whereKey($period->getKey())->update(['last_sequence' => $locked->last_sequence + 1]);
 
-        $digits = str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
+        do {
+            $digits = (string) random_int(10_000_000, 99_999_999);
+            $reference = $locked->code.'-'.$digits.self::checkDigit($digits);
+        } while (Application::query()->where('reference_number', $reference)->exists());
 
-        return $locked->code.'-'.$digits.self::checkDigit($digits);
+        return $reference;
     }
 
     /**

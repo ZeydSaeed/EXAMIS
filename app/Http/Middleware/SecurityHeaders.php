@@ -2,13 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Portal;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Baseline security headers for every web response.
+ * Baseline security headers for every response, error pages included: it is
+ * global middleware, outside the router.
  *
  * Scripts are restricted to same-origin files and nonce-carrying tags.
  * Styles allow 'unsafe-inline' because Radix UI and toast components set
@@ -39,10 +41,18 @@ class SecurityHeaders
         }
 
         if (config('examis.security.hsts') && $request->isSecure()) {
-            $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            $headers->set('Strict-Transport-Security', 'max-age='.(int) config('examis.security.hsts_max_age').'; includeSubDomains');
         }
 
-        if ($request->user() !== null) {
+        if (Portal::forRequest($request) === Portal::Staff) {
+            $headers->set('X-Robots-Tag', 'noindex, nofollow');
+            $headers->set('Referrer-Policy', 'same-origin');
+        }
+
+        // Only requests that went through the session can have a user. Asking
+        // the guard elsewhere (a 404, the health checks) could sign a user in
+        // from the remember cookie outside any session.
+        if ($request->hasSession() && $request->user() !== null) {
             $headers->set('Cache-Control', 'no-store, private');
         }
 

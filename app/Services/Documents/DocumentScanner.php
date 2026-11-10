@@ -5,8 +5,8 @@ namespace App\Services\Documents;
 /**
  * Inspects stored file contents before a document becomes downloadable.
  * Implementations: StructuralDocumentScanner (signature and active-content
- * checks). An antivirus-backed implementation (e.g. ClamAV) is required in
- * production and plugs in through this contract.
+ * checks) and ClamAvDocumentScanner (the same checks, then the ClamAV
+ * daemon), which production uses.
  */
 interface DocumentScanner
 {

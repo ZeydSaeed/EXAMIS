@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationDocumentController extends Controller
@@ -23,8 +22,6 @@ class ApplicationDocumentController extends Controller
         abort_if($type === null, 422);
 
         $storeDocument->handle($application, $type, $request->file('file'), $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('documents.uploaded')]);
 
         return back();
     }

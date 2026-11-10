@@ -1,0 +1,10 @@
+[Unit]
+Description=EXAMIS manual backup asked for from the staff Backups page
+
+# The application creates "request"; the backup removes it when it ends.
+[Path]
+PathExists=/srv/examis/shared/storage/app/backup-status/request
+Unit=examis-backup@manual.service
+
+[Install]
+WantedBy=paths.target

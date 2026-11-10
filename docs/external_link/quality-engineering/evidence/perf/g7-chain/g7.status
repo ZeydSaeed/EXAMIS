@@ -1,0 +1,8 @@
+2026-11-07T09:41:18Z start
+2026-11-07T09:41:34Z rebuild for stress exit=0
+2026-11-07T10:04:04Z 2026-11-07-stress-200 exit=0
+2026-11-07T10:04:20Z rebuild for spike exit=0
+2026-11-07T10:11:41Z 2026-11-07-spike-200 exit=0
+2026-11-07T10:11:57Z rebuild for soak exit=0
+2026-11-07T12:12:33Z 2026-11-07-soak-2h exit=0
+2026-11-07T12:12:33Z done; perf stopped

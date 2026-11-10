@@ -1,0 +1,36 @@
+[Unit]
+Description=EXAMIS backup (%i)
+After=postgresql.service network-online.target
+Wants=network-online.target
+
+# Root, because the job reads .env (examis, 600) and runs pg_dump as postgres;
+# boxed in: the file system is read-only except the backup directory, and only
+# the capabilities those two steps need are kept.
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/examis-backup.sh %i
+Nice=10
+IOSchedulingClass=idle
+CPUQuota=50%
+MemoryMax=512M
+TimeoutStartSec=2h
+UMask=0077
+ProtectSystem=strict
+ReadWritePaths=/var/backups/examis -/srv/examis/shared/storage/app/backup-status
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_SETUID CAP_SETGID CAP_CHOWN CAP_FOWNER CAP_AUDIT_WRITE

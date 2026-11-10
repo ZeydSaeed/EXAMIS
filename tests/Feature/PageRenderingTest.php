@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\AuditEvent;
 use App\Models\DocumentType;
@@ -10,41 +11,37 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     seedReferenceData();
-    config(['examis.security.require_staff_two_factor' => false]);
 });
 
 it('renders the applicant dashboard with only the applicant\'s own applications', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $mine = Application::factory()->submitted()->create();
     Application::factory()->submitted()->create();
 
     $this->actingAs($mine->user)->get(route('dashboard'))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('applicant/dashboard')
-            ->has('applications', 1)
-            ->where('applications.0.uuid', $mine->uuid));
+        ->assertRedirect(route('applications.printed', $mine));
 });
 
-it('sends staff from the applicant dashboard to the admin area', function () {
-    $this->actingAs(staffWith(Role::Reviewer))->get(route('dashboard'))->assertRedirect(route('admin.home'));
-});
-
-it('renders the application form with eligible options and what is missing', function () {
+it('renders the application form with the governorates and what is missing', function () {
     $application = readyDraft();
-    $application->examPeriod->update(['eligible_branch_codes' => ['SCI']]);
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))
         ->assertInertia(fn (Assert $page) => $page
             ->component('applicant/applications/edit')
             ->where('application.lock_version', 1)
-            ->has('options.branches', 1)
-            ->where('options.branches.0.code', 'SCI')
+            ->has('options.governorates', 18)
+            ->missing('options.branches')
+            ->where('application.labels.school_governorate', 'كربلاء')
             ->has('documentTypes', 1)
             ->where('missing.fields', [])
             ->where('missing.documents', []));
 });
 
-it('redirects from the form to the summary once submitted', function () {
-    $application = Application::factory()->submitted()->create();
+it('redirects from the form to the summary once the review has started', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
+    $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
     $this->actingAs($application->user)->get(route('applications.edit', $application))
         ->assertRedirect(route('applications.show', $application));
@@ -94,8 +91,12 @@ it('lists only the review queue for reviewers and filters by status', function (
     $this->actingAs($reviewer)->get(route('admin.applications.index'))
         ->assertInertia(fn (Assert $page) => $page->component('admin/applications/index')->where('applications.total', 1));
 
+    // Sent applications are shown, and filtered, as under review.
     $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['status' => 'under_review']))
-        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1));
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 2));
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['status' => 'accepted']))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 0));
 });
 
 it('finds applications by reference number', function () {
@@ -104,6 +105,34 @@ it('finds applications by reference number', function () {
 
     $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['q' => strtolower((string) $target->reference_number)]))
         ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1)->where('applications.data.0.uuid', $target->uuid));
+});
+
+it('matches every searched word at the start of a name word, ignoring Arabic letter variants', function () {
+    $target = Application::factory()->submitted()->create(['full_name_ar' => 'أحمد محمد علي حسن']);
+    Application::factory()->submitted()->create(['full_name_ar' => 'أحمد خالد سالم']);
+    Application::factory()->submitted()->create(['full_name_ar' => 'سعيد عليان']);
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['q' => 'احمد عل']))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.total', 1)->where('applications.data.0.uuid', $target->uuid));
+});
+
+it('finds applications by part of the reference number', function () {
+    $target = Application::factory()->submitted()->create();
+    Application::factory()->submitted()->create();
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.applications.index', ['q' => substr((string) $target->reference_number, -6)]))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.uuid', $target->uuid));
+});
+
+it('pages applications by the requested page size within bounds', function () {
+    Application::factory()->submitted()->count(7)->create();
+    $supervisor = staffWith(Role::Supervisor);
+
+    $this->actingAs($supervisor)->get(route('admin.applications.index', ['per_page' => 5, 'page' => 2]))
+        ->assertInertia(fn (Assert $page) => $page->where('applications.per_page', 5)->count('applications.data', 2));
+
+    $this->actingAs($supervisor)->get(route('admin.applications.index', ['per_page' => 1000]))
+        ->assertSessionHasErrors('per_page');
 });
 
 it('treats search input as data, not SQL', function () {
@@ -115,7 +144,24 @@ it('treats search input as data, not SQL', function () {
 
 it('renders every admin section for an administrator', function (string $route) {
     $this->actingAs(staffWith(Role::Administrator))->get(route($route))->assertOk();
-})->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.audit.index', 'admin.operations', 'admin.reports.index']);
+})->with(['admin.home', 'admin.dashboard', 'admin.periods.index', 'admin.periods.create', 'admin.content.index', 'admin.users.index', 'admin.reports.index', 'admin.student-export.index']);
+
+it('finds exam periods by part of the code or name and filters them by status', function () {
+    $target = ExamPeriod::factory()->create(['code' => 'EX2031', 'name_ar' => 'دورة الربيع']);
+    $closed = ExamPeriod::factory()->closed()->create(['code' => 'EX2020']);
+    $admin = staffWith(Role::Administrator);
+
+    foreach (['ex203', 'الربيع'] as $term) {
+        $this->actingAs($admin)->get(route('admin.periods.index', ['q' => $term]))
+            ->assertInertia(fn (Assert $page) => $page->where('periods.total', 1)->where('periods.data.0.id', $target->id));
+    }
+
+    $this->actingAs($admin)->get(route('admin.periods.index', ['status' => 'closed']))
+        ->assertInertia(fn (Assert $page) => $page->where('periods.total', 1)->where('periods.data.0.id', $closed->id));
+
+    $this->actingAs($admin)->get(route('admin.periods.index', ['status' => 'paused']))
+        ->assertSessionHasErrors('status');
+});
 
 it('creates an exam period with its document requirements', function () {
     $type = DocumentType::factory()->create();

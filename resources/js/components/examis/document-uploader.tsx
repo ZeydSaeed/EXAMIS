@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
 import { formatFileSize } from '@/lib/format';
+import { photoTakenAt } from '@/lib/photo-taken-at';
+import { shrinkPhoto } from '@/lib/shrink-photo';
 import applications from '@/routes/applications';
 import type { ApplicationDocument, DocumentRequirement } from '@/types';
 
@@ -14,6 +16,9 @@ const extensionsFor: Record<string, string> = {
     'image/png': '.png',
     'application/pdf': '.pdf',
 };
+
+/** A personal photo taken this recently counts as a camera shot. */
+const freshShotMs = 15 * 60 * 1000;
 
 /**
  * One upload slot per required document type. The browser checks type and
@@ -34,6 +39,7 @@ export function DocumentUploader({
     const inputId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
     const [clientError, setClientError] = useState<string | null>(null);
+    const [preparing, setPreparing] = useState(false);
     const form = useForm<{ document_type: string; file: File | null }>({
         document_type: requirement.code,
         file: null,
@@ -41,18 +47,50 @@ export function DocumentUploader({
 
     const mimeTypes = requirement.mime_types ?? [];
     const maxBytes = (requirement.max_size_kb ?? 0) * 1024;
+    // Extensions only: listing image MIME types makes phones offer the camera,
+    // and the photo must come from the gallery.
     const accept = mimeTypes
         .map((mime) => extensionsFor[mime] ?? '')
         .filter(Boolean)
         .join(',');
 
-    const upload = (file: File) => {
+    const upload = async (selected: File) => {
         setClientError(null);
 
-        if (mimeTypes.length > 0 && !mimeTypes.includes(file.type)) {
+        if (mimeTypes.length > 0 && !mimeTypes.includes(selected.type)) {
             setClientError(t('documents.wrong_type'));
 
             return;
+        }
+
+        // Phones offer the camera whatever the page asks for, so a photo
+        // taken in the last few minutes is refused: it must come from the
+        // gallery.
+        if (requirement.is_photo) {
+            const takenAt = await photoTakenAt(selected);
+
+            if (
+                takenAt &&
+                Math.abs(Date.now() - takenAt.getTime()) < freshShotMs
+            ) {
+                setClientError(t('documents.camera_photo'));
+
+                if (inputRef.current) {
+                    inputRef.current.value = '';
+                }
+
+                return;
+            }
+        }
+
+        // Phone photos are shrunk first, so they pass the size limit and
+        // upload quickly; the server re-encodes them either way.
+        let file = selected;
+
+        if (requirement.is_photo) {
+            setPreparing(true);
+            file = await shrinkPhoto(selected);
+            setPreparing(false);
         }
 
         if (maxBytes > 0 && file.size > maxBytes) {
@@ -77,6 +115,7 @@ export function DocumentUploader({
         });
     };
 
+    const busy = preparing || form.processing;
     const status = current?.status;
 
     return (
@@ -128,12 +167,12 @@ export function DocumentUploader({
                         type="file"
                         className="sr-only"
                         accept={accept}
-                        disabled={disabled || form.processing}
+                        disabled={disabled || busy}
                         onChange={(event) => {
                             const file = event.target.files?.[0];
 
                             if (file) {
-                                upload(file);
+                                void upload(file);
                             }
                         }}
                         data-test={`file-${requirement.code}`}
@@ -142,7 +181,7 @@ export function DocumentUploader({
                         asChild
                         variant={current ? 'outline' : 'default'}
                         size="sm"
-                        disabled={disabled || form.processing}
+                        disabled={disabled || busy}
                     >
                         <label
                             htmlFor={inputId}
@@ -152,14 +191,16 @@ export function DocumentUploader({
                                     : 'cursor-pointer'
                             }
                         >
-                            {form.processing ? (
+                            {busy ? (
                                 <Spinner />
                             ) : (
                                 <FileUp className="size-4" aria-hidden />
                             )}
                             {current
                                 ? t('documents.replace')
-                                : t('documents.upload')}
+                                : requirement.is_photo
+                                  ? t('documents.upload_photo')
+                                  : t('documents.upload')}
                         </label>
                     </Button>
                 </div>
@@ -217,6 +258,15 @@ export function DocumentUploader({
                         </a>
                     )}
                 </div>
+            )}
+
+            {requirement.is_photo && current?.url && (
+                <img
+                    src={`${current.url}?inline=1`}
+                    alt={requirement.name}
+                    className="mt-3 h-36 w-28 rounded-md border object-cover"
+                    data-test="photo-preview"
+                />
             )}
 
             <InputError

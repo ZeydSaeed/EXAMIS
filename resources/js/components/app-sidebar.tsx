@@ -1,17 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
-    Bell,
     CalendarRange,
     ClipboardList,
+    DatabaseBackup,
+    FileSpreadsheet,
     FileText,
     HelpCircle,
     House,
     LayoutGrid,
-    ScrollText,
     ShieldCheck,
     Users,
-    Activity,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -29,7 +28,6 @@ import {
 import { useTrans } from '@/hooks/use-trans';
 import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
-import notifications from '@/routes/notifications';
 import pages from '@/routes/pages';
 import type { NavItem } from '@/types';
 
@@ -42,19 +40,6 @@ export function AppSidebar() {
     const { t, isRtl } = useTrans();
     const can = (permission: string) =>
         auth.user.permissions.includes(permission);
-
-    const applicantItems: NavItem[] = [
-        {
-            title: t('nav.my_applications'),
-            href: dashboard(),
-            icon: LayoutGrid,
-        },
-        {
-            title: t('nav.notifications'),
-            href: notifications.index(),
-            icon: Bell,
-        },
-    ];
 
     const staffItems: NavItem[] = [
         {
@@ -85,6 +70,15 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(can('reports.view') && can('applications.view_all')
+            ? [
+                  {
+                      title: t('nav.student_export'),
+                      href: admin.studentExport.index(),
+                      icon: FileSpreadsheet,
+                  },
+              ]
+            : []),
         ...(can('periods.manage')
             ? [
                   {
@@ -112,21 +106,12 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        ...(can('audit.view')
+        ...(can('backups.manage')
             ? [
                   {
-                      title: t('nav.audit'),
-                      href: admin.audit.index(),
-                      icon: ScrollText,
-                  },
-              ]
-            : []),
-        ...(can('operations.view')
-            ? [
-                  {
-                      title: t('nav.operations'),
-                      href: admin.operations(),
-                      icon: Activity,
+                      title: t('nav.backups'),
+                      href: admin.backups.index(),
+                      icon: DatabaseBackup,
                   },
               ]
             : []),
@@ -135,14 +120,17 @@ export function AppSidebar() {
     const isStaff = auth.user.account_type === 'staff';
     const homeHref = isStaff ? admin.home() : dashboard();
 
+    // Administrators set staff passwords; only they change their own.
     const footerItems: NavItem[] = isStaff
-        ? [
-              {
-                  title: t('nav.security'),
-                  href: '/settings/security',
-                  icon: ShieldCheck,
-              },
-          ]
+        ? can('users.manage')
+            ? [
+                  {
+                      title: t('nav.security'),
+                      href: '/settings/security',
+                      icon: ShieldCheck,
+                  },
+              ]
+            : []
         : [
               {
                   title: t('nav.help'),
@@ -160,7 +148,11 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            className="h-16 justify-center group-data-[collapsible=icon]:h-8!"
+                        >
                             <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>
@@ -171,10 +163,8 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain
-                    label={
-                        isStaff ? t('nav.administration') : t('nav.applicant')
-                    }
-                    items={isStaff ? staffItems : applicantItems}
+                    label={isStaff ? undefined : t('nav.applicant')}
+                    items={isStaff ? staffItems : []}
                 />
             </SidebarContent>
 

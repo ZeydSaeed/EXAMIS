@@ -10,19 +10,37 @@ use App\Models\DocumentType;
 use App\Models\ExamPeriod;
 use App\Services\Audit\AuditLogger;
 use App\Services\ReferenceData;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ExamPeriodController extends Controller
 {
-    public function index(): Response
+    /**
+     * The search term matches part of the code, either name or the academic year.
+     */
+    public function index(Request $request): Response
     {
+        $filters = $request->validate([
+            'status' => ['nullable', Rule::enum(ExamPeriodStatus::class)],
+            'q' => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'between:5,100'],
+        ]);
+
         $periods = ExamPeriod::query()
             ->withCount('applications')
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($filters['q'] ?? null, fn (Builder $query, string $term) => $query->where(
+                fn (Builder $query) => collect(['code', 'name_ar', 'name_en', 'academic_year'])
+                    ->each(fn (string $column) => $query->orWhereLike($column, '%'.trim($term).'%')),
+            ))
             ->latest('opens_at')
-            ->paginate(20)
+            ->paginate((int) ($filters['per_page'] ?? 20))
+            ->withQueryString()
             ->through(fn (ExamPeriod $period): array => [
                 'id' => $period->id,
                 'code' => $period->code,
@@ -34,7 +52,11 @@ class ExamPeriodController extends Controller
                 'applications_count' => $period->applications_count,
             ]);
 
-        return Inertia::render('admin/periods/index', ['periods' => $periods]);
+        return Inertia::render('admin/periods/index', [
+            'periods' => $periods,
+            'filters' => $filters,
+            'statuses' => array_map(fn (ExamPeriodStatus $status): string => $status->value, ExamPeriodStatus::cases()),
+        ]);
     }
 
     public function create(ReferenceData $referenceData): Response
@@ -55,7 +77,6 @@ class ExamPeriodController extends Controller
         });
 
         $audit->record('period.created', $period, ['code' => $period->code]);
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.periods.index');
     }
@@ -68,8 +89,8 @@ class ExamPeriodController extends Controller
             'period' => [
                 ...$period->only(['id', 'code', 'name_ar', 'name_en', 'academic_year', 'instructions_ar', 'instructions_en']),
                 'status' => $period->status->value,
-                'opens_at' => $period->opens_at->format('Y-m-d\TH:i'),
-                'closes_at' => $period->closes_at->format('Y-m-d\TH:i'),
+                'opens_at' => $period->opens_at->tz(ExamPeriod::LOCAL_TIMEZONE)->format('Y-m-d\TH:i'),
+                'closes_at' => $period->closes_at->tz(ExamPeriod::LOCAL_TIMEZONE)->format('Y-m-d\TH:i'),
                 'eligible_branch_codes' => $period->eligible_branch_codes ?? [],
                 'eligible_category_codes' => $period->eligible_category_codes ?? [],
                 'documents' => $period->documentTypes->map(fn (DocumentType $type): array => [
@@ -89,7 +110,6 @@ class ExamPeriodController extends Controller
         });
 
         $audit->record('period.updated', $period, ['changed' => array_keys($period->getChanges())]);
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('admin.saved')]);
 
         return to_route('admin.periods.index');
     }

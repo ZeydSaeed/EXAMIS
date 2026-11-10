@@ -1,0 +1,11 @@
+run_id=2026-11-07-smoke-qe-010
+script=smoke.js
+settings=QE_STUDENT_OFFSET=600
+commit=3cfe4c7
+app_release=/srv/examis/releases/20261107180147
+started=2026-11-07T18:38:38+00:00
+host=examis-staging-1 4 vCPU 7729 MB
+k6=k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/arm64)
+caps=k6 CPUQuota=100% MemoryMax=1536M
+finished=2026-11-07T18:39:03+00:00
+k6_exit=0

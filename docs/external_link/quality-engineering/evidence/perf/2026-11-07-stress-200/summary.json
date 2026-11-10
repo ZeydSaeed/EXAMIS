@@ -1,0 +1,246 @@
+{
+    "metrics": {
+        "http_req_blocked": {
+            "min": 0.00016,
+            "med": 0.00076,
+            "p(90)": 0.00108,
+            "p(95)": 0.0012,
+            "p(99)": 0.00172,
+            "max": 12.124781,
+            "avg": 0.017707407742113362
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 9.570467,
+            "avg": 0.013956251386843636,
+            "min": 0,
+            "med": 0
+        },
+        "vus_max": {
+            "value": 200,
+            "min": 200,
+            "max": 200
+        },
+        "data_sent": {
+            "count": 38536804,
+            "rate": 28828.4426702969
+        },
+        "http_req_duration{type:read}": {
+            "med": 21.282277,
+            "p(90)": 37.0367372,
+            "p(95)": 42.90684389999999,
+            "p(99)": 74.68322707999997,
+            "max": 207.542768,
+            "avg": 24.58038078103707,
+            "min": 12.568674,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "http_req_waiting": {
+            "max": 180.556306,
+            "avg": 26.259826621971428,
+            "min": 0,
+            "med": 21.878533,
+            "p(90)": 39.5897566,
+            "p(95)": 45.53232819999998,
+            "p(99)": 72.03202067999996
+        },
+        "http_req_sending": {
+            "p(99)": 2.7535981999999994,
+            "max": 70.68229,
+            "avg": 0.27312922465858697,
+            "min": 0.03512,
+            "med": 0.173643,
+            "p(90)": 0.3169248,
+            "p(95)": 0.42166239999999994
+        },
+        "qe_journey_complete": {
+            "passes": 13009,
+            "fails": 0,
+            "value": 1
+        },
+        "iterations": {
+            "count": 13009,
+            "rate": 9.731715445263504
+        },
+        "vus": {
+            "min": 1,
+            "max": 200,
+            "value": 1
+        },
+        "iteration_duration": {
+            "p(95)": 24145.632466399988,
+            "p(99)": 27505.551845039998,
+            "max": 29995.75115,
+            "avg": 11629.936367749708,
+            "min": 4735.424163,
+            "med": 8792.073948,
+            "p(90)": 21821.1686606
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 49573,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0
+        },
+        "data_received": {
+            "count": 4184711720,
+            "rate": 3130480.719463387
+        },
+        "http_req_duration{type:write}": {
+            "p(95)": 58.97584289999998,
+            "p(99)": 96.15230936999998,
+            "max": 194.019434,
+            "avg": 40.09015109049837,
+            "min": 17.834352,
+            "med": 37.2458155,
+            "p(90)": 48.97466240000001,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "min": 12.568674,
+            "med": 22.596343,
+            "p(90)": 40.568766000000004,
+            "p(95)": 47.2805344,
+            "p(99)": 80.58467515999999,
+            "max": 207.542768,
+            "avg": 27.280425518507947
+        },
+        "http_reqs": {
+            "count": 49573,
+            "rate": 37.08435158490642
+        },
+        "http_req_connecting": {
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 9.154497,
+            "avg": 0.0021663781090512993,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0
+        },
+        "checks": {
+            "passes": 45106,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_duration": {
+            "p(95)": 47.2805344,
+            "p(99)": 80.58467515999999,
+            "max": 207.542768,
+            "avg": 27.280425518507947,
+            "min": 12.568674,
+            "med": 22.596343,
+            "p(90)": 40.568766000000004
+        },
+        "http_req_receiving": {
+            "p(90)": 0.9289188,
+            "p(95)": 1.5741679999999987,
+            "p(99)": 10.92071707999999,
+            "max": 102.23134,
+            "avg": 0.7474696718778359,
+            "min": 0.058241,
+            "med": 0.323445
+        },
+        "qe_step_ok": {
+            "passes": 45106,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.95": false
+            },
+            "value": 1
+        }
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "public: /": {
+                    "passes": 9244,
+                    "fails": 0,
+                    "name": "public: /",
+                    "path": "::public: /",
+                    "id": "746e3ca4d6be8d05a800532ed28198f6"
+                },
+                "student: QR opens the code page": {
+                    "id": "b4c4d65be680261520006b8b852d032f",
+                    "passes": 100,
+                    "fails": 0,
+                    "name": "student: QR opens the code page",
+                    "path": "::student: QR opens the code page"
+                },
+                "student: access code signs in": {
+                    "name": "student: access code signs in",
+                    "path": "::student: access code signs in",
+                    "id": "a758d910f322a3a2ff3d4ff862eb987b",
+                    "passes": 100,
+                    "fails": 0
+                },
+                "student: specialization starts a draft": {
+                    "id": "9287c9030dc3fb150af6c3d595c916e8",
+                    "passes": 100,
+                    "fails": 0,
+                    "name": "student: specialization starts a draft",
+                    "path": "::student: specialization starts a draft"
+                },
+                "student: step 1 saved": {
+                    "fails": 0,
+                    "name": "student: step 1 saved",
+                    "path": "::student: step 1 saved",
+                    "id": "07f6c3410176bbdeec82860dca14963e",
+                    "passes": 100
+                },
+                "student: step 2 saved": {
+                    "name": "student: step 2 saved",
+                    "path": "::student: step 2 saved",
+                    "id": "db5cf1e3f6f34feb322f3f14462ca33f",
+                    "passes": 3865,
+                    "fails": 0
+                },
+                "student: step 3 saved": {
+                    "name": "student: step 3 saved",
+                    "path": "::student: step 3 saved",
+                    "id": "8e01f609df080ce94f83b6755b6d5ed1",
+                    "passes": 100,
+                    "fails": 0
+                },
+                "public: /apply/terms": {
+                    "id": "b4bbeadffc1ccb6ecfba69e75f41f305",
+                    "passes": 9244,
+                    "fails": 0,
+                    "name": "public: /apply/terms",
+                    "path": "::public: /apply/terms"
+                },
+                "public: /portal": {
+                    "name": "public: /portal",
+                    "path": "::public: /portal",
+                    "id": "c45e9fa63fa6de92789ea5d0be396a10",
+                    "passes": 9244,
+                    "fails": 0
+                },
+                "public: /track": {
+                    "name": "public: /track",
+                    "path": "::public: /track",
+                    "id": "008ec26ac7622bebeba2f86270f5ad21",
+                    "passes": 9244,
+                    "fails": 0
+                },
+                "student: draft reads back intact": {
+                    "name": "student: draft reads back intact",
+                    "path": "::student: draft reads back intact",
+                    "id": "c6af9db618c5f9fc8539654e5fb9a317",
+                    "passes": 3765,
+                    "fails": 0
+                }
+            },
+        "name": "",
+        "path": ""
+    }
+}

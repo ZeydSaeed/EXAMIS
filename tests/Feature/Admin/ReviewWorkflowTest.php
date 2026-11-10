@@ -1,9 +1,12 @@
 <?php
 
+use App\Actions\Applications\AssignApplication;
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Exceptions\DomainRuleViolation;
 use App\Models\Application;
 use App\Models\AuditEvent;
+use App\Models\User;
 use App\Notifications\ApplicationStatusChanged;
 use Illuminate\Support\Facades\Notification;
 
@@ -135,25 +138,28 @@ it('does not let reviewers reassign work', function () {
 });
 
 it('keeps applicants out of the administration area', function () {
-    $this->actingAs(applicant())->get(route('admin.dashboard'))->assertForbidden();
-});
-
-it('requires two-factor authentication for staff when configured', function () {
-    config(['examis.security.require_staff_two_factor' => true]);
-
-    $this->actingAs(staffWith(Role::Supervisor))
-        ->get(route('admin.dashboard'))
-        ->assertRedirect(route('security.edit'));
+    $this->actingAs(applicant())->get(route('admin.dashboard'))->assertRedirect(route('staff.login'));
 });
 
 it('restricts configuration sections to their permission', function (Role $role, string $route, int $status) {
-    config(['examis.security.require_staff_two_factor' => false]);
-
     $this->actingAs(staffWith($role))->get(route($route))->assertStatus($status);
 })->with([
     'reviewer cannot manage periods' => [Role::Reviewer, 'admin.periods.index', 403],
     'reviewer cannot manage users' => [Role::Reviewer, 'admin.users.index', 403],
-    'supervisor cannot read the audit log' => [Role::Supervisor, 'admin.audit.index', 403],
     'auditor cannot manage content' => [Role::Auditor, 'admin.content.index', 403],
     'administrator can open reports' => [Role::Administrator, 'admin.reports.index', 200],
 ]);
+
+it('re-checks the assignee on the locked row, so a deactivation that lands first wins', function () {
+    $application = Application::factory()->submitted()->create();
+    $supervisor = staffWith(Role::Supervisor);
+    $reviewer = staffWith(Role::Reviewer);
+
+    // The caller still holds the reviewer as loaded before the deactivation.
+    User::query()->whereKey($reviewer->id)->update(['deactivated_at' => now()]);
+
+    expect(fn () => app(AssignApplication::class)->handle($application, $reviewer, $supervisor))
+        ->toThrow(DomainRuleViolation::class);
+
+    expect($application->fresh()->assigned_to)->toBeNull();
+});

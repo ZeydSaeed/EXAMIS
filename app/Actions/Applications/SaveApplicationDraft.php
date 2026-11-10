@@ -46,7 +46,8 @@ class SaveApplicationDraft
             $locked->lock_version++;
             $locked->save();
 
-            if ($locked->status === ApplicationStatus::RequiresCorrection) {
+            // Corrections are shown to reviewers in the history.
+            if ($locked->status !== ApplicationStatus::Draft) {
                 $locked->events()->create([
                     'actor_id' => $actor->id,
                     'type' => ApplicationEventType::DataCorrected,

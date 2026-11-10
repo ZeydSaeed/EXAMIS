@@ -1,78 +1,94 @@
 <?php
 
 use App\Enums\AccountType;
+use App\Http\Controllers\Public\ApplicationTermsController;
+use App\Models\AuditEvent;
 use App\Models\User;
-use Laravel\Fortify\Features;
 
 beforeEach(function () {
-    $this->skipUnlessFortifyHas(Features::registration());
+    // Registration follows the application terms step.
+    $this->withSession([ApplicationTermsController::SESSION_KEY => now()->toIso8601String()]);
 });
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
-
-    $response->assertOk();
+test('registration screen can be rendered once the terms are accepted', function () {
+    $this->get(route('register'))->assertOk();
 });
 
-test('new users can register', function () {
+test('a student registers with a mobile number only', function () {
     $response = $this->post(route('register.store'), [
-        'username' => 'test.user',
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'terms' => '1',
+        'phone' => '0770 123 4567',
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
-    expect(User::query()->where('username', 'test.user')->sole()->account_type)->toBe(AccountType::Applicant);
+    $response->assertRedirect(route('apply.specialization', absolute: false));
+
+    $user = User::query()->where('phone', '07701234567')->sole();
+
+    expect($user->account_type)->toBe(AccountType::Applicant)
+        ->and($user->username)->toBeNull()
+        ->and($user->name)->toBe((string) $user->student_number)
+        ->and($user->password)->toBeNull()
+        ->and($user->email)->toBeNull()
+        ->and($user->public_id)->not->toBeNull()
+        ->and($user->created_at)->not->toBeNull()
+        ->and($user->student_number)->toBeGreaterThanOrEqual(100000)->toBeLessThanOrEqual(999999)
+        ->and($user->access_code)->not->toBeNull()
+        ->and(AuditEvent::query()->where('action', 'student.registered')->where('subject_id', $user->id)->exists())->toBeTrue();
 });
 
-test('several accounts may share one email address', function () {
-    User::factory()->create(['email' => 'family@example.com']);
-
+test('the registration form ignores a submitted username', function () {
     $this->post(route('register.store'), [
-        'username' => 'second.child',
-        'name' => 'Second Child',
-        'email' => 'family@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'terms' => '1',
+        'username' => 'old.form',
+        'phone' => '07701234567',
     ])->assertSessionHasNoErrors();
 
-    expect(User::query()->where('email', 'family@example.com')->count())->toBe(2);
+    expect(User::query()->where('phone', '07701234567')->sole()->username)->toBeNull();
 });
 
-test('registration rejects a username that is already taken', function () {
-    User::factory()->create(['username' => 'taken.name']);
+test('registration shows no confirmation message and keeps the access code in plain text', function () {
+    $response = $this->post(route('register.store'), [
+        'phone' => '07701234567',
+    ]);
 
-    $this->post(route('register.store'), [
-        'username' => 'Taken.Name',
-        'name' => 'Someone Else',
-        'email' => 'other@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'terms' => '1',
-    ])->assertSessionHasErrors('username');
+    $user = User::query()->where('phone', '07701234567')->sole();
+    $response->assertRedirect(route('apply.specialization'))->assertInertiaFlashMissing('toast');
 
-    $this->assertGuest();
+    expect($user->getRawOriginal('access_code'))->toMatch('/^[A-Z2-9]{5}-[A-Z2-9]{5}$/');
 });
 
-test('registration requires accepting the terms', function () {
+test('several accounts can register with one mobile number, each with its own id', function () {
+    $existing = User::factory()->student()->create(['phone' => '07701234567']);
+
     $this->post(route('register.store'), [
-        'username' => 'no.terms',
-        'name' => 'No Terms',
-        'email' => 'no-terms@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ])->assertSessionHasErrors('terms');
+        'phone' => '0770-123-4567',
+    ])->assertSessionHasNoErrors();
+
+    $accounts = User::query()->where('phone', '07701234567')->get();
+
+    expect($accounts)->toHaveCount(2)
+        ->and($accounts->pluck('student_number')->unique())->toHaveCount(2)
+        ->and($accounts->pluck('public_id')->unique())->toHaveCount(2)
+        ->and(auth()->id())->not->toBe($existing->id);
+});
+
+test('registration rejects a malformed mobile number', function () {
+    $this->post(route('register.store'), [
+        'phone' => '123',
+    ])->assertSessionHasErrors('phone');
+});
+
+test('arabic-indic digits and the 00 prefix are normalized', function () {
+    $this->post(route('register.store'), [
+        'phone' => '٠٠٩٦٤٧٧٠١٢٣٤٥٦٧',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::query()->where('phone', '+9647701234567')->exists())->toBeTrue();
 });
 
 test('registration is rate limited', function () {
     foreach (range(1, 3) as $attempt) {
-        $this->post(route('register.store'), ['username' => 'x'])->assertRedirect();
+        $this->post(route('register.store'), ['phone' => 'x'])->assertRedirect();
     }
 
-    $this->post(route('register.store'), ['username' => 'x'])->assertTooManyRequests();
+    $this->post(route('register.store'), ['phone' => 'x'])->assertTooManyRequests();
 });

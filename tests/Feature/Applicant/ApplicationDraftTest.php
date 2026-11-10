@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStatus;
 use App\Enums\Role;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\ExamPeriod;
 use App\Models\User;
@@ -45,55 +46,142 @@ describe('starting an application', function () {
         expect(Application::query()->count())->toBe(0);
     });
 
-    it('forbids staff accounts from applying', function () {
+    it('does not let a staff session apply', function () {
         $period = ExamPeriod::factory()->create();
 
         $this->actingAs(staffWith(Role::Reviewer))
             ->post(route('applications.store'), ['exam_period_id' => $period->id])
-            ->assertForbidden();
-    });
-
-    it('requires a verified email address', function () {
-        $period = ExamPeriod::factory()->create();
-
-        $this->actingAs(User::factory()->unverified()->create())
-            ->post(route('applications.store'), ['exam_period_id' => $period->id])
-            ->assertRedirect(route('verification.notice'));
+            ->assertRedirect(route('apply.terms'));
     });
 });
 
 describe('saving a draft', function () {
     it('stores valid fields and increments the version', function () {
         $application = Application::factory()->create();
+        $application->user->forceFill(['phone' => '07701234567'])->save();
 
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
-                'full_name_ar' => 'زينب علي حسين كاظم',
-                'phone' => '٠٧٧٠١٢٣٤٥٦٧',
-                'governorate_code' => 'BSR',
+                'student_name' => 'زينب',
+                'father_name' => 'علي',
+                'grandfather_name' => 'حسين',
+                'great_grandfather_name' => 'عبد الكريم',
+                'mother_first_name' => 'مريم',
+                'mother_father_name' => 'جاسم',
+                'surname' => 'الموسوي',
+                'phone' => '07999999999',
+                'mahalla' => '٦٣٠',
+                'school_name' => 'إعدادية الصناعة',
+                'school_governorate_code' => 'BGD',
+                'last_grade' => '  الخامس   الإعدادي ',
+                'intermediate_school_name' => 'لم يعد يُجمع',
+                'branch_code' => 'COM',
+                'category_code' => 'COM_ACC',
             ])
             ->assertSessionHasNoErrors();
 
         $application->refresh();
-        expect($application->full_name_ar)->toBe('زينب علي حسين كاظم')
+        expect($application->student_name)->toBe('زينب')
+            ->and($application->great_grandfather_name)->toBe('عبد الكريم')
+            ->and($application->full_name_ar)->toBe('زينب علي حسين عبد الكريم')
+            ->and($application->mother_name_ar)->toBe('مريم جاسم')
+            ->and($application->getAttributes())->not->toHaveKey('surname')
+            // The mobile number is the account's, whatever the request sends.
             ->and($application->phone)->toBe('07701234567')
-            ->and($application->governorate_code)->toBe('BSR')
+            ->and($application->mahalla)->toBe('630')
+            ->and($application->school_governorate_code)->toBe('BGD')
+            ->and($application->last_grade)->toBe('الخامس الإعدادي')
+            ->and($application->getAttributes())->not->toHaveKey('intermediate_school_name')
+            // The branch and specialization are chosen on their own page only.
+            ->and($application->branch_code)->toBeNull()
+            ->and($application->category_code)->toBeNull()
             ->and($application->lock_version)->toBe(2);
     });
 
+    it('keeps every application in Karbala', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'governorate_code' => 'BSR'])
+            ->assertSessionHasNoErrors();
+
+        expect($application->fresh()->governorate_code)->toBe(Application::GOVERNORATE_CODE);
+    });
+
+    it('keeps the branch and specialization chosen on their page', function () {
+        $application = Application::factory()->create(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), [
+                'lock_version' => 1,
+                'branch_code' => 'COM',
+                'category_code' => 'COM_ACC',
+            ])
+            ->assertSessionHasNoErrors();
+
+        expect($application->fresh()->only(['branch_code', 'category_code']))
+            ->toBe(['branch_code' => 'IND', 'category_code' => 'IND_ELC']);
+    });
+
+    it('stores the place of birth as a governorate or as written text for "other"', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), [
+                'lock_version' => 1,
+                'birth_place_code' => 'OTHER',
+                'birth_place_other' => '  طهران  ',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $application->refresh();
+        expect($application->birth_place_code)->toBe('OTHER')
+            ->and($application->birth_place_other)->toBe('طهران')
+            ->and($application->birthPlace())->toBe('طهران');
+
+        // Choosing a governorate drops the written place.
+        $this->put(route('applications.update', $application), [
+            'lock_version' => $application->lock_version,
+            'birth_place_code' => 'BGD',
+            'birth_place_other' => 'طهران',
+        ])->assertSessionHasNoErrors();
+
+        $application->refresh();
+        expect($application->birth_place_other)->toBeNull()
+            ->and($application->birthPlace())->toBe('بغداد');
+    });
+
+    it('rejects an unknown place of birth and requires the written place for "other"', function () {
+        $application = Application::factory()->complete()->create(['birth_place_code' => 'OTHER', 'birth_place_other' => null]);
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'birth_place_code' => 'ATLANTIS'])
+            ->assertSessionHasErrors('birth_place_code');
+
+        expect($application->fresh()->missingFields())->toContain('birth_place_other');
+    });
+
+    it('accepts only a known governorate for the last school', function () {
+        $application = Application::factory()->create();
+
+        $this->actingAs($application->user)
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'school_governorate_code' => 'XXX'])
+            ->assertSessionHasErrors('school_governorate_code');
+    });
+
     it('rejects a save based on a stale version instead of overwriting', function () {
-        $application = Application::factory()->create(['full_name_ar' => 'الاسم الأصلي للطالب']);
+        $application = Application::factory()->create(['student_name' => 'الأصلي']);
         $application->forceFill(['lock_version' => 3])->save();
 
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 2,
-                'full_name_ar' => 'اسم من جلسة قديمة',
+                'student_name' => 'قديم',
             ])
             ->assertSessionHasErrors(['lock_version' => __('applications.errors.stale_version')]);
 
-        expect($application->fresh()->full_name_ar)->toBe('الاسم الأصلي للطالب');
+        expect($application->fresh()->student_name)->toBe('الأصلي');
     });
 
     it('validates fields with Arabic messages', function () {
@@ -102,39 +190,50 @@ describe('saving a draft', function () {
         $this->actingAs($application->user)
             ->put(route('applications.update', $application), [
                 'lock_version' => 1,
-                'full_name_ar' => 'Ahmed Ali',
-                'governorate_code' => 'ATLANTIS',
+                'father_name' => 'Ali',
+                'school_governorate_code' => 'ATLANTIS',
             ])
             ->assertSessionHasErrors([
-                'full_name_ar' => 'يجب كتابة الاسم بالأحرف العربية فقط.',
-                'governorate_code' => 'القيمة المختارة في المحافظة غير صالحة.',
+                'father_name' => 'يجب كتابة اسم الأب بالأحرف العربية فقط.',
+                'school_governorate_code' => 'القيمة المختارة في المحافظة غير صالحة.',
             ]);
-    });
-
-    it('only offers branches eligible for the period', function () {
-        $period = ExamPeriod::factory()->create(['eligible_branch_codes' => ['SCI']]);
-        $application = Application::factory()->create(['exam_period_id' => $period->id]);
-
-        $this->actingAs($application->user)
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'branch_code' => 'LIT'])
-            ->assertSessionHasErrors('branch_code');
     });
 
     it('answers 404 when another applicant tries to edit', function () {
         $application = Application::factory()->create();
 
         $this->actingAs(applicant())
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'full_name_ar' => 'محاولة تعديل غير مشروعة'])
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'student_name' => 'محاولة'])
             ->assertNotFound();
     });
 
-    it('refuses edits after submission', function () {
-        $application = Application::factory()->submitted()->create();
+    it('refuses edits once the review has started', function () {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
+        $application = Application::factory()->inStatus(ApplicationStatus::UnderReview)->create();
 
         $this->actingAs($application->user)
-            ->put(route('applications.update', $application), ['lock_version' => 1, 'full_name_ar' => 'تعديل بعد الإرسال'])
+            ->put(route('applications.update', $application), ['lock_version' => 1, 'student_name' => 'تعديل'])
             ->assertForbidden();
     });
+
+    it('refuses edits once the application is submitted (ADR-0004)', function (ApplicationStatus $status) {
+        $this->withoutMiddleware(EnsureAccountIsActive::class);
+
+        $student = User::factory()->student()->create();
+        $application = Application::factory()->inStatus($status)->for($student)->create(['phone' => $student->phone]);
+        $name = $application->student_name;
+
+        $this->actingAs($student)
+            ->put(route('applications.update', $application), [
+                'lock_version' => $application->lock_version,
+                'student_name' => 'معدّل',
+            ])
+            ->assertForbidden();
+
+        expect($application->fresh()->student_name)->toBe($name)
+            ->and($application->events()->where('type', 'data_corrected')->exists())->toBeFalse();
+    })->with([ApplicationStatus::Submitted, ApplicationStatus::Resubmitted, ApplicationStatus::UnderReview]);
 
     it('ignores attempts to mass-assign protected attributes', function () {
         $application = Application::factory()->create();

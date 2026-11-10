@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\Portal;
 use App\Models\ApplicationDocument;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,7 +26,7 @@ class ApplicationDocumentResource extends JsonResource
             'status' => $this->status->value,
             'rejection_reason' => $this->rejection_reason !== null ? __('documents.rejection.'.$this->rejection_reason) : null,
             'uploaded_at' => $this->created_at?->toIso8601String(),
-            'url' => $this->isDownloadable() ? route('documents.show', $this->resource) : null,
+            'url' => $this->isDownloadable() ? route(Portal::forRequest($request) === Portal::Staff ? 'admin.documents.show' : 'documents.show', $this->resource) : null,
         ];
     }
 }

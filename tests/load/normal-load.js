@@ -1,73 +1,99 @@
-// Normal load, staged ramp: 25 → 100 → 250 → 500 → 1000 VUs.
-// Traffic mix approximates a submission peak: 60% public browsing,
-// 30% signed-in reads, 10% full submissions. Stop at the first stage that
-// breaches a threshold (abortOnFail) and record results in docs/testing/PERFORMANCE.md.
+// Normal load, staged: 5 → 10 → 20 → 50 → 100 → 150 → 200 VUs, cut so
+// that the stage plus 3 helper VUs (1 staff, up to 2 submitting) fits in
+// QE_MAX_VUS. Stops at the first stage that breaks an SLO (abortOnFail).
+// Each stage: 55% public visitors, 45% students filling the form (accounts
+// QE_STUDENT_OFFSET+VU, never submitted). Alongside: one supervisor working
+// the queue, and fresh submissions at QE_SUBMIT_PER_MIN (accounts
+// QE_SUBMIT_OFFSET+1…, consumed).
 //
-// k6 run -e BASE_URL=... -e MAX_VUS=250 [-e STAGE_RAMP=2m -e STAGE_HOLD=5m] tests/load/normal-load.js
-import { thresholds } from './lib/common.js';
+// k6 run -e QE_ENV=perf -e QE_RUN_ID=<id> -e QE_MAX_VUS=53 ... tests/load/normal-load.js
+import exec from 'k6/execution';
+import { assertVus } from './lib/guard.js';
+import { baseOptions, preflight, target, thresholdsFor } from './lib/common.js';
 import {
-    applicantReads,
     browsePublicPages,
+    fillingStudent,
     submissionJourney,
+    staffWorking,
 } from './lib/journeys.js';
 
-const maxVus = Number(__ENV.MAX_VUS || 1000);
-const ramp = __ENV.STAGE_RAMP || '2m';
-const hold = __ENV.STAGE_HOLD || '5m';
-const stages = [25, 100, 250, 500, 1000]
-    .filter((target) => target <= maxVus)
-    .flatMap((target) => [
-        { duration: ramp, target },
-        { duration: hold, target },
+const HELPERS = 3;
+const ramp = __ENV.STAGE_RAMP || '1m';
+const hold = __ENV.STAGE_HOLD || '3m';
+const studentOffset = Number(__ENV.QE_STUDENT_OFFSET || 0);
+const submitOffset = Number(__ENV.QE_SUBMIT_OFFSET || 1000);
+const submitPerMinute = Number(__ENV.QE_SUBMIT_PER_MIN || 2);
+
+const levels = [5, 10, 20, 50, 100, 150, 200].filter(
+    (vus) => vus + HELPERS <= target.maxVus,
+);
+
+if (levels.length === 0) {
+    throw new Error(
+        `QE guard refused normal-load: QE_MAX_VUS must be at least ${5 + HELPERS}`,
+    );
+}
+
+assertVus(target, levels[levels.length - 1] + HELPERS, 'normal-load peak');
+
+const filling = (vus) => Math.max(1, Math.round(vus * 0.45));
+const stagesFor = (count) =>
+    levels.flatMap((vus) => [
+        { duration: ramp, target: count(vus) },
+        { duration: hold, target: count(vus) },
     ]);
+const totalMinutes = levels.length * (parseInt(ramp, 10) + parseInt(hold, 10));
 
-const share = (fraction) =>
-    stages.map((stage) => ({
-        ...stage,
-        target: Math.max(1, Math.round(stage.target * fraction)),
-    }));
-
-export const options = {
+export const options = baseOptions({
+    noCookiesReset: true,
     scenarios: {
         public: {
             executor: 'ramping-vus',
-            stages: share(0.6),
+            stages: stagesFor((vus) => vus - filling(vus)),
             exec: 'publicScenario',
             gracefulRampDown: '30s',
         },
-        reads: {
+        filling: {
             executor: 'ramping-vus',
-            stages: share(0.3),
-            exec: 'readScenario',
+            stages: stagesFor(filling),
+            exec: 'fillingScenario',
             gracefulRampDown: '30s',
         },
+        staff: {
+            executor: 'constant-vus',
+            vus: 1,
+            duration: `${totalMinutes}m`,
+            exec: 'staffScenario',
+        },
         submissions: {
-            executor: 'ramping-vus',
-            stages: share(0.1),
+            executor: 'constant-arrival-rate',
+            rate: submitPerMinute,
+            timeUnit: '1m',
+            duration: `${totalMinutes}m`,
+            preAllocatedVUs: 1,
+            maxVUs: 2,
             exec: 'submitScenario',
-            gracefulRampDown: '60s',
         },
     },
-    thresholds: Object.fromEntries(
-        Object.entries(thresholds).map(([key, value]) => [
-            key,
-            value.map((threshold) => ({
-                threshold,
-                abortOnFail: true,
-                delayAbortEval: '1m',
-            })),
-        ]),
-    ),
-};
+    thresholds: thresholdsFor('load'),
+});
+
+export function setup() {
+    preflight();
+}
 
 export function publicScenario() {
     browsePublicPages();
 }
 
-export function readScenario() {
-    applicantReads();
+export function fillingScenario() {
+    fillingStudent(studentOffset + __VU);
+}
+
+export function staffScenario() {
+    staffWorking(1);
 }
 
 export function submitScenario() {
-    submissionJourney();
+    submissionJourney(submitOffset + exec.scenario.iterationInTest + 1);
 }

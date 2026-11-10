@@ -2,8 +2,30 @@
 
 return [
     'custom' => [
+        'student_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'father_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'great_grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'mother_first_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'mother_father_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
+        'mother_grandfather_name' => [
+            'regex' => 'The :attribute must be written in Arabic letters.',
+        ],
         'username' => [
-            'regex' => 'The username may contain only lowercase English letters, digits and . _ -',
+            'regex' => 'The username may contain only Arabic or English letters, digits and . _ -',
+            'not_regex' => 'The username cannot consist of digits only.',
         ],
         'full_name_ar' => [
             'regex' => 'The full name must be written in Arabic letters.',
@@ -16,6 +38,7 @@ return [
         ],
         'phone' => [
             'regex' => 'The phone number must contain 10 to 15 digits.',
+            'unique' => 'This mobile number is already registered to another account. Sign in with it or contact support.',
         ],
         'national_id_number' => [
             'regex' => 'The ID number must be 6 to 20 letters or digits.',
@@ -26,20 +49,34 @@ return [
     ],
 
     'attributes' => [
+        'birth_place_code' => 'place of birth',
+        'birth_place_other' => 'place of birth',
+        'student_name' => 'Student\'s name',
+        'father_name' => 'Father\'s name',
+        'grandfather_name' => 'Grandfather\'s name',
+        'great_grandfather_name' => 'Great-grandfather\'s name',
+        'mother_first_name' => 'Mother\'s name',
+        'mother_father_name' => 'Mother\'s father\'s name',
+        'mother_grandfather_name' => 'Mother\'s grandfather\'s name',
         'full_name_ar' => 'full name (Arabic)',
-        'full_name_en' => 'full name (English)',
         'mother_name_ar' => "mother's name",
         'birth_date' => 'date of birth',
-        'national_id_number' => 'ID number',
-        'contact_email' => 'contact email',
-        'governorate_code' => 'governorate',
-        'directorate_code' => 'directorate',
-        'school_name' => 'school name',
+        'national_id_number' => 'national ID number',
+        'school_name' => 'last school',
+        'school_governorate_code' => 'governorate',
+        'last_grade' => 'last grade',
         'branch_code' => 'branch',
-        'category_code' => 'applicant category',
-        'previous_exam_year' => 'previous exam year',
+        'category_code' => 'specialization',
         'document_type' => 'document type',
         'declaration' => 'declaration',
         'terms' => 'terms of use and privacy policy',
+        'district' => 'district',
+        'mahalla' => 'mahalla number',
+        'alley' => 'alley number',
+        'house_number' => 'house number',
+        'other_info' => 'other information',
+        'issued_documents.*.number' => 'document number',
+        'issued_documents.*.date' => 'document date',
+        'issued_documents.*.recipient' => 'recipient',
     ],
 ];

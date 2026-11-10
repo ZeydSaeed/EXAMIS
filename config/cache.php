@@ -97,12 +97,12 @@ return [
             'driver' => 'octane',
         ],
 
+        // Production runs CACHE_STORE=failover with "redis,database": when
+        // Redis is down, reads and writes fall through to the database
+        // instead of failing the page.
         'failover' => [
             'driver' => 'failover',
-            'stores' => [
-                'database',
-                'array',
-            ],
+            'stores' => explode(',', (string) env('CACHE_FAILOVER_STORES', 'database,array')),
         ],
 
     ],

@@ -81,12 +81,12 @@ return [
             'driver' => 'background',
         ],
 
+        // Production runs QUEUE_CONNECTION=failover with "redis,database": a
+        // job dispatched while Redis is down lands in the jobs table, which a
+        // second worker drains, instead of failing a request that already saved.
         'failover' => [
             'driver' => 'failover',
-            'connections' => [
-                'database',
-                'deferred',
-            ],
+            'connections' => explode(',', (string) env('QUEUE_FAILOVER_CONNECTIONS', 'database,deferred')),
         ],
 
     ],

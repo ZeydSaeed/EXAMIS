@@ -1,11 +1,6 @@
 <?php
 
 return [
-    'saved' => 'Draft saved.',
-    'withdrawn' => 'The application was withdrawn.',
-    'transitioned' => 'Application status updated.',
-    'assigned' => 'Responsible reviewer updated.',
-
     'errors' => [
         'invalid_transition' => 'This action is not possible for the application in its current status.',
         'stale_version' => 'This application was changed in another session. Reload the page and re-enter your changes.',
@@ -16,10 +11,13 @@ return [
         'not_eligible' => 'This choice is not eligible for this exam period.',
         'document_limit' => 'The maximum number of attachments for this application has been reached.',
         'assignee_not_eligible' => 'The selected user is not allowed to review applications.',
+        'required_after_submission' => 'Your application has been submitted, so required fields cannot be left empty. Fill them in, then save.',
+        'specialization_branch' => 'The chosen specialization does not belong to the selected branch.',
     ],
 
     'track' => [
-        'not_found' => 'No application matches these details. Check the reference number and date of birth.',
+        'not_found' => 'No application has this number. Check the reference number printed on your form.',
+        'closed' => 'The form for this application has been printed and the account has closed, so it cannot be tracked or printed again.',
     ],
 
     'gender' => [
@@ -48,5 +46,7 @@ return [
         'requires_correction' => 'Request correction',
         'accepted' => 'Accept',
         'rejected' => 'Reject',
+        'fees_paid' => 'Confirm fees paid (final acceptance)',
+        'reopen' => 'Return to review',
     ],
 ];

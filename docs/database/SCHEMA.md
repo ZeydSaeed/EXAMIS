@@ -33,6 +33,8 @@ reference_items (type, code)            content_pages (slug)
 
 Deletion policy: applicants with applications cannot be deleted (`RESTRICT`). Retention is handled by the archival policy (§5), not by cascades.
 
+Staff tables (ADR-0011): `staff_invitations` (hashed one-time links), `staff_permission_overrides` (per-staff grants and denials, unique per user and permission), `staff_sessions` (same shape as `sessions`). `users_staff_email_unique` is a partial unique index on `lower(email)` for staff, and `users_staff_email_check` requires a staff email.
+
 ## 3. Indexes and the queries they serve
 
 | Index                                                                                                      | Query                                                                                   |
@@ -45,7 +47,7 @@ Deletion policy: applicants with applications cannot be deleted (`RESTRICT`). Re
 | `application_documents(application_id, document_type_id)`                                                  | current-document lookups                                                                |
 | `application_documents(status, created_at)`                                                                | pending-scan monitoring and sweeps                                                      |
 | `application_events(application_id, id)`                                                                   | timeline in insertion order                                                             |
-| `audit_events(created_at)`, `(action, created_at)`, `(actor_id, created_at)`, `(subject_type, subject_id)` | audit viewer filters with cursor pagination                                             |
+| `audit_events(created_at)`, `(action, created_at)`, `(actor_id, created_at)`, `(subject_type, subject_id)` | audit queries by time, action, actor or subject                                         |
 | `exam_periods(status, opens_at)`                                                                           | open-period lookup on the home page                                                     |
 
 Name search uses a left-anchored `LIKE 'term%'`, which can use a B-tree only with `text_pattern_ops`. For production scale, add:
@@ -71,7 +73,6 @@ CREATE INDEX CONCURRENTLY applications_full_name_ar_trgm ON applications USING g
 | Name prefix search                              | seq scan   | —                                                                        | 1.3 ms                         | `applications_full_name_ar_prefix_index` (`text_pattern_ops`)             |
 | Dashboard counts by status                      | 42 ms      | Seq Scan + HashAggregate                                                 | unchanged                      | acceptable at 100k; cache 60 s if it exceeds ~200 ms at production volume |
 | Report by governorate, one period               | 22.6 ms    | Bitmap index on period                                                   | unchanged                      | same                                                                      |
-| Audit viewer page (cursor)                      | 0.8 ms     | Index Scan Backward on PK                                                | unchanged                      | same                                                                      |
 
 Fixes shipped in migration `2026_10_14_194309_add_query_indexes_to_applications_table`. The queue no longer orders by `submitted_at IS NULL`, which was redundant because the CHECK constraint guarantees `submitted_at` for non-drafts. Reproduce with `docs/database/explain-checks.sql`.
 

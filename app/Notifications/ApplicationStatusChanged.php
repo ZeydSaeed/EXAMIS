@@ -7,12 +7,15 @@ use App\Models\Application;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Tells the applicant their application changed status. Contains only the
  * reference number, status and reviewer reason: no personal data.
+ * Delivered in the portal only: email addresses are not verified
+ * (ADR-0009), so nothing is mailed to an address that may not be theirs.
  */
 class ApplicationStatusChanged extends Notification implements ShouldQueue
 {
@@ -39,24 +42,7 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
      */
     public function via(User $notifiable): array
     {
-        return $notifiable->hasVerifiedEmail() ? ['database', 'mail'] : ['database'];
-    }
-
-    public function toMail(User $notifiable): MailMessage
-    {
-        $message = (new MailMessage)
-            ->subject(__('notifications.status_changed.subject', ['reference' => $this->application->reference_number]))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
-            ->line(__('notifications.status_changed.line', [
-                'reference' => $this->application->reference_number,
-                'status' => $this->status->label(),
-            ]));
-
-        if ($this->reason !== null) {
-            $message->line(__('notifications.status_changed.reason', ['reason' => $this->reason]));
-        }
-
-        return $message->action(__('notifications.status_changed.action'), route('applications.show', $this->application));
+        return ['database'];
     }
 
     /**
@@ -70,5 +56,18 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
             'status' => $this->status->value,
             'reason' => $this->reason,
         ];
+    }
+
+    /**
+     * Every try failed: the applicant still sees the status on their
+     * application page, but the missing notice must reach the logs.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('Application status notification failed after every retry.', [
+            'application' => $this->application->uuid,
+            'status' => $this->status->value,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

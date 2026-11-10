@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Applicant;
 
 use App\Actions\Applications\SaveApplicationDraft;
 use App\Actions\Applications\StartApplication;
+use App\Enums\ApplicationStatus;
 use App\Enums\ReferenceType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Applications\SaveApplicationRequest;
@@ -64,32 +65,54 @@ class ApplicationController extends Controller
         }
 
         $application->load(['examPeriod.documentTypes', 'currentDocuments.documentType']);
-        $period = $application->examPeriod;
 
         return Inertia::render('applicant/applications/edit', [
             'application' => ApplicationResource::make($application)->resolve(),
             'documentTypes' => $this->documentTypes($application),
             'missing' => $application->missingRequirements(),
-            'instructions' => $period->localizedInstructions(),
             'options' => [
                 'governorates' => $referenceData->items(ReferenceType::Governorate),
-                'directorates' => $referenceData->items(ReferenceType::Directorate),
-                'branches' => $this->eligible($referenceData->items(ReferenceType::Branch), $period->eligible_branch_codes),
-                'categories' => $this->eligible($referenceData->items(ReferenceType::Category), $period->eligible_category_codes),
             ],
-            'step' => $request->integer('step', 1),
+            'step' => $this->step($request, $application),
         ]);
     }
 
     public function update(SaveApplicationRequest $request, Application $application, SaveApplicationDraft $saveDraft): RedirectResponse
     {
         $validated = $request->validated();
+        $step = $validated['step'] ?? null;
+        unset($validated['step']);
 
         $saveDraft->handle($application, $validated, (int) $validated['lock_version'], $request->user());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.saved')]);
+        return $step === null ? back() : to_route('applications.edit', [$application, 'step' => (int) $step + 1]);
+    }
 
-        return back();
+    /**
+     * The step to open: never past the first incomplete one. A draft resumes
+     * there and cannot return to a finished step until everything is
+     * complete: the review may then reopen any step, and the student moves
+     * forward from it again. Anything already submitted starts from the top
+     * to be edited.
+     */
+    private function step(Request $request, Application $application): int
+    {
+        $furthest = $application->furthestStep();
+        $requested = $request->integer('step');
+
+        if ($application->status !== ApplicationStatus::Draft) {
+            return $requested > 0 ? min($requested, $furthest) : 1;
+        }
+
+        if ($requested <= 0) {
+            return $furthest;
+        }
+
+        if ($furthest === Application::STEP_REVIEW) {
+            return min($requested, $furthest);
+        }
+
+        return $furthest;
     }
 
     /**
@@ -109,19 +132,5 @@ class ApplicationController extends Controller
                 'is_photo' => $type->is_photo,
             ])
             ->all());
-    }
-
-    /**
-     * @param  list<array{code: string, parent_code: string|null, name_ar: string, name_en: string}>  $items
-     * @param  list<string>|null  $eligibleCodes
-     * @return list<array{code: string, parent_code: string|null, name_ar: string, name_en: string}>
-     */
-    private function eligible(array $items, ?array $eligibleCodes): array
-    {
-        if ($eligibleCodes === null) {
-            return $items;
-        }
-
-        return array_values(array_filter($items, fn (array $item): bool => in_array($item['code'], $eligibleCodes, true)));
     }
 }

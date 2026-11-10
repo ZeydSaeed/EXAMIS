@@ -25,22 +25,29 @@ class DemoSeeder extends Seeder
         }
 
         $period = ExamPeriod::query()->updateOrCreate(['code' => 'EX2027'], [
-            'name_ar' => 'الدورة الأولى للامتحانات الخارجية ٢٠٢٧',
-            'name_en' => 'External examinations, first round 2027',
+            'name_ar' => 'الامتحانات التمهيدية للطلبة الخارجيين للدراسة المهنية العامة',
+            'name_en' => 'Preliminary Examinations for External Students of General Vocational Study',
             'academic_year' => '2026-2027',
             'status' => ExamPeriodStatus::Open,
             'opens_at' => now()->subWeek(),
             'closes_at' => now()->addMonths(2),
-            'instructions_ar' => 'يُرجى إدخال البيانات كما في المستمسكات الرسمية، ورفع صورة شخصية حديثة والبطاقة الوطنية ووثيقة المدرسة.',
-            'instructions_en' => 'Enter your data exactly as in your official documents and upload a recent photo, your national ID and your school document.',
+            'instructions_ar' => <<<'TEXT'
+                املأ البيانات كما وردت في استمارة واقع حال وفي المستمسكات الرسمية، واطّلع على صفحتي «شروط التقديم» و«المستمسكات المطلوبة» قبل البدء.
+                تُختم استمارة واقع حال الورقية من آخر مدرسة، وتوضع المستمسكات (أصل وصورة ملونة، كل مستمسك في ورقة واحدة) مع 10 صور شخصية في فايل كارتون بلون الفرع: الصناعي أحمر، الحاسوب وتقنية المعلومات أبيض، التجاري أصفر، الفنون التطبيقية أزرق، الزراعي أخضر، السياحة والفندقة أحمر.
+                TEXT,
+            'instructions_en' => <<<'TEXT'
+                Enter your details exactly as on the student status form and your official documents, and read the "Application conditions" and "Required documents" pages first.
+                The paper status form is stamped by your last school; the documents (original and colour copy, each on one page) and 10 photos go in a cardboard folder in your branch's colour: industrial red, computing and IT white, commercial yellow, applied arts blue, agricultural green.
+                TEXT,
         ]);
 
-        $required = DocumentType::query()->whereIn('code', ['personal_photo', 'national_id', 'school_certificate'])->pluck('id');
-        $optional = DocumentType::query()->where('code', 'residence_card')->pluck('id');
+        // Only the personal photo is uploaded; the other documents go in the paper file.
+        $required = DocumentType::query()
+            ->whereIn('code', ['personal_photo'])
+            ->pluck('id');
 
         $period->documentTypes()->sync(
-            $required->mapWithKeys(fn (int $id): array => [$id => ['is_required' => true]])->all()
-            + $optional->mapWithKeys(fn (int $id): array => [$id => ['is_required' => false]])->all(),
+            $required->mapWithKeys(fn (int $id): array => [$id => ['is_required' => true]])->all(),
         );
 
         $staff = [
@@ -62,9 +69,9 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        if (! User::query()->where('username', 'student')->exists()) {
+        if (! User::query()->where('email', 'family@examis.test')->exists()) {
             User::factory()->create([
-                'username' => 'student',
+                'username' => null,
                 'name' => 'طالب تجريبي',
                 'email' => 'family@examis.test',
             ]);

@@ -1,35 +1,31 @@
-import {
-    Head,
-    Link,
-    router,
-    setLayoutProps,
-    useForm,
-    usePoll,
-} from '@inertiajs/react';
-import {
-    AlertTriangle,
-    CheckCircle2,
-    Info,
-    RefreshCw,
-    Save,
-    Send,
-} from 'lucide-react';
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+import { Head, Link, router, useForm, usePoll } from '@inertiajs/react';
+import { AlertTriangle, Pencil, Printer, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { FormEvent, KeyboardEvent } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
+import { ConfirmDialog } from '@/components/examis/confirm-dialog';
+import { DatePartsInput } from '@/components/examis/date-parts-input';
 import { DocumentUploader } from '@/components/examis/document-uploader';
 import { describedBy, Field, selectClassName } from '@/components/examis/field';
-import { PageContainer, PageHeader } from '@/components/examis/page-header';
-import { StatusBadge } from '@/components/examis/status-badge';
+import { PageContainer } from '@/components/examis/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTrans } from '@/hooks/use-trans';
-import { formatDate } from '@/lib/format';
-import { dashboard } from '@/routes';
+import { applicationSummarySections } from '@/lib/application-summary';
 import applications from '@/routes/applications';
+import apply from '@/routes/apply';
 import type {
     Application,
     ApplicationForm,
@@ -42,17 +38,19 @@ type Props = {
     application: Application;
     documentTypes: DocumentRequirement[];
     missing: MissingRequirements;
-    instructions: string | null;
     options: {
+        /** For the governorate of the last school. */
         governorates: ReferenceOption[];
-        directorates: ReferenceOption[];
-        branches: ReferenceOption[];
-        categories: ReferenceOption[];
     };
     step: number;
 };
 
-type FormData = ApplicationForm & { lock_version: number };
+type FormData = ApplicationForm & { lock_version: number; step?: number };
+
+type TextField = keyof ApplicationForm;
+
+/** A place or governorate outside the governorate list. */
+const OTHER_CODE = 'OTHER';
 
 const STEPS = [
     'personal',
@@ -62,45 +60,58 @@ const STEPS = [
     'review',
 ] as const;
 
-const STEP_FIELDS: Record<(typeof STEPS)[number], (keyof ApplicationForm)[]> = {
+/**
+ * Required fields in filling order. A field opens once those before it are
+ * filled, so nothing can be skipped.
+ */
+const FIELD_ORDER: Record<(typeof STEPS)[number], TextField[]> = {
     personal: [
-        'full_name_ar',
-        'full_name_en',
-        'mother_name_ar',
+        'student_name',
+        'father_name',
+        'grandfather_name',
+        'great_grandfather_name',
+        'mother_first_name',
+        'mother_father_name',
+        'mother_grandfather_name',
         'birth_date',
+        'birth_place_code',
         'gender',
-        'national_id_number',
     ],
-    contact: [
-        'phone',
-        'contact_email',
-        'governorate_code',
-        'directorate_code',
-        'address',
-    ],
-    education: [
-        'school_name',
-        'branch_code',
-        'category_code',
-        'previous_exam_year',
-    ],
+    contact: ['district'],
+    education: ['school_name', 'school_governorate_code'],
     documents: [],
     review: [],
 };
+
+/** Written in by hand when the choice before them is "other". */
+const OTHER_FIELDS: Partial<Record<TextField, TextField>> = {
+    birth_place_code: 'birth_place_other',
+    school_governorate_code: 'school_governorate_other',
+};
+
+/** These must not start with a space. */
+const NAME_FIELDS: TextField[] = [
+    'student_name',
+    'father_name',
+    'grandfather_name',
+    'great_grandfather_name',
+];
 
 export default function EditApplication({
     application,
     documentTypes,
     missing,
-    instructions,
     options,
     step: initialStep,
 }: Props) {
     const { t, locale } = useTrans();
-    const [step, setStep] = useState(
-        Math.min(Math.max(initialStep, 1), STEPS.length) - 1,
-    );
+    const step = Math.min(Math.max(initialStep, 1), STEPS.length) - 1;
     const [submissionUnconfirmed, setSubmissionUnconfirmed] = useState(false);
+    const [confirmingPrint, setConfirmingPrint] = useState(false);
+    const [notice, setNotice] = useState<{
+        title: string;
+        items: string[];
+    } | null>(null);
 
     const form = useForm<FormData>({
         ...application.form,
@@ -117,60 +128,138 @@ export default function EditApplication({
         { autoStart: hasPendingDocuments },
     );
 
-    setLayoutProps({
-        breadcrumbs: [
-            { title: t('nav.my_applications'), href: dashboard() },
-            {
-                title:
-                    application.exam_period?.name ?? t('applicant.application'),
-                href: applications.edit(application.uuid),
-            },
-        ],
-    });
-
     const optionName = (option: ReferenceOption) =>
         locale === 'en' ? option.name_en : option.name_ar;
     const currentStep = STEPS[step];
-    const stepHasErrors = (index: number) =>
-        STEP_FIELDS[STEPS[index]].some((field) => form.errors[field]);
+    const sequence = FIELD_ORDER[currentStep].flatMap((field) => {
+        const other = OTHER_FIELDS[field];
+
+        return other && form.data[field] === OTHER_CODE
+            ? [field, other]
+            : [field];
+    });
+    const isEmpty = (field: TextField) => !form.data[field];
+    const isLocked = (field: TextField) => {
+        const index = sequence.indexOf(field);
+
+        return (index < 0 ? sequence : sequence.slice(0, index)).some(isEmpty);
+    };
+    const fieldLabel = (field: string) =>
+        t(`fields.${field.replace(/_code$/, '')}`);
+
+    // Start on the next field to fill.
+    useEffect(() => {
+        const next = sequence.find(isEmpty);
+
+        if (next) {
+            document.getElementById(next)?.focus();
+        }
+        // Once per step: each step is a fresh page.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const isCorrection = application.status === 'requires_correction';
 
-    const save = (afterSave?: () => void) => {
-        form.put(applications.update.url(application.uuid), {
-            preserveScroll: true,
-            onSuccess: (page) => {
-                const updated = (page.props as unknown as Props).application;
-                form.setDefaults({
-                    ...updated.form,
-                    lock_version: updated.lock_version,
-                });
-                form.setData('lock_version', updated.lock_version);
-                afterSave?.();
-            },
-        });
-    };
-
-    const goTo = (index: number) => {
-        setStep(index);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
+    // Each step replaces the last in the history: the form has no way back.
     const handleNext = (event: FormEvent) => {
         event.preventDefault();
 
-        if (STEP_FIELDS[currentStep].length === 0) {
-            goTo(step + 1);
+        const unfilled = sequence.filter(isEmpty);
+
+        if (unfilled.length > 0) {
+            setNotice({
+                title: t('applicant.missing_title'),
+                items: unfilled.map(fieldLabel),
+            });
 
             return;
         }
 
-        save(() => goTo(step + 1));
+        form.transform((data) => ({ ...data, step: step + 1 }));
+        form.put(applications.update.url(application.uuid), {
+            preserveScroll: 'errors',
+            preserveState: 'errors',
+            replace: true,
+        });
     };
+
+    // Enter moves field by field and ends on the save button. A field that
+    // must be filled keeps the focus until it is.
+    const moveOnEnter = (event: KeyboardEvent<HTMLFormElement>) => {
+        const target = event.target as HTMLInputElement;
+
+        if (
+            event.key !== 'Enter' ||
+            event.shiftKey ||
+            target instanceof HTMLButtonElement
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (sequence.includes(target.id as TextField) && !target.value.trim()) {
+            return;
+        }
+
+        const stops = Array.from(
+            event.currentTarget.querySelectorAll<HTMLElement>(
+                'input:not([readonly]):not(:disabled), select:not(:disabled), textarea:not(:disabled), button[type="submit"]',
+            ),
+        );
+
+        stops[stops.indexOf(target) + 1]?.focus();
+    };
+
+    const goToReview = () => {
+        if (missing.documents.length > 0) {
+            setNotice({
+                title: t('applicant.missing_documents_title'),
+                items: missing.documents.map(
+                    (code) =>
+                        documentTypes.find((type) => type.code === code)
+                            ?.name ?? code,
+                ),
+            });
+
+            return;
+        }
+
+        goToStep('review');
+    };
+
+    // From the review a step can be reopened; the student then moves forward
+    // through the steps after it, back to the review.
+    const goToStep = (name: (typeof STEPS)[number]) => {
+        router.get(
+            applications.edit.url(application.uuid, {
+                query: { step: STEPS.indexOf(name) + 1 },
+            }),
+            {},
+            { replace: true },
+        );
+    };
+
+    const editButton = (name: (typeof STEPS)[number]) => (
+        <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-current hover:bg-white/15 hover:text-current"
+            onClick={() => goToStep(name)}
+            data-test={`edit-${name}`}
+        >
+            <Pencil className="size-3.5" aria-hidden />
+            {t('applicant.edit_section')}
+        </Button>
+    );
 
     const submit = () => {
         setSubmissionUnconfirmed(false);
         submission.post(applications.submit.url(application.uuid), {
+            replace: true,
+            onError: () => setConfirmingPrint(false),
             onNetworkError: () => {
+                setConfirmingPrint(false);
                 setSubmissionUnconfirmed(true);
 
                 return false;
@@ -179,21 +268,29 @@ export default function EditApplication({
     };
 
     const input = (
-        field: keyof ApplicationForm,
+        field: TextField,
         props: Partial<React.ComponentProps<typeof Input>> = {},
     ) => (
         <Input
             id={field}
             name={field}
-            value={(form.data[field] as string | number | null) ?? ''}
-            onChange={(event) =>
-                form.setData(
-                    field,
-                    event.target.value === ''
-                        ? null
-                        : (event.target.value as never),
-                )
-            }
+            value={form.data[field] ?? ''}
+            disabled={isLocked(field)}
+            onChange={(event) => {
+                const value = event.target.value;
+
+                if (NAME_FIELDS.includes(field) && /^\s/.test(value)) {
+                    setNotice({
+                        title: t('applicant.leading_space_title'),
+                        items: [t('applicant.leading_space_text')],
+                    });
+                    form.setData(field, (value.trimStart() || null) as never);
+
+                    return;
+                }
+
+                form.setData(field, value === '' ? null : (value as never));
+            }}
             aria-invalid={form.errors[field] ? true : undefined}
             aria-describedby={describedBy(field, undefined, form.errors[field])}
             {...props}
@@ -201,14 +298,16 @@ export default function EditApplication({
     );
 
     const select = (
-        field: keyof ApplicationForm,
+        field: TextField,
         choices: { value: string; label: string }[],
+        placeholder = t('common.choose'),
     ) => (
         <select
             id={field}
             name={field}
             className={selectClassName}
-            value={(form.data[field] as string | null) ?? ''}
+            value={form.data[field] ?? ''}
+            disabled={isLocked(field)}
             onChange={(event) =>
                 form.setData(
                     field,
@@ -220,7 +319,7 @@ export default function EditApplication({
             aria-invalid={form.errors[field] ? true : undefined}
             aria-describedby={describedBy(field, undefined, form.errors[field])}
         >
-            <option value="">{t('common.choose')}</option>
+            <option value="">{placeholder}</option>
             {choices.map((choice) => (
                 <option key={choice.value} value={choice.value}>
                     {choice.label}
@@ -229,11 +328,6 @@ export default function EditApplication({
         </select>
     );
 
-    const directorates = options.directorates.filter(
-        (item) =>
-            !form.data.governorate_code ||
-            item.parent_code === form.data.governorate_code,
-    );
     const documentsByType = Object.fromEntries(
         (application.documents ?? []).map((document) => [
             document.document_type,
@@ -256,30 +350,7 @@ export default function EditApplication({
     return (
         <>
             <Head title={t('applicant.application_form')} />
-            <PageContainer className="max-w-4xl">
-                <PageHeader
-                    title={
-                        application.exam_period?.name ??
-                        t('applicant.application_form')
-                    }
-                    description={
-                        application.exam_period
-                            ? t('home.closes_on', {
-                                  date: formatDate(
-                                      application.exam_period.closes_at,
-                                      locale,
-                                  ),
-                              })
-                            : undefined
-                    }
-                    actions={
-                        <StatusBadge
-                            status={application.status}
-                            label={application.status_label}
-                        />
-                    }
-                />
-
+            <PageContainer>
                 {isCorrection && (
                     <Alert>
                         <AlertTriangle className="size-4" />
@@ -294,16 +365,6 @@ export default function EditApplication({
                             >
                                 {t('applicant.view_reviewer_notes')}
                             </Link>
-                        </AlertDescription>
-                    </Alert>
-                )}
-
-                {instructions && step === 0 && (
-                    <Alert>
-                        <Info className="size-4" />
-                        <AlertTitle>{t('applicant.instructions')}</AlertTitle>
-                        <AlertDescription className="whitespace-pre-line">
-                            {instructions}
                         </AlertDescription>
                     </Alert>
                 )}
@@ -326,85 +387,104 @@ export default function EditApplication({
                     </Alert>
                 )}
 
-                <nav
-                    aria-label={t('applicant.form_steps')}
-                    className="no-print"
+                <h2
+                    id="step-heading"
+                    className="flex w-fit items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
                 >
-                    <ol className="grid grid-cols-5 gap-1 sm:gap-2">
-                        {STEPS.map((name, index) => (
-                            <li key={name}>
-                                <button
-                                    type="button"
-                                    onClick={() => goTo(index)}
-                                    aria-current={
-                                        index === step ? 'step' : undefined
-                                    }
-                                    className={`flex w-full flex-col items-center gap-1 rounded-lg border px-1 py-2 text-xs transition-colors sm:flex-row sm:justify-center sm:gap-2 sm:text-sm ${
-                                        index === step
-                                            ? 'border-primary bg-primary/10 font-semibold text-primary'
-                                            : 'hover:bg-muted'
-                                    } ${stepHasErrors(index) ? 'border-destructive' : ''}`}
-                                >
-                                    <span className="flex size-6 items-center justify-center rounded-full bg-muted text-xs">
-                                        {index + 1}
-                                    </span>
-                                    <span className="hidden sm:inline">
-                                        {t(`applicant.steps.${name}`)}
-                                    </span>
-                                </button>
-                            </li>
-                        ))}
-                    </ol>
-                    <p className="mt-2 text-center text-sm font-medium sm:hidden">
-                        {t(`applicant.steps.${currentStep}`)}
-                    </p>
-                </nav>
+                    <span className="flex size-6 items-center justify-center rounded-full bg-primary-foreground text-xs text-primary">
+                        {step + 1}
+                    </span>
+                    {t(`applicant.steps.${currentStep}`)}
+                </h2>
 
                 {['personal', 'contact', 'education'].includes(currentStep) && (
                     <form
                         onSubmit={handleNext}
+                        onKeyDown={moveOnEnter}
                         className="space-y-6 rounded-xl border bg-card p-4 sm:p-6"
                         noValidate
                     >
-                        <h2 className="text-lg font-semibold">
-                            {t(`applicant.steps.${currentStep}`)}
-                        </h2>
-
                         {currentStep === 'personal' && (
                             <div className="grid gap-5 sm:grid-cols-2">
+                                <p className="text-sm text-muted-foreground sm:col-span-2">
+                                    {t('fields.full_name_ar_hint')}
+                                </p>
                                 <Field
-                                    id="full_name_ar"
-                                    label={t('fields.full_name_ar')}
-                                    hint={t('fields.full_name_ar_hint')}
-                                    error={form.errors.full_name_ar}
+                                    id="student_name"
+                                    label={t('fields.student_name')}
+                                    error={form.errors.student_name}
                                     required
-                                    className="sm:col-span-2"
                                 >
-                                    {input('full_name_ar', {
-                                        autoComplete: 'name',
+                                    {input('student_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                        autoComplete: 'given-name',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="father_name"
+                                    label={t('fields.father_name')}
+                                    error={form.errors.father_name}
+                                    required
+                                >
+                                    {input('father_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
                                 </Field>
                                 <Field
-                                    id="mother_name_ar"
-                                    label={t('fields.mother_name_ar')}
-                                    error={form.errors.mother_name_ar}
+                                    id="grandfather_name"
+                                    label={t('fields.grandfather_name')}
+                                    error={form.errors.grandfather_name}
                                     required
                                 >
-                                    {input('mother_name_ar', {
+                                    {input('grandfather_name', {
                                         lang: 'ar',
                                         dir: 'rtl',
                                     })}
                                 </Field>
                                 <Field
-                                    id="full_name_en"
-                                    label={t('fields.full_name_en')}
-                                    error={form.errors.full_name_en}
+                                    id="great_grandfather_name"
+                                    label={t('fields.great_grandfather_name')}
+                                    error={form.errors.great_grandfather_name}
+                                    required
                                 >
-                                    {input('full_name_en', {
-                                        lang: 'en',
-                                        dir: 'ltr',
+                                    {input('great_grandfather_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_first_name"
+                                    label={t('fields.mother_first_name')}
+                                    error={form.errors.mother_first_name}
+                                    required
+                                >
+                                    {input('mother_first_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_father_name"
+                                    label={t('fields.mother_father_name')}
+                                    error={form.errors.mother_father_name}
+                                    required
+                                >
+                                    {input('mother_father_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="mother_grandfather_name"
+                                    label={t('fields.mother_grandfather_name')}
+                                    error={form.errors.mother_grandfather_name}
+                                    required
+                                >
+                                    {input('mother_grandfather_name', {
+                                        lang: 'ar',
+                                        dir: 'rtl',
                                     })}
                                 </Field>
                                 <Field
@@ -413,8 +493,92 @@ export default function EditApplication({
                                     error={form.errors.birth_date}
                                     required
                                 >
-                                    {input('birth_date', { type: 'date' })}
+                                    {/* Years as the server allows: over 10, born after 1940. */}
+                                    <DatePartsInput
+                                        id="birth_date"
+                                        value={form.data.birth_date ?? null}
+                                        onChange={(value) =>
+                                            form.setData('birth_date', value)
+                                        }
+                                        fromYear={new Date().getFullYear() - 10}
+                                        toYear={1941}
+                                        disabled={isLocked('birth_date')}
+                                        invalid={!!form.errors.birth_date}
+                                        describedBy={describedBy(
+                                            'birth_date',
+                                            undefined,
+                                            form.errors.birth_date,
+                                        )}
+                                    />
                                 </Field>
+                                <Field
+                                    id="birth_place_code"
+                                    label={t('fields.birth_place')}
+                                    error={form.errors.birth_place_code}
+                                    required
+                                >
+                                    <select
+                                        id="birth_place_code"
+                                        name="birth_place_code"
+                                        className={selectClassName}
+                                        value={form.data.birth_place_code ?? ''}
+                                        disabled={isLocked('birth_place_code')}
+                                        onChange={(event) =>
+                                            form.setData((data) => ({
+                                                ...data,
+                                                birth_place_code:
+                                                    event.target.value || null,
+                                                // The written place only goes with "other".
+                                                birth_place_other:
+                                                    event.target.value ===
+                                                    OTHER_CODE
+                                                        ? data.birth_place_other
+                                                        : null,
+                                            }))
+                                        }
+                                        aria-invalid={
+                                            form.errors.birth_place_code
+                                                ? true
+                                                : undefined
+                                        }
+                                        aria-describedby={describedBy(
+                                            'birth_place_code',
+                                            undefined,
+                                            form.errors.birth_place_code,
+                                        )}
+                                        data-test="birth-place"
+                                    >
+                                        <option value="">
+                                            {t('common.choose')}
+                                        </option>
+                                        {options.governorates.map((item) => (
+                                            <option
+                                                key={item.code}
+                                                value={item.code}
+                                            >
+                                                {optionName(item)}
+                                            </option>
+                                        ))}
+                                        <option value={OTHER_CODE}>
+                                            {t(
+                                                'fields.birth_place_other_option',
+                                            )}
+                                        </option>
+                                    </select>
+                                </Field>
+                                {form.data.birth_place_code === OTHER_CODE && (
+                                    <Field
+                                        id="birth_place_other"
+                                        label={t('fields.birth_place_other')}
+                                        error={form.errors.birth_place_other}
+                                        required
+                                        className="sm:col-span-2"
+                                    >
+                                        {input('birth_place_other', {
+                                            autoFocus: true,
+                                        })}
+                                    </Field>
+                                )}
                                 <Field
                                     id="gender"
                                     label={t('fields.gender')}
@@ -432,86 +596,87 @@ export default function EditApplication({
                                         },
                                     ])}
                                 </Field>
-                                <Field
-                                    id="national_id_number"
-                                    label={t('fields.national_id_number')}
-                                    hint={t('fields.national_id_hint')}
-                                    error={form.errors.national_id_number}
-                                    required
-                                    className="sm:col-span-2"
-                                >
-                                    {input('national_id_number', {
-                                        dir: 'ltr',
-                                        inputMode: 'numeric',
-                                        autoComplete: 'off',
-                                    })}
-                                </Field>
                             </div>
                         )}
 
                         {currentStep === 'contact' && (
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <Field
-                                    id="phone"
-                                    label={t('fields.phone')}
-                                    hint={t('fields.phone_hint')}
-                                    error={form.errors.phone}
-                                    required
-                                >
-                                    {input('phone', {
-                                        type: 'tel',
-                                        dir: 'ltr',
-                                        inputMode: 'tel',
-                                        autoComplete: 'tel',
-                                    })}
-                                </Field>
-                                <Field
-                                    id="contact_email"
-                                    label={t('fields.contact_email')}
-                                    error={form.errors.contact_email}
-                                >
-                                    {input('contact_email', {
-                                        type: 'email',
-                                        dir: 'ltr',
-                                        autoComplete: 'email',
-                                    })}
-                                </Field>
-                                <Field
-                                    id="governorate_code"
+                                    id="governorate"
                                     label={t('fields.governorate')}
-                                    error={form.errors.governorate_code}
-                                    required
-                                >
-                                    {select(
-                                        'governorate_code',
-                                        options.governorates.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="directorate_code"
-                                    label={t('fields.directorate')}
-                                    error={form.errors.directorate_code}
-                                >
-                                    {select(
-                                        'directorate_code',
-                                        directorates.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="address"
-                                    label={t('fields.address')}
-                                    error={form.errors.address}
+                                    hint={t('fields.residence_hint')}
                                     className="sm:col-span-2"
                                 >
-                                    {input('address', {
-                                        autoComplete: 'street-address',
+                                    <Input
+                                        id="governorate"
+                                        value={t('fields.karbala')}
+                                        readOnly
+                                        aria-describedby="governorate-hint"
+                                        className="bg-muted"
+                                    />
+                                </Field>
+                                <Field
+                                    id="district"
+                                    label={t('fields.district')}
+                                    error={form.errors.district}
+                                    required
+                                >
+                                    {input('district')}
+                                </Field>
+                                <Field
+                                    id="mahalla"
+                                    label={t('fields.mahalla')}
+                                    error={form.errors.mahalla}
+                                >
+                                    {input('mahalla', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
                                     })}
+                                </Field>
+                                <Field
+                                    id="alley"
+                                    label={t('fields.alley')}
+                                    error={form.errors.alley}
+                                >
+                                    {input('alley', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="house_number"
+                                    label={t('fields.house_number')}
+                                    error={form.errors.house_number}
+                                >
+                                    {input('house_number', {
+                                        dir: 'ltr',
+                                        inputMode: 'numeric',
+                                        placeholder: t('common.optional'),
+                                        className: 'rtl:placeholder:text-right',
+                                    })}
+                                </Field>
+                                <Field
+                                    id="phone"
+                                    label={t('fields.phone')}
+                                    hint={t('fields.phone_account_hint')}
+                                    error={form.errors.phone}
+                                    className="sm:col-span-2"
+                                >
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        dir="ltr"
+                                        value={form.data.phone ?? ''}
+                                        readOnly
+                                        aria-readonly
+                                        aria-describedby="phone-hint"
+                                        className="bg-muted text-right"
+                                        data-test="phone-readonly"
+                                    />
                                 </Field>
                             </div>
                         )}
@@ -523,84 +688,72 @@ export default function EditApplication({
                                     label={t('fields.school_name')}
                                     error={form.errors.school_name}
                                     required
-                                    className="sm:col-span-2"
                                 >
-                                    {input('school_name')}
-                                </Field>
-                                <Field
-                                    id="branch_code"
-                                    label={t('fields.branch')}
-                                    error={form.errors.branch_code}
-                                    required
-                                >
-                                    {select(
-                                        'branch_code',
-                                        options.branches.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="category_code"
-                                    label={t('fields.category')}
-                                    error={form.errors.category_code}
-                                    required
-                                >
-                                    {select(
-                                        'category_code',
-                                        options.categories.map((item) => ({
-                                            value: item.code,
-                                            label: optionName(item),
-                                        })),
-                                    )}
-                                </Field>
-                                <Field
-                                    id="previous_exam_year"
-                                    label={t('fields.previous_exam_year')}
-                                    error={form.errors.previous_exam_year}
-                                >
-                                    {input('previous_exam_year', {
-                                        type: 'number',
-                                        inputMode: 'numeric',
-                                        dir: 'ltr',
-                                        min: 1990,
-                                        max: new Date().getFullYear(),
+                                    {/* Kept on record only; the printed form leaves it to be written in. */}
+                                    {input('school_name', {
+                                        placeholder: t('common.required'),
                                     })}
                                 </Field>
+                                <Field
+                                    id="school_governorate_code"
+                                    label={t('fields.school_governorate')}
+                                    error={form.errors.school_governorate_code}
+                                    required
+                                >
+                                    {select('school_governorate_code', [
+                                        ...options.governorates.map((item) => ({
+                                            value: item.code,
+                                            label: optionName(item),
+                                        })),
+                                        {
+                                            value: OTHER_CODE,
+                                            label: t(
+                                                'fields.birth_place_other_option',
+                                            ),
+                                        },
+                                    ])}
+                                </Field>
+                                {form.data.school_governorate_code ===
+                                    OTHER_CODE && (
+                                    <Field
+                                        id="school_governorate_other"
+                                        label={t(
+                                            'fields.school_governorate_other',
+                                        )}
+                                        error={
+                                            form.errors.school_governorate_other
+                                        }
+                                        required
+                                        className="sm:col-span-2"
+                                    >
+                                        {input('school_governorate_other', {
+                                            autoFocus: true,
+                                        })}
+                                    </Field>
+                                )}
+                                {!form.data.branch_code && (
+                                    <p className="text-sm sm:col-span-2">
+                                        {t('fields.branch_not_chosen')}{' '}
+                                        <Link
+                                            href={apply.specialization()}
+                                            className="font-medium underline underline-offset-4"
+                                        >
+                                            {t('fields.choose_branch_link')}
+                                        </Link>
+                                    </p>
+                                )}
                             </div>
                         )}
 
-                        <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-between">
+                        <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:justify-end">
                             <Button
-                                type="button"
-                                variant="outline"
-                                disabled={form.processing || !form.isDirty}
-                                onClick={() => save()}
-                                data-test="save-draft"
+                                type="submit"
+                                disabled={form.processing}
+                                data-test="next-step"
                             >
-                                <Save className="size-4" aria-hidden />
-                                {t('applicant.save_draft')}
+                                {form.processing && <Spinner />}
+                                {t('applicant.save_and_continue')}
                             </Button>
-                            <div className="flex gap-2">
-                                {step > 0 && (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => goTo(step - 1)}
-                                    >
-                                        {t('common.previous')}
-                                    </Button>
-                                )}
-                                <Button
-                                    type="submit"
-                                    disabled={form.processing}
-                                    data-test="next-step"
-                                >
-                                    {form.processing && <Spinner />}
-                                    {t('applicant.save_and_continue')}
-                                </Button>
-                            </div>
                         </div>
                     </form>
                 )}
@@ -608,27 +761,16 @@ export default function EditApplication({
                 {currentStep === 'documents' && (
                     <section
                         className="space-y-4"
-                        aria-labelledby="documents-heading"
+                        aria-labelledby="step-heading"
                     >
-                        <div className="flex items-center justify-between gap-2">
-                            <h2
-                                id="documents-heading"
-                                className="text-lg font-semibold"
+                        {hasPendingDocuments && (
+                            <p
+                                className="flex items-center gap-2 text-sm text-muted-foreground"
+                                role="status"
                             >
-                                {t('applicant.steps.documents')}
-                            </h2>
-                            {hasPendingDocuments && (
-                                <span
-                                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                                    role="status"
-                                >
-                                    <Spinner /> {t('documents.checking')}
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            {t('documents.intro')}
-                        </p>
+                                <Spinner /> {t('documents.checking')}
+                            </p>
+                        )}
                         {documentTypes.map((requirement) => (
                             <DocumentUploader
                                 key={requirement.code}
@@ -637,20 +779,13 @@ export default function EditApplication({
                                 current={documentsByType[requirement.code]}
                             />
                         ))}
-                        <div className="flex justify-between border-t pt-4">
+                        <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:justify-end">
                             <Button
                                 type="button"
-                                variant="ghost"
-                                onClick={() => goTo(step - 1)}
-                            >
-                                {t('common.previous')}
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => goTo(step + 1)}
+                                onClick={goToReview}
                                 data-test="next-step"
                             >
-                                {t('common.next')}
+                                {t('applicant.save_and_continue')}
                             </Button>
                         </div>
                     </section>
@@ -659,86 +794,52 @@ export default function EditApplication({
                 {currentStep === 'review' && (
                     <section
                         className="space-y-5"
-                        aria-labelledby="review-heading"
+                        aria-labelledby="step-heading"
                     >
-                        <h2
-                            id="review-heading"
-                            className="text-lg font-semibold"
-                        >
-                            {t('applicant.steps.review')}
-                        </h2>
+                        <ApplicationSummaryTable
+                            caption={t('applicant.steps.review')}
+                            sections={[
+                                ...applicationSummarySections(
+                                    application,
+                                    t,
+                                ).map((section) => ({
+                                    key: section.step,
+                                    title: section.title,
+                                    rows: section.rows,
+                                    action: editButton(section.step),
+                                })),
+                                {
+                                    key: 'documents',
+                                    title: t('applicant.steps.documents'),
+                                    action: editButton('documents'),
+                                    rows: documentTypes.map((requirement) => {
+                                        const document =
+                                            documentsByType[requirement.code];
 
-                        <dl className="grid gap-x-6 gap-y-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2 sm:p-6">
-                            {(
-                                [
-                                    [
-                                        'fields.full_name_ar',
-                                        application.form.full_name_ar,
-                                    ],
-                                    [
-                                        'fields.mother_name_ar',
-                                        application.form.mother_name_ar,
-                                    ],
-                                    [
-                                        'fields.full_name_en',
-                                        application.form.full_name_en,
-                                    ],
-                                    [
-                                        'fields.birth_date',
-                                        application.form.birth_date,
-                                    ],
-                                    [
-                                        'fields.gender',
-                                        application.labels.gender,
-                                    ],
-                                    [
-                                        'fields.national_id_number',
-                                        application.form.national_id_number,
-                                    ],
-                                    ['fields.phone', application.form.phone],
-                                    [
-                                        'fields.contact_email',
-                                        application.form.contact_email,
-                                    ],
-                                    [
-                                        'fields.governorate',
-                                        application.labels.governorate,
-                                    ],
-                                    [
-                                        'fields.directorate',
-                                        application.labels.directorate,
-                                    ],
-                                    [
-                                        'fields.school_name',
-                                        application.form.school_name,
-                                    ],
-                                    [
-                                        'fields.branch',
-                                        application.labels.branch,
-                                    ],
-                                    [
-                                        'fields.category',
-                                        application.labels.category,
-                                    ],
-                                    [
-                                        'fields.previous_exam_year',
-                                        application.form.previous_exam_year,
-                                    ],
-                                ] as const
-                            ).map(([label, value]) => (
-                                <div
-                                    key={label}
-                                    className="flex flex-col gap-0.5 border-b pb-2 last:border-0"
-                                >
-                                    <dt className="text-muted-foreground">
-                                        {t(label)}
-                                    </dt>
-                                    <dd className="font-medium" dir="auto">
-                                        {value ?? '—'}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
+                                        return [
+                                            requirement.name,
+                                            requirement.is_photo &&
+                                            document?.url ? (
+                                                <img
+                                                    src={`${document.url}?inline=1`}
+                                                    alt={requirement.name}
+                                                    className="h-36 w-28 rounded-md border object-cover"
+                                                    data-test="photo-preview"
+                                                />
+                                            ) : document ? (
+                                                t(
+                                                    `documents.status.${document.status}`,
+                                                )
+                                            ) : (
+                                                <span className="font-medium text-destructive">
+                                                    {t('documents.missing')}
+                                                </span>
+                                            ),
+                                        ];
+                                    }),
+                                },
+                            ]}
+                        />
 
                         {!isReady && (
                             <Alert
@@ -837,43 +938,75 @@ export default function EditApplication({
                                     {submission.errors.declaration}
                                 </p>
                             )}
-                            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => goTo(step - 1)}
+                            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                                <ConfirmDialog
+                                    title={t('applicant.print_title')}
+                                    description={t('applicant.print_back_text')}
+                                    confirmLabel={t('applicant.print_accept')}
+                                    cancelLabel={t('applicant.print_back')}
+                                    open={confirmingPrint}
+                                    onOpenChange={setConfirmingPrint}
+                                    processing={submission.processing}
+                                    onConfirm={submit}
                                 >
-                                    {t('common.previous')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="lg"
-                                    onClick={submit}
-                                    disabled={
-                                        !isReady ||
-                                        !submission.data.declaration ||
-                                        submission.processing
-                                    }
-                                    data-test="submit-application"
-                                >
-                                    {submission.processing ? (
-                                        <Spinner />
-                                    ) : isReady ? (
-                                        <Send className="size-4" aria-hidden />
-                                    ) : (
-                                        <CheckCircle2
-                                            className="size-4"
-                                            aria-hidden
-                                        />
-                                    )}
-                                    {isCorrection
-                                        ? t('applicant.resubmit')
-                                        : t('applicant.submit')}
-                                </Button>
+                                    <Button
+                                        type="button"
+                                        size="lg"
+                                        disabled={
+                                            !isReady ||
+                                            !submission.data.declaration ||
+                                            submission.processing
+                                        }
+                                        data-test="submit-application"
+                                    >
+                                        {submission.processing ? (
+                                            <Spinner />
+                                        ) : (
+                                            <Printer
+                                                className="size-4"
+                                                aria-hidden
+                                            />
+                                        )}
+                                        {t('applicant.print_form')}
+                                    </Button>
+                                </ConfirmDialog>
                             </div>
                         </div>
                     </section>
                 )}
+
+                <Dialog
+                    open={notice !== null}
+                    onOpenChange={(open) => !open && setNotice(null)}
+                >
+                    <DialogContent
+                        data-test="form-notice"
+                        onCloseAutoFocus={(event) => {
+                            const next = sequence.find(isEmpty);
+
+                            if (next) {
+                                event.preventDefault();
+                                document.getElementById(next)?.focus();
+                            }
+                        }}
+                    >
+                        <DialogHeader>
+                            <DialogTitle>{notice?.title}</DialogTitle>
+                        </DialogHeader>
+                        <ul className="list-inside list-disc space-y-1 text-sm">
+                            {notice?.items.map((item) => (
+                                <li key={item}>{item}</li>
+                            ))}
+                        </ul>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button data-test="form-notice-close">
+                                    {t('applicant.understood')}
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </PageContainer>
         </>
     );

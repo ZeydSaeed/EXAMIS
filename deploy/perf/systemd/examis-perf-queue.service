@@ -1,0 +1,15 @@
+[Unit]
+Description=EXAMIS perf queue worker (Redis)
+After=network.target examis-perf-redis.service postgresql@16-perf.service
+PartOf=examis-perf.target
+
+[Service]
+User=examisperf
+Group=examisperf
+WorkingDirectory=/srv/examis-perf/app
+ExecStart=/usr/bin/php /srv/examis-perf/app/artisan queue:work redis --queue=documents,default --tries=3 --max-time=3600 --memory=256 --sleep=3
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=examis-perf.target

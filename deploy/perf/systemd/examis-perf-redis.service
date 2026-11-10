@@ -1,0 +1,15 @@
+[Unit]
+Description=EXAMIS perf Redis (127.0.0.1:6380)
+After=network.target
+PartOf=examis-perf.target
+
+[Service]
+Type=notify
+User=redis
+Group=redis
+StateDirectory=examis-perf-redis
+ExecStart=/usr/bin/redis-server /etc/examis-perf/redis.conf
+TimeoutStopSec=10
+
+[Install]
+WantedBy=examis-perf.target

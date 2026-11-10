@@ -8,11 +8,10 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 
 /**
- * Writes authentication events to the audit trail. Attempted usernames are
+ * Writes authentication events to the audit trail. Attempted emails are
  * stored only as a keyed hash so failed-login records can be correlated
  * without collecting what people typed.
  */
@@ -33,14 +32,14 @@ class RecordAuthenticationActivity
     public function handleFailed(Failed $event): void
     {
         $this->audit->record('auth.failed', metadata: [
-            'username_hash' => $this->hashIdentifier((string) ($event->credentials['username'] ?? '')),
+            'email_hash' => $this->hashIdentifier((string) ($event->credentials['email'] ?? '')),
         ]);
     }
 
     public function handleLockout(Lockout $event): void
     {
         $this->audit->record('auth.lockout', metadata: [
-            'username_hash' => $this->hashIdentifier((string) $event->request->input('username', '')),
+            'email_hash' => $this->hashIdentifier((string) $event->request->input('email', '')),
         ]);
     }
 
@@ -48,13 +47,6 @@ class RecordAuthenticationActivity
     {
         if ($event->user instanceof User) {
             $this->audit->record('auth.logout', $event->user, actor: $event->user);
-        }
-    }
-
-    public function handlePasswordReset(PasswordReset $event): void
-    {
-        if ($event->user instanceof User) {
-            $this->audit->record('auth.password_reset', $event->user, actor: $event->user);
         }
     }
 

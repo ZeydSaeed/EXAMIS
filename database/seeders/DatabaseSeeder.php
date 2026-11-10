@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ReferenceDataSeeder::class,
             DocumentTypeSeeder::class,
             ContentPageSeeder::class,
+            MessageTemplateSeeder::class,
         ]);
 
         if (! app()->isProduction()) {

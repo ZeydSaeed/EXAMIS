@@ -4,9 +4,10 @@ return [
     'draft' => 'Draft',
     'submitted' => 'Submitted',
     'under_review' => 'Under review',
-    'requires_correction' => 'Requires correction',
+    'requires_correction' => 'Incomplete paperwork',
     'resubmitted' => 'Resubmitted',
     'accepted' => 'Accepted',
     'rejected' => 'Rejected',
     'withdrawn' => 'Withdrawn',
+    'fees_paid' => 'Fees paid (final acceptance)',
 ];

@@ -4,61 +4,380 @@ namespace App\Services\Receipts;
 
 use App\Enums\ReferenceType;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Services\ReferenceData;
+use App\Services\Students\StudentIdentity;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Mpdf\Config\ConfigVariables;
+use Mpdf\Config\FontVariables;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use SplFileInfo;
+use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 /**
- * Renders the A4 submission receipt with mPDF, which shapes Arabic letters
- * and applies bidi so text stays selectable and extractable.
+ * Renders the A4 receipt as the official student status form (استمارة واقع
+ * حال) filled with the submitted data, plus the reference number and the
+ * verification QR code (ADR-0007). mPDF shapes Arabic letters and applies
+ * bidi so text stays selectable and extractable.
  */
 class ReceiptRenderer
 {
-    public function __construct(private ReferenceData $referenceData) {}
+    /**
+     * Words that start a compound Arabic name ("عبد الرحمن", "أبو بكر").
+     */
+
+    /**
+     * Logo printed at the top of the form, when the authority has provided it.
+     */
+    public const LOGO_PATH = 'images/vocational-education-logo.png';
+
+    /**
+     * The application's own logo, printed small above the committee's name. A
+     * downscaled copy: mPDF decoding the full-size PNG exhausts the memory limit.
+     */
+
+    /**
+     * Muted shade of each branch's colour for the form's label cells, with a
+     * lighter tint for sub-headings. Any other branch is printed white.
+     *
+     * @var array<string, array{string, string}>
+     */
+    public const BRANCH_SHADES = [
+        'IND' => ['#e39191', '#f4d3d3'],
+        'TOU' => ['#e39191', '#f4d3d3'],
+        'COM' => ['#f2cf66', '#faecc2'],
+        'AGR' => ['#99cc8f', '#d9edd4'],
+        'APA' => ['#8fb3e0', '#d5e3f4'],
+        'CIT' => ['#ffffff', '#ffffff'],
+    ];
+
+    /**
+     * Shades of the test form page where they differ from the branch's.
+     *
+     * @var array<string, array{string, string}>
+     */
+    public const TEST_FORM_SHADES = [
+        'CIT_HW' => ['#bfbfbf', '#e6e6e6'],
+    ];
+
+    public function __construct(private StudentIdentity $identity) {}
+
+    /**
+     * The form, built only when its data or template changed: building takes
+     * about a second, reading the kept copy a few milliseconds. Copies hold
+     * personal data, so they stay on the private disk.
+     */
+    public function cached(Application $application): string
+    {
+        if (! config('examis.documents.form_cache')) {
+            return $this->render($application);
+        }
+
+        $application->loadMissing(['user', 'examPeriod', 'currentDocuments.documentType']);
+
+        $disk = Storage::disk('local');
+        $directory = 'form-cache/'.$application->uuid;
+        $path = $directory.'/'.$this->fingerprint($application).'.pdf';
+        $kept = $disk->get($path);
+
+        if ($kept !== null) {
+            return $kept;
+        }
+
+        // The queued build after sending and the printed page's own request
+        // often ask at the same moment: one builds, the other waits for it.
+        try {
+            return Cache::lock('form-render:'.$application->uuid, 60)->block(30, function () use ($application, $disk, $directory, $path): string {
+                $kept = $disk->get($path);
+
+                if ($kept !== null) {
+                    return $kept;
+                }
+
+                $pdf = $this->render($application);
+
+                $disk->deleteDirectory($directory);
+                $disk->put($path, $pdf);
+
+                return $pdf;
+            });
+        } catch (LockTimeoutException) {
+            // Never leave the student without the form: build it here.
+            return $this->render($application);
+        }
+    }
+
+    /**
+     * Builds the form ahead of its first view, so that view is fast too. A
+     * failure here must not stop the application: the view builds it again.
+     */
+    public function warm(Application $application): void
+    {
+        if (! config('examis.documents.form_cache')) {
+            return;
+        }
+
+        try {
+            $this->cached($application);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /**
+     * Everything the printed form depends on.
+     */
+    private function fingerprint(Application $application): string
+    {
+        $templates = collect(File::allFiles(resource_path('views/pdf')))
+            ->map(fn (SplFileInfo $file): int => $file->getMTime())
+            ->max();
+
+        return sha1((string) json_encode([
+            app()->getLocale(),
+            now()->year,
+            $templates,
+            filemtime(lang_path(app()->getLocale().'/receipt.php')),
+            $application->updated_at?->toIso8601String(),
+            $application->currentDocuments->map(fn (ApplicationDocument $document): array => [$document->id, $document->status->value])->all(),
+        ]));
+    }
 
     public function render(Application $application): string
     {
-        $application->loadMissing('examPeriod');
+        $application->loadMissing(['user', 'examPeriod', 'currentDocuments.documentType']);
+        // The form prints the student number and its barcode.
+        $this->identity->ensureIdentity($application->user);
         $locale = app()->getLocale();
         $tempDir = storage_path('app/mpdf');
         File::ensureDirectoryExists($tempDir);
+
+        $fonts = $this->fontConfig();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'tempDir' => $tempDir,
-            'default_font' => 'dejavusans',
-            'margin_top' => 14,
-            'margin_bottom' => 14,
-            'margin_left' => 14,
-            'margin_right' => 14,
+            ...$fonts,
+            'margin_top' => 12,
+            'margin_bottom' => 11,
+            'margin_left' => 12,
+            'margin_right' => 12,
             'autoScriptToLang' => true,
             // Keep DejaVu Sans for Arabic: the language fallback font (XB Riyaz)
             // maps contextual letter forms to private-use code points, which
             // silently drops letters from copied or extracted text.
             'autoLangToFont' => false,
             'autoArabic' => true,
+            // Justify with the spaces between words, never between letters.
+            'jSmaxChar' => 0,
+            'jSWord' => 1,
         ]);
 
         $mpdf->SetDirectionality($locale === 'ar' ? 'rtl' : 'ltr');
-        $mpdf->SetTitle(__('receipt.title').' '.$application->reference_number);
+        // Browsers offer the title as the file name when the form is printed or saved.
+        $mpdf->SetTitle($this->filename($application));
         $mpdf->SetAuthor((string) config('examis.organization.name_en'));
         $mpdf->SetCreator('EXAMIS');
+
+        $photo = $this->photo($application);
+
+        if ($photo !== null) {
+            $mpdf->imageVars['photo'] = $photo;
+        }
+
+        $logo = public_path(self::LOGO_PATH);
+        $referenceData = app(ReferenceData::class);
 
         $mpdf->WriteHTML(view('pdf.receipt', [
             'application' => $application,
             'direction' => $locale === 'ar' ? 'rtl' : 'ltr',
-            'organization' => $locale === 'ar' ? config('examis.organization.name_ar') : config('examis.organization.name_en'),
-            'labels' => [
-                'governorate' => $this->referenceData->name(ReferenceType::Governorate, $application->governorate_code),
-                'branch' => $this->referenceData->name(ReferenceType::Branch, $application->branch_code),
-                'category' => $this->referenceData->name(ReferenceType::Category, $application->category_code),
-            ],
-            'verificationUrl' => route('receipts.verify', $application->verification_token),
+            'font' => $fonts['default_font'],
+            'logo' => is_file($logo) ? $logo : null,
+            'hasPhoto' => $photo !== null,
+            'shades' => self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
+            'branchShades' => self::BRANCH_SHADES,
+            // Only specializations with a test centre sit a practical test.
+            'testCentre' => __('receipt.test_form.centres')[$application->category_code] ?? null,
+            'testShades' => self::TEST_FORM_SHADES[$application->category_code] ?? self::BRANCH_SHADES[$application->branch_code] ?? ['#ffffff', '#ffffff'],
+            // Shown left to right so that the first year reads first, on the right.
+            'academicYear' => implode('-', array_reverse(explode('-', $application->examPeriod->academic_year))),
+            'student' => $application->user,
+            'fullName' => $this->joined($application->only(Application::NAME_PARTS), ' ') ?? $application->full_name_ar,
+            'motherName' => $this->joined($application->only(Application::MOTHER_NAME_PARTS), ' ') ?? $application->mother_name_ar,
+            'branch' => $referenceData->name(ReferenceType::Branch, $application->branch_code),
+            'specialization' => $referenceData->name(ReferenceType::Category, $application->category_code),
             'generatedAt' => now(),
+            'texts' => ReceiptTexts::current(),
         ])->render());
 
+        $this->drawFrame($mpdf);
+
         return $mpdf->Output('', Destination::STRING_RETURN);
+    }
+
+    /**
+     * The filled values joined, or null when none is filled.
+     *
+     * @param  array<array-key, mixed>  $values
+     */
+    private function joined(array $values, string $separator): ?string
+    {
+        $values = array_filter($values, fn (mixed $value): bool => filled($value));
+
+        return $values === [] ? null : implode($separator, $values);
+    }
+
+    /**
+     * A thin double frame inside every page: two 0.3 mm lines 1.2 mm apart,
+     * drawn at fixed page coordinates so it never shifts with the content.
+     */
+    private function drawFrame(Mpdf $mpdf): void
+    {
+        $current = $mpdf->page;
+        $mpdf->SetDrawColor(0, 0, 0);
+        $mpdf->SetLineWidth(0.3);
+
+        for ($page = 1; $page <= count($mpdf->pages); $page++) {
+            $mpdf->page = $page;
+
+            foreach ([6.0, 7.2] as $inset) {
+                $mpdf->Rect($inset, $inset, $mpdf->w - 2 * $inset, $mpdf->h - 2 * $inset);
+            }
+        }
+
+        $mpdf->page = $current;
+    }
+
+    /**
+     * Times New Roman when its files are available (config
+     * `examis.receipt.font_dir`), shaped through its OpenType tables so
+     * Arabic joins correctly; DejaVu Sans otherwise.
+     *
+     * @return array<string, mixed>
+     */
+    private function fontConfig(): array
+    {
+        $directory = rtrim((string) config('examis.receipt.font_dir'), '/\\');
+
+        if ($directory === '' || ! is_file($directory.'/times.ttf') || ! is_file($directory.'/timesbd.ttf')) {
+            return ['default_font' => 'dejavusans'];
+        }
+
+        $defaults = (new FontVariables)->getDefaults();
+
+        return [
+            'fontDir' => [...(new ConfigVariables)->getDefaults()['fontDir'], $directory],
+            'fontdata' => $defaults['fontdata'] + [
+                'timesnewroman' => [
+                    'R' => 'times.ttf',
+                    'B' => 'timesbd.ttf',
+                    'useOTL' => 0xFF,
+                    // No stretched letters when justifying: they pull words apart.
+                    'useKashida' => 0,
+                ],
+            ],
+            'default_font' => 'timesnewroman',
+        ];
+    }
+
+    /**
+     * The verified personal photo, read from the private documents disk.
+     * Only a verified file is used, as for every other document download.
+     */
+    private function photo(Application $application): ?string
+    {
+        $document = $application->currentDocuments
+            ->first(fn (ApplicationDocument $document): bool => $document->documentType->is_photo && $document->isDownloadable());
+
+        if ($document === null) {
+            return null;
+        }
+
+        try {
+            $photo = Storage::disk($document->disk)->get($document->path);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $photo === null ? null : ($this->fitToFrame($photo) ?? $photo);
+    }
+
+    /**
+     * The PDF as a response: shown in the browser, or saved as a file.
+     */
+    public function response(Application $application, string $pdf, bool $download): Response
+    {
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            // The Arabic name in filename*, with an ASCII name for older clients.
+            'Content-Disposition' => HeaderUtils::makeDisposition(
+                $download ? HeaderUtils::DISPOSITION_ATTACHMENT : HeaderUtils::DISPOSITION_INLINE,
+                $this->filename($application).'.pdf',
+                'receipt-'.$application->reference_number.'.pdf',
+            ),
+            'Cache-Control' => 'no-store, private',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'self'",
+            'X-Frame-Options' => 'SAMEORIGIN',
+        ]);
+    }
+
+    /**
+     * The form's file name, without extension: the student's full name, then
+     * "_" and the student number. Falls back to the reference number when
+     * there is no name.
+     */
+    public function filename(Application $application): string
+    {
+        $name = $this->joined($application->only(Application::NAME_PARTS), ' ') ?? $application->full_name_ar;
+        $name = trim((string) preg_replace('/[\/\\\\:*?"<>|\x00-\x1F]+/u', ' ', (string) $name));
+
+        if ($name === '') {
+            return 'receipt-'.$application->reference_number;
+        }
+
+        $number = $application->user->student_number;
+
+        return $number === null ? $name : $name.'_'.$number;
+    }
+
+    /**
+     * Crops the photo around its centre to the frame's 28×36 mm shape and
+     * scales it down, so it fills the frame without being stretched. Null
+     * when GD cannot read it, in which case the original is printed as is.
+     */
+    private function fitToFrame(string $photo): ?string
+    {
+        $source = @imagecreatefromstring($photo);
+
+        if ($source === false) {
+            return null;
+        }
+
+        [$width, $height] = [imagesx($source), imagesy($source)];
+        $ratio = 28 / 36;
+        $cropWidth = (int) min($width, round($height * $ratio));
+        $cropHeight = (int) min($height, round($width / $ratio));
+
+        // 420×540 px prints at about 380 dpi in the frame.
+        $frame = imagecreatetruecolor(420, 540);
+        imagefill($frame, 0, 0, (int) imagecolorallocate($frame, 255, 255, 255));
+        imagecopyresampled(
+            $frame, $source, 0, 0,
+            intdiv($width - $cropWidth, 2), intdiv($height - $cropHeight, 2),
+            420, 540, $cropWidth, $cropHeight,
+        );
+
+        ob_start();
+        imagejpeg($frame, null, 90);
+
+        return (string) ob_get_clean();
     }
 }

@@ -10,6 +10,7 @@ use App\Models\ApplicationDocument;
 use App\Models\DocumentType;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Documents\PhotoNormalizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,22 +21,34 @@ use Throwable;
  * Stores an uploaded document in private storage under a random key and
  * records its metadata. A previous document of the same type is marked
  * replaced (never deleted) so the history stays auditable. The document is
- * not downloadable until ScanApplicationDocument verifies it.
+ * not downloadable until ScanApplicationDocument verifies it, normally
+ * during this same request.
  */
 class StoreApplicationDocument
 {
-    public function __construct(private AuditLogger $audit) {}
+    public function __construct(
+        private AuditLogger $audit,
+        private PhotoNormalizer $photos,
+    ) {}
 
     public function handle(Application $application, DocumentType $type, UploadedFile $file, User $actor): ApplicationDocument
     {
         $disk = (string) config('examis.documents.disk');
         $path = $application->uuid.'/'.Str::random(48);
         $contents = (string) file_get_contents((string) $file->getRealPath());
+        $mimeType = (string) $file->getMimeType();
+
+        // Photos are stored re-encoded: small, upright, with nothing but pixels.
+        $normalized = $type->is_photo ? $this->photos->normalize($contents) : null;
+
+        if ($normalized !== null) {
+            [$contents, $mimeType] = [$normalized, 'image/jpeg'];
+        }
 
         Storage::disk($disk)->put($path, $contents);
 
         try {
-            return DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents): ApplicationDocument {
+            $document = DB::transaction(function () use ($application, $type, $file, $actor, $disk, $path, $contents, $mimeType): ApplicationDocument {
                 $locked = Application::query()->whereKey($application->id)->lockForUpdate()->firstOrFail();
 
                 if (! $locked->status->isEditableByApplicant()) {
@@ -65,7 +78,7 @@ class StoreApplicationDocument
                     'disk' => $disk,
                     'path' => $path,
                     'original_name' => Str::limit($this->safeOriginalName($file), 200, ''),
-                    'mime_type' => (string) $file->getMimeType(),
+                    'mime_type' => $mimeType,
                     'size_bytes' => strlen($contents),
                     'sha256' => hash('sha256', $contents),
                 ])->save();
@@ -82,14 +95,36 @@ class StoreApplicationDocument
 
                 $this->audit->record('document.uploaded', $document, ['application' => $locked->uuid], $actor);
 
-                ScanApplicationDocument::dispatch($document->id)->afterCommit();
-
                 return $document;
             }, 3);
         } catch (Throwable $exception) {
             Storage::disk($disk)->delete($path);
 
             throw $exception;
+        }
+
+        $this->scan($document);
+
+        return $document->refresh();
+    }
+
+    /**
+     * A scan that fails here is not the student's problem: the document stays
+     * pending and goes to the queue, which retries it.
+     */
+    private function scan(ApplicationDocument $document): void
+    {
+        if (! config('examis.documents.scan_inline')) {
+            ScanApplicationDocument::dispatch($document->id);
+
+            return;
+        }
+
+        try {
+            ScanApplicationDocument::dispatchSync($document->id);
+        } catch (Throwable $exception) {
+            report($exception);
+            ScanApplicationDocument::dispatch($document->id);
         }
     }
 

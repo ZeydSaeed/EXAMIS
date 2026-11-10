@@ -1,0 +1,33 @@
+{
+    "_comment": "Synthetic form answers per step, shared by k6 (tests/load/lib/student.js) and Pest (tests/Feature/QualityEngineering/LoadJourneyContractTest.php), so the test proves k6 sends what the form really accepts.",
+    "steps": {
+        "1": {
+            "student_name": "سجاد",
+            "father_name": "حيدر",
+            "grandfather_name": "كاظم",
+            "great_grandfather_name": "جواد",
+            "mother_first_name": "زهراء",
+            "mother_father_name": "مهدي",
+            "mother_grandfather_name": "كريم",
+            "birth_date": "2006-05-20",
+            "birth_place_code": "KRB",
+            "gender": "male"
+        },
+        "2": {
+            "district": "حي تجريبي",
+            "mahalla": "630",
+            "alley": "44",
+            "house_number": "164"
+        },
+        "3": {
+            "school_name": "إعدادية تجريبية للبنين",
+            "school_governorate_code": "KRB",
+            "last_grade": "الخامس الإعدادي"
+        }
+    },
+    "photo": {
+        "document_type": "personal_photo",
+        "file": "photo.png",
+        "mime": "image/png"
+    }
+}

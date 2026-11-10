@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationEventType;
 use App\Enums\ApplicationStatus;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Notifications\ApplicationStatusChanged;
@@ -15,7 +16,7 @@ it('submits a complete application with a valid reference number', function () {
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])
-        ->assertRedirect(route('applications.show', $application));
+        ->assertRedirect(route('applications.printed', $application));
 
     $application->refresh();
     expect($application->status)->toBe(ApplicationStatus::Submitted)
@@ -58,8 +59,8 @@ it('issues distinct sequential reference numbers within a period', function () {
 
     $references = [$first->fresh()->reference_number, $second->fresh()->reference_number];
     expect($references[0])->not->toBe($references[1])
-        ->and(substr((string) $references[0], -7, 6))->toBe('000001')
-        ->and(substr((string) $references[1], -7, 6))->toBe('000002');
+        ->and(preg_replace('/^.*-/', '', (string) $references[0]))->toMatch('/^[1-9][0-9]{7}[0-9X]$/')
+        ->and(preg_replace('/^.*-/', '', (string) $references[1]))->toMatch('/^[1-9][0-9]{7}[0-9X]$/');
 });
 
 it('requires the declaration', function () {
@@ -74,7 +75,7 @@ it('requires the declaration', function () {
 
 it('lists what is missing when the application is incomplete', function () {
     [$period] = openPeriodRequiringDocument();
-    $application = Application::factory()->create(['exam_period_id' => $period->id, 'full_name_ar' => 'اسم فقط']);
+    $application = Application::factory()->create(['exam_period_id' => $period->id, 'student_name' => 'اسم']);
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])
@@ -104,7 +105,7 @@ it('refuses new submissions after the period closes', function () {
 
 it('re-checks eligibility against the period rules at submission time', function () {
     $application = readyDraft();
-    $application->examPeriod->update(['eligible_branch_codes' => ['LIT']]);
+    $application->examPeriod->update(['eligible_branch_codes' => ['COM']]);
 
     $this->actingAs($application->user)
         ->post(route('applications.submit', $application), ['declaration' => '1'])
@@ -137,6 +138,8 @@ it('answers 404 when submitting someone else\'s application', function () {
 });
 
 it('lets the applicant withdraw a submitted application', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $application = Application::factory()->submitted()->create();
 
     $this->actingAs($application->user)
@@ -148,6 +151,8 @@ it('lets the applicant withdraw a submitted application', function () {
 });
 
 it('does not allow withdrawing a decided application', function () {
+    $this->withoutMiddleware(EnsureAccountIsActive::class);
+
     $application = Application::factory()->inStatus(ApplicationStatus::Accepted)->create();
 
     $this->actingAs($application->user)

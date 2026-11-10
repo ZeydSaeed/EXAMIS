@@ -1,11 +1,10 @@
 import {
+    BadgeCheck,
     CheckCircle2,
     CircleDashed,
     CircleSlash,
-    Clock,
     FileEdit,
     Search,
-    Send,
     XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -13,59 +12,94 @@ import { cn } from '@/lib/utils';
 import type { ApplicationStatus } from '@/types';
 
 const appearance: Record<
-    ApplicationStatus,
-    { icon: LucideIcon; className: string }
+    Exclude<ApplicationStatus, 'submitted' | 'resubmitted'>,
+    { icon: LucideIcon; text: string; border: string; surface: string }
 > = {
     draft: {
         icon: CircleDashed,
-        className: 'border-border bg-muted text-muted-foreground',
+        text: 'text-slate-700 dark:text-slate-300',
+        border: 'border-slate-500/40',
+        surface: 'bg-slate-500/10',
     },
-    submitted: { icon: Send, className: 'border-info/40 bg-info/10 text-info' },
     under_review: {
         icon: Search,
-        className: 'border-info/40 bg-info/10 text-info',
+        text: 'text-yellow-800 dark:text-yellow-300',
+        border: 'border-yellow-500/40',
+        surface: 'bg-yellow-500/15',
     },
     requires_correction: {
         icon: FileEdit,
-        className: 'border-warning/50 bg-warning/15 text-foreground',
-    },
-    resubmitted: {
-        icon: Clock,
-        className: 'border-info/40 bg-info/10 text-info',
+        text: 'text-orange-700 dark:text-orange-300',
+        border: 'border-orange-500/40',
+        surface: 'bg-orange-500/10',
     },
     accepted: {
         icon: CheckCircle2,
-        className: 'border-success/40 bg-success/10 text-success',
+        text: 'text-green-700 dark:text-green-300',
+        border: 'border-green-500/40',
+        surface: 'bg-green-500/10',
     },
     rejected: {
         icon: XCircle,
-        className: 'border-destructive/40 bg-destructive/10 text-destructive',
+        text: 'text-red-700 dark:text-red-300',
+        border: 'border-red-500/40',
+        surface: 'bg-red-500/10',
     },
     withdrawn: {
         icon: CircleSlash,
-        className: 'border-border bg-muted text-muted-foreground',
+        text: 'text-stone-700 dark:text-stone-300',
+        border: 'border-stone-500/40',
+        surface: 'bg-stone-500/10',
+    },
+    fees_paid: {
+        icon: BadgeCheck,
+        text: 'text-indigo-700 dark:text-indigo-300',
+        border: 'border-indigo-500/40',
+        surface: 'bg-indigo-500/10',
     },
 };
 
+/** A sent application is shown as under review from the moment it arrives. */
+function appearanceOf(status: ApplicationStatus) {
+    return appearance[
+        status === 'submitted' || status === 'resubmitted'
+            ? 'under_review'
+            : status
+    ];
+}
+
 /**
- * Status is conveyed by icon and text, never by colour alone.
+ * Background tint of a status, for table cells that show a `plain` badge.
+ */
+export function statusSurface(status: ApplicationStatus): string {
+    return appearanceOf(status).surface;
+}
+
+/**
+ * Each status has its own hue; it is still conveyed by icon and text,
+ * never by colour alone.
  */
 export function StatusBadge({
     status,
     label,
+    variant = 'badge',
     className,
 }: {
     status: ApplicationStatus;
     label: string;
+    /** `plain` drops the pill (border and fill) and keeps icon and text. */
+    variant?: 'badge' | 'plain';
     className?: string;
 }) {
-    const { icon: Icon, className: tone } = appearance[status];
+    const { icon: Icon, text, border, surface } = appearanceOf(status);
 
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap',
-                tone,
+                'inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap',
+                text,
+                variant === 'badge' &&
+                    cn('rounded-full border px-2.5 py-0.5', border, surface),
                 className,
             )}
             data-status={status}

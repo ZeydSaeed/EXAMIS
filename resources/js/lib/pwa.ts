@@ -6,7 +6,10 @@ import { toast } from 'sonner';
  * before it activates so an open form is never swapped out underneath them.
  */
 export function registerServiceWorker(): void {
-    if (!('serviceWorker' in navigator)) {
+    if (
+        !('serviceWorker' in navigator) ||
+        document.documentElement.dataset.portal === 'staff'
+    ) {
         return;
     }
 

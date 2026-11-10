@@ -1,0 +1,10 @@
+[Unit]
+Description=EXAMIS backup deletions asked for from the staff Backups page
+
+# The application creates delete-<kind>-<set>; the job removes each request.
+[Path]
+PathExistsGlob=/srv/examis/shared/storage/app/backup-status/delete-*
+Unit=examis-backup@delete.service
+
+[Install]
+WantedBy=paths.target

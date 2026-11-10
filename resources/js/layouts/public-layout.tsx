@@ -1,12 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { ExamisMark } from '@/components/examis/examis-mark';
 import { NetworkStatus } from '@/components/network-status';
 import { useDocumentLocale } from '@/hooks/use-document-locale';
 import { Button } from '@/components/ui/button';
 import { useTrans } from '@/hooks/use-trans';
-import { dashboard, home, login, register } from '@/routes';
+import { dashboard, home, register } from '@/routes';
+import apply from '@/routes/apply';
 import pages from '@/routes/pages';
 import track from '@/routes/track';
 
@@ -46,7 +47,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                         className="flex min-w-0 items-center gap-2 text-primary-foreground"
                     >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--sis-button-radius)] bg-[var(--sis-oxford)] text-primary-foreground">
-                            <AppLogoIcon className="size-6 fill-current" />
+                            <AppLogoIcon className="size-6" />
                         </span>
                         <span className="grid min-w-0 leading-tight">
                             <span className="truncate font-semibold">
@@ -72,7 +73,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                 {t('public.track_application')}
                             </Link>
                         </Button>
-                        <LanguageSwitcher className="text-primary-foreground hover:bg-white/10 hover:text-primary-foreground" />
                         {auth.user ? (
                             <Button size="sm" variant="secondary" asChild>
                                 <Link href={dashboard()}>
@@ -87,7 +87,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                     asChild
                                     className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
                                 >
-                                    <Link href={login()}>
+                                    <Link href={apply.terms()}>
                                         {t('auth.login')}
                                     </Link>
                                 </Button>
@@ -103,6 +103,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </>
                         )}
+                        <ExamisMark className="ms-1 h-11 w-auto shrink-0" />
                     </nav>
                 </div>
             </header>

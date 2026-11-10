@@ -1,0 +1,26 @@
+  node_modules/vitest
+    @vitest/browser-preview  <=4.1.11
+    Depends on vulnerable versions of @vitest/browser
+    Depends on vulnerable versions of vitest
+    node_modules/@vitest/browser-preview
+
+tinypool  <=2.1.1
+Severity: critical
+Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution - https://github.com/advisories/GHSA-5gmw-xhrv-c9v3
+Tinypool: Prototype Pollution Gadget to RCE in run() options - https://github.com/advisories/GHSA-85c8-ppgw-ccpr
+fix available via `npm audit fix --force`
+Will install vite-plus@1.5.0, which is a breaking change
+node_modules/tinypool
+  oxfmt  0.18.0 - 0.66.0
+  Depends on vulnerable versions of tinypool
+  node_modules/oxfmt
+
+
+8 vulnerabilities (1 low, 4 moderate, 3 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+exit=1

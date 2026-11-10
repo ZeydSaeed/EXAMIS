@@ -14,6 +14,8 @@ use Illuminate\Validation\Rule;
 /**
  * Draft saves accept partial data (every field nullable) but each value that
  * is present must be well formed; completeness is enforced at submission.
+ * The branch and specialization are not part of the form: they are chosen
+ * on their own page (SpecializationController) and shown read-only here.
  */
 class SaveApplicationRequest extends FormRequest
 {
@@ -29,40 +31,71 @@ class SaveApplicationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $referenceData = app(ReferenceData::class);
-        $period = $this->application()->examPeriod;
+        $namePart = ['nullable', 'string', 'min:2', 'max:40', 'regex:/^[\p{Arabic}\s\.\-]+$/u'];
+        $houseNumber = ['nullable', 'string', 'max:10', 'regex:/^[0-9A-Za-z\/\-]+$/'];
 
-        $branches = $referenceData->codes(ReferenceType::Branch);
-        $categories = $referenceData->codes(ReferenceType::Category);
-
-        if ($period->eligible_branch_codes !== null) {
-            $branches = array_values(array_intersect($branches, $period->eligible_branch_codes));
-        }
-
-        if ($period->eligible_category_codes !== null) {
-            $categories = array_values(array_intersect($categories, $period->eligible_category_codes));
-        }
-
-        $arabicName = ['nullable', 'string', 'min:3', 'max:150', 'regex:/^[\p{Arabic}\s\.\-]+$/u'];
-
-        return [
+        return $this->requireStep([
             'lock_version' => ['required', 'integer', 'min:1'],
-            'full_name_ar' => $arabicName,
-            'mother_name_ar' => $arabicName,
-            'full_name_en' => ['nullable', 'string', 'min:3', 'max:150', 'regex:/^[A-Za-z\s\.\'\-]+$/'],
+            'step' => ['nullable', 'integer', Rule::in(array_keys(Application::STEP_FIELDS))],
+            'student_name' => $namePart,
+            'father_name' => $namePart,
+            'grandfather_name' => $namePart,
+            'great_grandfather_name' => $namePart,
+            'mother_first_name' => $namePart,
+            'mother_father_name' => $namePart,
+            'mother_grandfather_name' => $namePart,
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before:-10 years', 'after:1940-01-01'],
+            'birth_place_code' => ['nullable', 'string', Rule::in([
+                ...app(ReferenceData::class)->codes(ReferenceType::Governorate),
+                Application::BIRTH_PLACE_OTHER,
+            ])],
+            'birth_place_other' => ['nullable', 'string', 'min:2', 'max:100'],
             'gender' => ['nullable', Rule::enum(Gender::class)],
             'national_id_number' => ['nullable', 'string', 'regex:/^[0-9A-Za-z]{6,20}$/'],
             'phone' => ['nullable', 'string', 'regex:/^\+?[0-9]{10,15}$/'],
-            'contact_email' => ['nullable', 'string', 'email:rfc', 'max:255'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'governorate_code' => ['nullable', 'string', Rule::in($referenceData->codes(ReferenceType::Governorate))],
-            'directorate_code' => ['nullable', 'string', Rule::in($referenceData->codes(ReferenceType::Directorate))],
+            'district' => ['nullable', 'string', 'min:2', 'max:100'],
+            'mahalla' => $houseNumber,
+            'alley' => $houseNumber,
+            'house_number' => $houseNumber,
             'school_name' => ['nullable', 'string', 'min:3', 'max:150'],
-            'branch_code' => ['nullable', 'string', Rule::in($branches)],
-            'category_code' => ['nullable', 'string', Rule::in($categories)],
-            'previous_exam_year' => ['nullable', 'integer', 'min:1990', 'max:'.now()->year],
-        ];
+            'school_governorate_code' => ['nullable', 'string', Rule::in([
+                ...app(ReferenceData::class)->codes(ReferenceType::Governorate),
+                Application::SCHOOL_GOVERNORATE_OTHER,
+            ])],
+            'school_governorate_other' => ['nullable', 'string', 'min:2', 'max:100'],
+            'last_grade' => ['nullable', 'string', 'max:60'],
+            'other_info' => ['nullable', 'string', 'max:1000'],
+        ]);
+    }
+
+    /**
+     * "Save and continue" sends its step: the required fields of that step
+     * must then be filled, because the form has no way back to them.
+     *
+     * @param  array<string, array<mixed>>  $rules
+     * @return array<string, array<mixed>>
+     */
+    private function requireStep(array $rules): array
+    {
+        $required = array_intersect(
+            Application::STEP_FIELDS[$this->integer('step')] ?? [],
+            Application::REQUIRED_FOR_SUBMISSION,
+            array_keys($rules),
+        );
+
+        foreach ($required as $field) {
+            $rules[$field] = ['required', ...array_diff($rules[$field], ['nullable'])];
+        }
+
+        if ($this->integer('step') === 1 && $this->input('birth_place_code') === Application::BIRTH_PLACE_OTHER) {
+            $rules['birth_place_other'] = ['required', ...array_diff($rules['birth_place_other'], ['nullable'])];
+        }
+
+        if ($this->integer('step') === 3 && $this->input('school_governorate_code') === Application::SCHOOL_GOVERNORATE_OTHER) {
+            $rules['school_governorate_other'] = ['required', ...array_diff($rules['school_governorate_other'], ['nullable'])];
+        }
+
+        return $rules;
     }
 
     /**
@@ -73,7 +106,7 @@ class SaveApplicationRequest extends FormRequest
     {
         $normalized = [];
 
-        foreach (['phone', 'national_id_number'] as $field) {
+        foreach (['national_id_number', 'mahalla', 'alley', 'house_number'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = preg_replace('/\s+/', '', strtr($this->input($field), [
                     '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
@@ -82,11 +115,24 @@ class SaveApplicationRequest extends FormRequest
             }
         }
 
-        foreach (['full_name_ar', 'mother_name_ar', 'full_name_en', 'school_name', 'address'] as $field) {
+        foreach ([...Application::NAME_PARTS, ...Application::MOTHER_NAME_PARTS, 'birth_place_other', 'school_governorate_other', 'district', 'school_name', 'last_grade', 'other_info'] as $field) {
             if (is_string($this->input($field))) {
                 $normalized[$field] = trim((string) preg_replace('/\s+/u', ' ', $this->input($field)));
             }
         }
+
+        // A written place of birth only goes with "other".
+        if ($this->has('birth_place_code') && $this->input('birth_place_code') !== Application::BIRTH_PLACE_OTHER) {
+            $normalized['birth_place_other'] = null;
+        }
+
+        // A written governorate only goes with "other".
+        if ($this->has('school_governorate_code') && $this->input('school_governorate_code') !== Application::SCHOOL_GOVERNORATE_OTHER) {
+            $normalized['school_governorate_other'] = null;
+        }
+
+        // The mobile number is the account's (only the owner edits a draft).
+        $normalized['phone'] = $this->user()?->phone;
 
         $this->merge($normalized);
     }

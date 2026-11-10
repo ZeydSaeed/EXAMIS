@@ -35,18 +35,26 @@ class ApplicationFactory extends Factory
     public function complete(): static
     {
         return $this->state(fn (array $attributes) => [
-            'full_name_ar' => 'أحمد محمد علي حسن',
-            'full_name_en' => 'Ahmed Mohammed Ali Hasan',
-            'mother_name_ar' => 'فاطمة جاسم كاظم',
+            'student_name' => 'أحمد',
+            'father_name' => 'محمد',
+            'grandfather_name' => 'علي',
+            'great_grandfather_name' => 'حسن',
+            'mother_first_name' => 'فاطمة',
+            'mother_father_name' => 'جاسم',
+            'mother_grandfather_name' => 'كريم',
             'birth_date' => '2006-03-15',
+            'birth_place_code' => 'KRB',
             'gender' => Gender::Male,
             'national_id_number' => fake()->unique()->numerify('19##########'),
             'phone' => fake()->numerify('0770#######'),
-            'contact_email' => fake()->safeEmail(),
-            'governorate_code' => 'BGD',
+            'district' => 'حي الحسين',
+            'mahalla' => (string) fake()->numberBetween(100, 999),
+            'alley' => (string) fake()->numberBetween(1, 60),
+            'house_number' => (string) fake()->numberBetween(1, 200),
             'school_name' => 'إعدادية النجاح للبنين',
-            'branch_code' => 'SCI',
-            'category_code' => 'EXTERNAL',
+            'school_governorate_code' => 'KRB',
+            'branch_code' => 'IND',
+            'category_code' => 'IND_ELC',
         ]);
     }
 

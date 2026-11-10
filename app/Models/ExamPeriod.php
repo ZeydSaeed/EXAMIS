@@ -41,6 +41,11 @@ class ExamPeriod extends Model
     use HasFactory;
 
     /**
+     * The window is stored in UTC; staff enter and read it as Iraq time.
+     */
+    public const LOCAL_TIMEZONE = 'Asia/Baghdad';
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

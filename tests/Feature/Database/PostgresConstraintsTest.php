@@ -47,3 +47,25 @@ it('refuses malformed usernames', function () {
         'username' => 'Bad Name', 'name' => 'x', 'email' => 'x@example.com', 'password' => 'x',
     ]))->toThrow(QueryException::class);
 });
+
+it('lets only a transaction that opted in delete application history, and never the audit trail', function () {
+    $application = Application::factory()->create();
+    DB::table('application_events')->insert(['application_id' => $application->id, 'type' => 'created']);
+    DB::table('audit_events')->insert(['action' => 'test.event']);
+
+    // Each attempt runs in its own savepoint, so a refused one leaves the test's transaction usable.
+    expect(fn () => DB::transaction(fn () => DB::table('application_events')->delete()))->toThrow(QueryException::class);
+
+    expect(fn () => DB::transaction(function (): void {
+        DB::statement("SET LOCAL examis.allow_history_delete = 'on'");
+        DB::table('audit_events')->delete();
+    }))->toThrow(QueryException::class);
+
+    DB::transaction(function (): void {
+        DB::statement("SET LOCAL examis.allow_history_delete = 'on'");
+        DB::table('application_events')->delete();
+    });
+
+    expect(DB::table('application_events')->count())->toBe(0)
+        ->and(DB::table('audit_events')->count())->toBe(1);
+});

@@ -1,18 +1,27 @@
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { ExternalLink, FileWarning, Printer } from 'lucide-react';
+import {
+    ExternalLink,
+    FileWarning,
+    MessageCircle,
+    Printer,
+} from 'lucide-react';
 import { useState } from 'react';
+import { ApplicationSummaryTable } from '@/components/examis/application-summary-table';
 import { ConfirmDialog } from '@/components/examis/confirm-dialog';
 import { selectClassName, textareaClassName } from '@/components/examis/field';
 import { PageContainer, PageHeader } from '@/components/examis/page-header';
 import { StatusBadge } from '@/components/examis/status-badge';
+import { SendMessageDialog } from '@/components/examis/send-message-dialog';
+import type { StudentAccount } from '@/components/examis/student-account-card';
+import { StudentAccountCard } from '@/components/examis/student-account-card';
 import { Timeline } from '@/components/examis/timeline';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-trans';
+import { applicationSummary } from '@/lib/application-summary';
 import { formatDateTime, formatFileSize } from '@/lib/format';
 import admin from '@/routes/admin';
-import applications from '@/routes/applications';
 import type { Application, ApplicationStatus } from '@/types';
 
 type Props = {
@@ -23,9 +32,12 @@ type Props = {
         label: string;
         requires_reason: boolean;
     }[];
+    decisionMessage: { text: string; phone: string | null } | null;
     canViewDocuments: boolean;
     canAssign: boolean;
     reviewers: { id: number; name: string }[];
+    student: StudentAccount;
+    canResetStudentAccess: boolean;
 };
 
 function TransitionButton({
@@ -105,11 +117,15 @@ export default function AdminApplicationShow({
     application,
     documentTypes,
     transitions,
+    decisionMessage,
     canViewDocuments,
     canAssign,
     reviewers,
+    student,
+    canResetStudentAccess,
 }: Props) {
     const { t, locale } = useTrans();
+    const [showMessage, setShowMessage] = useState(false);
     const assignment = useForm<{ assignee_id: number | null }>({
         assignee_id: application.assignee?.id ?? null,
     });
@@ -130,24 +146,6 @@ export default function AdminApplicationShow({
             document,
         ]),
     );
-    const fields = [
-        ['fields.full_name_ar', application.form.full_name_ar],
-        ['fields.full_name_en', application.form.full_name_en],
-        ['fields.mother_name_ar', application.form.mother_name_ar],
-        ['fields.birth_date', application.form.birth_date],
-        ['fields.gender', application.labels.gender],
-        ['fields.national_id_number', application.form.national_id_number],
-        ['fields.phone', application.form.phone],
-        ['fields.contact_email', application.form.contact_email],
-        ['fields.governorate', application.labels.governorate],
-        ['fields.directorate', application.labels.directorate],
-        ['fields.address', application.form.address],
-        ['fields.school_name', application.form.school_name],
-        ['fields.branch', application.labels.branch],
-        ['fields.category', application.labels.category],
-        ['fields.previous_exam_year', application.form.previous_exam_year],
-    ] as const;
-
     return (
         <>
             <Head
@@ -157,7 +155,7 @@ export default function AdminApplicationShow({
             />
             <PageContainer>
                 <PageHeader
-                    title={application.form.full_name_ar ?? '—'}
+                    title={application.full_name || '—'}
                     description={
                         <>
                             <bdi
@@ -180,7 +178,7 @@ export default function AdminApplicationShow({
                             />
                             <Button variant="outline" size="sm" asChild>
                                 <a
-                                    href={applications.receipt.url(
+                                    href={admin.applications.receipt.url(
                                         application.uuid,
                                     )}
                                     target="_blank"
@@ -193,6 +191,27 @@ export default function AdminApplicationShow({
                         </>
                     }
                 />
+
+                {decisionMessage && (
+                    <Button
+                        variant="outline"
+                        className="w-fit"
+                        onClick={() => setShowMessage(true)}
+                        data-test="send-decision-message"
+                    >
+                        <MessageCircle aria-hidden />
+                        {t('admin.send_whatsapp')}
+                    </Button>
+                )}
+
+                {decisionMessage && (
+                    <SendMessageDialog
+                        message={decisionMessage.text}
+                        phone={decisionMessage.phone}
+                        open={showMessage}
+                        onOpenChange={setShowMessage}
+                    />
+                )}
 
                 {transitions.length > 0 && (
                     <section
@@ -221,18 +240,10 @@ export default function AdminApplicationShow({
                             <h2 id="data" className="mb-4 font-semibold">
                                 {t('admin.applicant_data')}
                             </h2>
-                            <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                                {fields.map(([label, value]) => (
-                                    <div key={label}>
-                                        <dt className="text-muted-foreground">
-                                            {t(label)}
-                                        </dt>
-                                        <dd className="font-medium" dir="auto">
-                                            {value ?? '—'}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
+                            <ApplicationSummaryTable
+                                caption={t('admin.applicant_data')}
+                                rows={applicationSummary(application, t)}
+                            />
                         </section>
 
                         <section
@@ -324,6 +335,10 @@ export default function AdminApplicationShow({
                     </div>
 
                     <aside className="space-y-6">
+                        <StudentAccountCard
+                            student={student}
+                            canResetAccess={canResetStudentAccess}
+                        />
                         <section
                             className="rounded-xl border bg-card p-4"
                             aria-labelledby="assignment"

@@ -5,11 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/password/confirm';
-import {
-    index as confirmOptions,
-    store as confirmStore,
-} from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyConfirmationController';
-import PasskeyVerify from '@/components/passkey-verify';
 import { useTrans } from '@/hooks/use-trans';
 
 export default function ConfirmPassword() {
@@ -23,16 +18,6 @@ export default function ConfirmPassword() {
     return (
         <>
             <Head title={t('auth.confirm_title')} />
-
-            <PasskeyVerify
-                routes={{
-                    options: confirmOptions(),
-                    submit: confirmStore(),
-                }}
-                label={t('auth.confirm_with_passkey')}
-                loadingLabel={t('common.processing')}
-                separator={t('auth.or_confirm_with_password')}
-            />
 
             <Form {...store.form()} resetOnSuccess={['password']}>
                 {({ processing, errors }) => (

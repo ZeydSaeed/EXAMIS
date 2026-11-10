@@ -28,23 +28,16 @@ class DashboardController extends Controller
             ->map(fn (mixed $count): int => (int) $count)
             ->all();
 
-        $statusCounts = collect(ApplicationStatus::cases())
-            ->reject(fn (ApplicationStatus $status): bool => $status === ApplicationStatus::Draft)
+        $statusCounts = collect(ApplicationStatus::staffStatuses())
             ->map(fn (ApplicationStatus $status): array => [
                 'status' => $status->value,
                 'label' => $status->label(),
-                'count' => $byStatus[$status->value] ?? 0,
+                'count' => collect($status->shownFrom())->sum(fn (ApplicationStatus $stored): int => $byStatus[$stored->value] ?? 0),
             ])
             ->values();
 
-        $myQueue = Application::query()
-            ->where('assigned_to', $user->id)
-            ->where('status', ApplicationStatus::UnderReview)
-            ->count();
-
         return Inertia::render('admin/dashboard', [
             'statusCounts' => $statusCounts,
-            'myQueue' => $myQueue,
         ]);
     }
 }

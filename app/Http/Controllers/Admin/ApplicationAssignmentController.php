@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Inertia\Inertia;
 
 class ApplicationAssignmentController extends Controller
 {
@@ -26,8 +25,6 @@ class ApplicationAssignmentController extends Controller
             : null;
 
         $assign->handle($application, $assignee, $request->user());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('applications.assigned')]);
 
         return to_route('admin.applications.show', $application);
     }

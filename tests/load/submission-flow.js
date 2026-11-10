@@ -1,30 +1,33 @@
-// Submission flow under concurrency: every VU runs the full write path once
-// with its own account (start → save → upload → double submit → receipt).
-// Afterwards verify integrity in the database:
+// Concurrent submissions (functional under concurrency): QE_VUS students
+// (accounts QE_STUDENT_OFFSET+VU) each run the whole journey once and send
+// their submission twice at the same moment. Every step must pass. Then the
+// database decides: run tests/load/sql/post-run-integrity.sql, every count
+// must be 0 (no duplicate reference, one submission event per application).
 //
-//   SELECT count(*), count(DISTINCT reference_number) FROM applications WHERE reference_number IS NOT NULL;
-//   -- both numbers must be equal; and no user may have two applications in a period:
-//   SELECT user_id, exam_period_id, count(*) FROM applications GROUP BY 1, 2 HAVING count(*) > 1;
-//
-// k6 run -e BASE_URL=... -e VUS=200 tests/load/submission-flow.js
-import { thresholds } from './lib/common.js';
+// k6 run -e QE_ENV=perf -e QE_RUN_ID=<id> -e QE_VUS=20 -e QE_MAX_VUS=20 ... tests/load/submission-flow.js
+import { assertVus } from './lib/guard.js';
+import { baseOptions, preflight, target, thresholdsFor } from './lib/common.js';
 import { submissionJourney } from './lib/journeys.js';
 
-const vus = Number(__ENV.VUS || 100);
+const vus = assertVus(target, Number(__ENV.QE_VUS || 5), 'submission-flow');
+const offset = Number(__ENV.QE_STUDENT_OFFSET || 0);
 
-export const options = {
+export const options = baseOptions({
     scenarios: {
         submit: {
             executor: 'per-vu-iterations',
             vus,
             iterations: 1,
             maxDuration: '15m',
-            exec: 'submit',
         },
     },
-    thresholds,
-};
+    thresholds: thresholdsFor('functional'),
+});
 
-export function submit() {
-    submissionJourney();
+export function setup() {
+    preflight();
+}
+
+export default function () {
+    submissionJourney(offset + __VU, { racing: true });
 }

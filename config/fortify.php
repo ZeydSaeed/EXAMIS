@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Middleware\ThrottleAuthEndpoints;
-use Laravel\Fortify\Features;
+use App\Http\Middleware\DropRememberMe;
 
 return [
 
@@ -16,7 +15,7 @@ return [
     |
     */
 
-    'guard' => 'web',
+    'guard' => 'staff',
 
     /*
     |--------------------------------------------------------------------------
@@ -46,7 +45,7 @@ return [
     |
     */
 
-    'username' => 'username',
+    'username' => 'email',
 
     'email' => 'email',
 
@@ -74,7 +73,7 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/admin/home',
 
     /*
     |--------------------------------------------------------------------------
@@ -89,7 +88,8 @@ return [
 
     'prefix' => '',
 
-    'domain' => null,
+    // Fortify serves the staff portal only (ADR-0011); see Portal::routeDomain().
+    'domain' => app()->runningConsoleCommand('wayfinder:generate') ? null : env('EXAMIS_STAFF_HOST', 'staff.examis.test'),
 
     /*
     |--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web', ThrottleAuthEndpoints::class],
+    'middleware' => ['web', DropRememberMe::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -117,8 +117,6 @@ return [
 
     'limiters' => [
         'login' => 'login',
-        'two-factor' => 'two-factor',
-        'passkeys' => 'passkeys',
     ],
 
     /*
@@ -136,22 +134,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Passkeys
-    |--------------------------------------------------------------------------
-    |
-    | These settings configure Fortify's passkey (WebAuthn) support.
-    |
-    */
-
-    'passkeys' => [
-        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
-        'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
-        'timeout' => 60000,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Features
     |--------------------------------------------------------------------------
     |
@@ -162,20 +144,10 @@ return [
     */
 
     /*
-     * Password reset is implemented by App\Http\Controllers\Auth because it is
-     * keyed by username, not email (ADR-0002); Fortify's version is disabled.
+     * Staff passwords are set through one-time links and students register on
+     * their own portal (ADR-0011), and staff sign in with a password alone
+     * (ADR-0012), so every optional Fortify feature is off.
      */
-    'features' => [
-        Features::registration(),
-        Features::emailVerification(),
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0
-        ]),
-        Features::passkeys([
-            'confirmPassword' => true,
-        ]),
-    ],
+    'features' => [],
 
 ];

@@ -1,0 +1,256 @@
+Defaulting ZAP install dir to /opt/zap/ZAP_2.17.0
+No check for updates for over 3 month - add-ons may well be out of date
+Job replacer set deleteAllRules = true
+Job replacer set description = student A Cookie
+Job replacer set url = https://students\.perf\.localhost:8443/(applications|dashboard|notifications|student/card|portal|apply/specialization)\b.*
+Job replacer set matchType = req_header
+Job replacer set matchString = Cookie
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = student A X-XSRF-TOKEN
+Job replacer set url = https://students\.perf\.localhost:8443/(applications|dashboard|notifications|student/card|portal|apply/specialization)\b.*
+Job replacer set matchType = req_header
+Job replacer set matchString = X-XSRF-TOKEN
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = student guest Cookie
+Job replacer set url = https://students\.perf\.localhost:8443/(?!(applications|dashboard|notifications|student/card|portal|apply/specialization)\b).*
+Job replacer set matchType = req_header
+Job replacer set matchString = Cookie
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = student guest X-XSRF-TOKEN
+Job replacer set url = https://students\.perf\.localhost:8443/(?!(applications|dashboard|notifications|student/card|portal|apply/specialization)\b).*
+Job replacer set matchType = req_header
+Job replacer set matchString = X-XSRF-TOKEN
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = administrator Cookie
+Job replacer set url = https://staff\.perf\.localhost:8443/(admin|settings|user)\b.*
+Job replacer set matchType = req_header
+Job replacer set matchString = Cookie
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = administrator X-XSRF-TOKEN
+Job replacer set url = https://staff\.perf\.localhost:8443/(admin|settings|user)\b.*
+Job replacer set matchType = req_header
+Job replacer set matchString = X-XSRF-TOKEN
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = staff guest Cookie
+Job replacer set url = https://staff\.perf\.localhost:8443/(?!(admin|settings|user)\b).*
+Job replacer set matchType = req_header
+Job replacer set matchString = Cookie
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job replacer set description = staff guest X-XSRF-TOKEN
+Job replacer set url = https://staff\.perf\.localhost:8443/(?!(admin|settings|user)\b).*
+Job replacer set matchType = req_header
+Job replacer set matchString = X-XSRF-TOKEN
+Job replacer set matchRegex = false
+Job replacer set replacementString = [redacted]
+Job replacer set tokenProcessing = false
+Job requestor set url = https://students.perf.localhost:8443/
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/apply/terms
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/register
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/track
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/pages/about
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/verify/40140a1f-9ca8-43f0-af2a-509a527280b7
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/s/00000000-0000-4000-8000-000000002900
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/student/verify
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/up
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/track
+Job requestor set method = POST
+Job requestor set data = reference_number=ZAP-0000
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job requestor set url = https://students.perf.localhost:8443/register
+Job requestor set method = POST
+Job requestor set data = phone=07700000000
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job requestor set url = https://students.perf.localhost:8443/portal
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/dashboard
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/notifications
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/student/card
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/edit
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/receipt
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/printed
+Job requestor set method = GET
+Job requestor set url = https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9
+Job requestor set method = PUT
+Job requestor set data = {"lock_version": 3, "step": 1, "student_name": "\u0633\u062c\u0627\u062f", "father_name": "\u062d\u064a\u062f\u0631", "grandfather_name": "\u0643\u0627\u0638\u0645", "great_grandfather_name": "\u062c\u0648\u0627\u062f", "mother_first_name": "\u0632\u0647\u0631\u0627\u0621", "mother_father_name": "\u0645\u0647\u062f\u064a", "mother_grandfather_name": "\u0643\u0631\u064a\u0645", "birth_date": "2006-05-20", "birth_place_code": "KRB", "gender": "male"}
+Job requestor set headers = [Content-Type:application/json, Accept:application/json]
+Job requestor set url = https://students.perf.localhost:8443/notifications/read
+Job requestor set method = POST
+Job requestor set data = 
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job requestor set url = https://staff.perf.localhost:8443/
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/staff/login
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/staff/invitation
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/login
+Job requestor set method = POST
+Job requestor set data = email=zap.nobody%40qe.localhost&password=not-a-password
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job requestor set url = https://staff.perf.localhost:8443/admin/home
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/applications/01a1b63d-cd8b-7259-96f6-0cb6e3c0bb6e
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/applications/01a1b63d-cd8b-7259-96f6-0cb6e3c0bb6e/receipt
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/documents/01a1b63d-cf60-7121-84fb-36ca0dd3da81
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/content
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/content/about/edit
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/periods
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/periods/create
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/periods/1/edit
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/reports
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/reports/1/export
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/student-export?from=2026-01-01&to=2026-12-31&per_page=20
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/users?role=reviewer&state=active&q=perf&per_page=20
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/settings/profile
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/settings/appearance
+Job requestor set method = GET
+Job requestor set url = https://staff.perf.localhost:8443/admin/message-templates
+Job requestor set method = POST
+Job requestor set data = title=zap&status=accepted&body=zap
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job requestor set url = https://staff.perf.localhost:8443/admin/content/about
+Job requestor set method = PUT
+Job requestor set data = title_ar=zap&title_en=zap&body_ar=zap&body_en=zap&is_published=1
+Job requestor set headers = [Content-Type:application/x-www-form-urlencoded]
+Job spider set context = students
+Job spider set maxDuration = 3
+Job spider set maxDepth = 5
+Job spider set context = staff
+Job spider set maxDuration = 3
+Job spider set maxDepth = 5
+Job activeScan set context = students
+Job activeScan set maxRuleDurationInMins = 3
+Job activeScan set maxScanDurationInMins = 35
+Job activeScan set threadPerHost = 2
+Job activeScan set context = staff
+Job activeScan set maxRuleDurationInMins = 3
+Job activeScan set maxScanDurationInMins = 35
+Job activeScan set threadPerHost = 2
+Job passiveScan-wait set maxDuration = 15
+Job report set template = traditional-html
+Job report set reportDir = /srv/examis-perf/qe/results/2026-11-07-zap-active
+Job report set reportFile = zap-report
+Job report set reportTitle = EXAMIS perf active scan
+Job report set template = traditional-json
+Job report set reportDir = /srv/examis-perf/qe/results/2026-11-07-zap-active
+Job report set reportFile = zap-report
+Job replacer set deleteAllRules = true
+Job replacer started
+Existing Replace rules deleted
+Job replacer finished, time taken: 00:00:00
+Job requestor started
+Job requestor requesting URL https://students.perf.localhost:8443/
+Job requestor requesting URL https://students.perf.localhost:8443/apply/terms
+Job requestor requesting URL https://students.perf.localhost:8443/register
+Job requestor requesting URL https://students.perf.localhost:8443/track
+Job requestor requesting URL https://students.perf.localhost:8443/pages/about
+Job requestor requesting URL https://students.perf.localhost:8443/verify/40140a1f-9ca8-43f0-af2a-509a527280b7
+Job requestor requesting URL https://students.perf.localhost:8443/s/00000000-0000-4000-8000-000000002900
+Job requestor requesting URL https://students.perf.localhost:8443/student/verify
+Job requestor requesting URL https://students.perf.localhost:8443/up
+Job requestor requesting URL https://students.perf.localhost:8443/track
+Job requestor requesting URL https://students.perf.localhost:8443/register
+Job requestor requesting URL https://students.perf.localhost:8443/portal
+Job requestor requesting URL https://students.perf.localhost:8443/dashboard
+Job requestor requesting URL https://students.perf.localhost:8443/notifications
+Job requestor requesting URL https://students.perf.localhost:8443/student/card
+Job requestor requesting URL https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9
+Job requestor requesting URL https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/edit
+Job requestor requesting URL https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/receipt
+Job requestor requesting URL https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9/printed
+Job requestor requesting URL https://students.perf.localhost:8443/applications/01a1b63d-f23a-726e-9330-ad81233771c9
+Job requestor requesting URL https://students.perf.localhost:8443/notifications/read
+Job requestor finished, time taken: 00:00:01
+Job requestor started
+Job requestor requesting URL https://staff.perf.localhost:8443/
+Job requestor requesting URL https://staff.perf.localhost:8443/staff/login
+Job requestor requesting URL https://staff.perf.localhost:8443/staff/invitation
+Job requestor requesting URL https://staff.perf.localhost:8443/login
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/home
+Job requestor requesting URL https://staff.perf.localhost:8443/admin
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/applications/01a1b63d-cd8b-7259-96f6-0cb6e3c0bb6e
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/applications/01a1b63d-cd8b-7259-96f6-0cb6e3c0bb6e/receipt
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/documents/01a1b63d-cf60-7121-84fb-36ca0dd3da81
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/content
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/content/about/edit
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/periods
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/periods/create
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/periods/1/edit
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/reports
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/reports/1/export
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/student-export?from=2026-01-01&to=2026-12-31&per_page=20
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/users?role=reviewer&state=active&q=perf&per_page=20
+Job requestor requesting URL https://staff.perf.localhost:8443/settings/profile
+Job requestor requesting URL https://staff.perf.localhost:8443/settings/appearance
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/message-templates
+Job requestor requesting URL https://staff.perf.localhost:8443/admin/content/about
+Job requestor finished, time taken: 00:00:02
+Job spider started
+Job spider requesting URL https://students.perf.localhost:8443/
+Job spider found 97 URLs
+Job spider finished, time taken: 00:00:03
+Job spider started
+Job spider requesting URL https://staff.perf.localhost:8443/
+Job spider found 79 URLs
+Job spider finished, time taken: 00:00:02
+Job activeScan started
+Job activeScan finished, time taken: 00:04:41
+Job activeScan started
+Job activeScan finished, time taken: 00:07:13
+Job passiveScan-wait started
+Job passiveScan-wait finished, time taken: 00:00:00
+Job report started
+Job report generated report /srv/examis-perf/qe/results/2026-11-07-zap-active/zap-report.html
+Job report finished, time taken: 00:00:01
+Job report started
+Job report generated report /srv/examis-perf/qe/results/2026-11-07-zap-active/zap-report.json
+Job report finished, time taken: 00:00:00
+Automation plan succeeded!

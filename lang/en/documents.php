@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'uploaded' => 'The document was uploaded and is being checked.',
     'errors' => [
         'not_available' => 'This document is not available for download yet.',
     ],

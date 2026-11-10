@@ -1,0 +1,2581 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Sat, 7 Nov 2026 14:28:11",
+	"created": "2026-11-07T14:28:11.776521970Z",
+	"insights":[
+		{
+			"level": "Low",
+			"reason": "Warning",
+			"site": "",
+			"key": "insight.log.error",
+			"description": "ZAP errors logged - see the zap.log file for details",
+			"statistic": "1"
+		},
+		{
+			"level": "Low",
+			"reason": "Warning",
+			"site": "",
+			"key": "insight.log.warn",
+			"description": "ZAP warnings logged - see the zap.log file for details",
+			"statistic": "14"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.code.2xx",
+			"description": "Percentage of responses with status code 2xx",
+			"statistic": "78"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.code.3xx",
+			"description": "Percentage of responses with status code 3xx",
+			"statistic": "6"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "15"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.application/javascript",
+			"description": "Percentage of endpoints with content type application/javascript",
+			"statistic": "32"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.application/octet-stream",
+			"description": "Percentage of endpoints with content type application/octet-stream",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.application/pdf",
+			"description": "Percentage of endpoints with content type application/pdf",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.font/woff2",
+			"description": "Percentage of endpoints with content type font/woff2",
+			"statistic": "3"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/jpeg",
+			"description": "Percentage of endpoints with content type image/jpeg",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/png",
+			"description": "Percentage of endpoints with content type image/png",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/svg+xml",
+			"description": "Percentage of endpoints with content type image/svg+xml",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/x-icon",
+			"description": "Percentage of endpoints with content type image/x-icon",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/css",
+			"description": "Percentage of endpoints with content type text/css",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/csv",
+			"description": "Percentage of endpoints with content type text/csv",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/html",
+			"description": "Percentage of endpoints with content type text/html",
+			"statistic": "49"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/plain",
+			"description": "Percentage of endpoints with content type text/plain",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "95"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.method.POST",
+			"description": "Percentage of endpoints with method POST",
+			"statistic": "3"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.method.PUT",
+			"description": "Percentage of endpoints with method PUT",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "61"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://staff.perf.localhost:8443",
+			"key": "insight.response.slow",
+			"description": "Percentage of slow responses",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.code.2xx",
+			"description": "Percentage of responses with status code 2xx",
+			"statistic": "70"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.code.3xx",
+			"description": "Percentage of responses with status code 3xx",
+			"statistic": "5"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "24"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.application/javascript",
+			"description": "Percentage of endpoints with content type application/javascript",
+			"statistic": "50"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.application/octet-stream",
+			"description": "Percentage of endpoints with content type application/octet-stream",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.font/woff2",
+			"description": "Percentage of endpoints with content type font/woff2",
+			"statistic": "2"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/png",
+			"description": "Percentage of endpoints with content type image/png",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/svg+xml",
+			"description": "Percentage of endpoints with content type image/svg+xml",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.image/x-icon",
+			"description": "Percentage of endpoints with content type image/x-icon",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/css",
+			"description": "Percentage of endpoints with content type text/css",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/html",
+			"description": "Percentage of endpoints with content type text/html",
+			"statistic": "38"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.ctype.text/plain",
+			"description": "Percentage of endpoints with content type text/plain",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "94"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.method.POST",
+			"description": "Percentage of endpoints with method POST",
+			"statistic": "4"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.method.PUT",
+			"description": "Percentage of endpoints with method PUT",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "75"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "https://students.perf.localhost:8443",
+			"key": "insight.response.slow",
+			"description": "Percentage of slow responses",
+			"statistic": "1"
+		}
+	],
+	"site":[ 
+		{
+			"@name": "https://staff.perf.localhost:8443",
+			"@host": "staff.perf.localhost",
+			"@port": "8443",
+			"@ssl": "true",
+			"alerts": [ 
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-6",
+					"alert": "CSP: style-src unsafe-inline",
+					"name": "CSP: style-src unsafe-inline",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks. Including (but not limited to) Cross Site Scripting (XSS), and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "108",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-1AY4oQWFAERONpeGQgOdoXNBGWIkmwlGyB1WhNjM'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "129",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-KwywmlUnVa1IDVgCgsM4RZzGbKPHRu762S2XxhGj'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "118",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-BtBGWJ0JcdYgvEIaqlxusZuaRTXn8qcXX7P608gW'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "112",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-5HVWmFPHwiado7ppwMRrTeJD2vBN3pHr97TZebDB'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "124",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login ()(email,password)",
+							"method": "POST",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-819LZm2O52uyUechxEIClxxWlCbLhDxl2so0wtbM'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>style-src includes unsafe-inline.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "31"
+				},
+				{
+					"pluginid": "10038",
+					"alertRef": "10038-1",
+					"alert": "Content Security Policy (CSP) Header Not Set",
+					"name": "Content Security Policy (CSP) Header Not Set",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "470",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "472",
+							"uri": "https://staff.perf.localhost:8443/admin/documents",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/documents",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "480",
+							"uri": "https://staff.perf.localhost:8443/admin/message-templates",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/message-templates",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "482",
+							"uri": "https://staff.perf.localhost:8443/admin/periods/1",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods\/1",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "446",
+							"uri": "https://staff.perf.localhost:8443/sitemap.xml",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/sitemap.xml",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP</p><p>https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html</p><p>https://www.w3.org/TR/CSP/</p><p>https://w3c.github.io/webappsec-csp/</p><p>https://web.dev/articles/csp</p><p>https://caniuse.com/#feat=contentsecuritypolicy</p><p>https://content-security-policy.com/</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "256"
+				},
+				{
+					"pluginid": "10044",
+					"alertRef": "10044-1",
+					"alert": "Big Redirect Detected (Potential Sensitive Information Leak)",
+					"name": "Big Redirect Detected (Potential Sensitive Information Leak)",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The server has responded with a redirect that seems to provide a large response. This may indicate that although the server sent a redirect it also responded with body content (which may include sensitive details, PII, etc.).</p>",
+					"instances":[ 
+						{
+							"id": "442",
+							"uri": "https://staff.perf.localhost:8443",
+							"nodeName": "https:\/\/staff.perf.localhost:8443",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "107",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "448",
+							"uri": "https://staff.perf.localhost:8443/admin",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "455",
+							"uri": "https://staff.perf.localhost:8443/admin/applications",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "461",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "458",
+							"uri": "https://staff.perf.localhost:8443/admin/applications/01a1b65d-771f-707c-bb4c-77da3483efe4",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications\/01a1b65d-771f-707c-bb4c-77da3483efe4",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "464",
+							"uri": "https://staff.perf.localhost:8443/admin/applications/01a1b65d-771f-707c-bb4c-77da3483efe4/receipt",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications\/01a1b65d-771f-707c-bb4c-77da3483efe4\/receipt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "467",
+							"uri": "https://staff.perf.localhost:8443/admin/content",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "474",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about/edit",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about\/edit",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "477",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "484",
+							"uri": "https://staff.perf.localhost:8443/admin/periods",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "490",
+							"uri": "https://staff.perf.localhost:8443/admin/periods/1/edit",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods\/1\/edit",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "487",
+							"uri": "https://staff.perf.localhost:8443/admin/periods/create",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods\/create",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "493",
+							"uri": "https://staff.perf.localhost:8443/admin/reports",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/reports",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "498",
+							"uri": "https://staff.perf.localhost:8443/admin/reports/1/export",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/reports\/1\/export",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "504",
+							"uri": "https://staff.perf.localhost:8443/admin/student-export?from=2026-01-01&to=2026-12-31&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/student-export (from,per_page,to)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "501",
+							"uri": "https://staff.perf.localhost:8443/admin/users?role=reviewer&state=active&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/users (per_page,q,role,state)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "507",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "517",
+							"uri": "https://staff.perf.localhost:8443/settings",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "520",
+							"uri": "https://staff.perf.localhost:8443/settings/appearance",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings\/appearance",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "525",
+							"uri": "https://staff.perf.localhost:8443/settings/profile",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings\/profile",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].\nPredicted response size: 345.\nResponse Body Length: 426."
+						},
+						{
+							"id": "222",
+							"uri": "https://staff.perf.localhost:8443/admin/message-templates",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/message-templates ()(body,status,title)",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 47 [https://staff.perf.localhost:8443/admin/content].\nPredicted response size: 347.\nResponse Body Length: 434."
+						},
+						{
+							"id": "123",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login ()(email,password)",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 50 [https://staff.perf.localhost:8443/staff/invitation].\nPredicted response size: 350.\nResponse Body Length: 446."
+						},
+						{
+							"id": "226",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about ()(body_ar,body_en,is_published,title_ar,title_en)",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 47 [https://staff.perf.localhost:8443/admin/content].\nPredicted response size: 347.\nResponse Body Length: 434."
+						}
+					],
+					"count": "24",
+					"systemic": false,
+					"solution": "<p>Ensure that no sensitive information is leaked via redirect responses. Redirect responses should have almost no content.</p>",
+					"otherinfo": "<p>Location header URI length: 45 [https://staff.perf.localhost:8443/staff/login].</p><p>Predicted response size: 345.</p><p>Response Body Length: 426.</p>",
+					"reference": "",
+					"cweid": "201",
+					"wascid": "13",
+					"sourceid": "237"
+				},
+				{
+					"pluginid": "10010",
+					"alertRef": "10010",
+					"alert": "Cookie No HttpOnly Flag",
+					"name": "Cookie No HttpOnly Flag",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>A cookie has been set without the HttpOnly flag, which means that the cookie can be accessed by JavaScript. If a malicious script can be run on this page then the cookie will be accessible and can be transmitted to another site. If this is a session cookie then session hijacking may be possible.</p>",
+					"instances":[ 
+						{
+							"id": "109",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "130",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "119",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "113",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "125",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login ()(email,password)",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the HttpOnly flag is set for all cookies.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://owasp.org/www-community/HttpOnly</p>",
+					"cweid": "1004",
+					"wascid": "13",
+					"sourceid": "31"
+				},
+				{
+					"pluginid": "10035",
+					"alertRef": "10035-1",
+					"alert": "Strict-Transport-Security Header Not Set",
+					"name": "Strict-Transport-Security Header Not Set",
+					"riskcode": "1",
+					"confidence": "3",
+					"riskdesc": "Low (High)",
+					"desc": "<p>HTTP Strict Transport Security (HSTS) is a web security policy mechanism whereby a web server declares that complying user agents (such as a web browser) are to interact with it using only secure HTTPS connections (i.e. HTTP layered over TLS/SSL). HSTS is an IETF standards track protocol and is specified in RFC 6797.</p>",
+					"instances":[ 
+						{
+							"id": "138",
+							"uri": "https://staff.perf.localhost:8443/admin",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "144",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "132",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "121",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "115",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to enforce Strict-Transport-Security.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html</p><p>https://owasp.org/www-community/Security_Headers</p><p>https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security</p><p>https://caniuse.com/stricttransportsecurity</p><p>https://datatracker.ietf.org/doc/html/rfc6797</p>",
+					"cweid": "319",
+					"wascid": "15",
+					"sourceid": "39"
+				},
+				{
+					"pluginid": "10021",
+					"alertRef": "10021",
+					"alert": "X-Content-Type-Options Header Missing",
+					"name": "X-Content-Type-Options Header Missing",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>",
+					"instances":[ 
+						{
+							"id": "539",
+							"uri": "https://staff.perf.localhost:8443/build/assets/app-CHkK96e_.css",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/app-CHkK96e_.css",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "537",
+							"uri": "https://staff.perf.localhost:8443/build/assets/ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "529",
+							"uri": "https://staff.perf.localhost:8443/build/assets/ibm-plex-sans-arabic-400-normal-CyU-ddYS.woff2",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/ibm-plex-sans-arabic-400-normal-CyU-ddYS.woff2",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "541",
+							"uri": "https://staff.perf.localhost:8443/build/assets/rolldown-runtime-CbXtAM7H.js",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/rolldown-runtime-CbXtAM7H.js",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "441",
+							"uri": "https://staff.perf.localhost:8443/robots.txt",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/robots.txt",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.</p>",
+					"otherinfo": "<p>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.</p><p>At \"High\" threshold this scan rule will not alert on client or server error responses.</p>",
+					"reference": "<p>https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</p><p>https://owasp.org/www-community/Security_Headers</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "308"
+				},
+				{
+					"pluginid": "10111",
+					"alertRef": "10111",
+					"alert": "Authentication Request Identified",
+					"name": "Authentication Request Identified",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified.</p>",
+					"instances":[ 
+						{
+							"id": "126",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login ()(email,password)",
+							"method": "POST",
+							"param": "email",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=email\nuserValue=zap.nobody@qe.localhost\npasswordParam=password"
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>userParam=email</p><p>userValue=zap.nobody@qe.localhost</p><p>passwordParam=password</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "36"
+				},
+				{
+					"pluginid": "10027",
+					"alertRef": "10027",
+					"alert": "Information Disclosure - Suspicious Comments",
+					"name": "Information Disclosure - Suspicious Comments",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>The response appears to contain suspicious comments which may help an attacker.</p>",
+					"instances":[ 
+						{
+							"id": "542",
+							"uri": "https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/app-DeEo39Pz.js",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "user",
+							"otherinfo": "The following pattern was used: \\bUSER\\b and was detected in likely comment: \"//www.w3.org/2000/svg`,viewBox:`0 0 20 20`,fill:`currentColor`,height:`20`,width:`20`,\"aria-hidden\":`true`},V.createElement(`pat\", see evidence field for the suspicious comment/snippet."
+						},
+						{
+							"id": "545",
+							"uri": "https://staff.perf.localhost:8443/build/assets/jsx-runtime-GYkmRuKb.js",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/build\/assets\/jsx-runtime-GYkmRuKb.js",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "from",
+							"otherinfo": "The following pattern was used: \\bFROM\\b and was detected in likely comment: \"//`)&&!e.startsWith(`https://`)&&(e=t.replace(/\\/$/,``)+`/`+e.replace(/^\\//,``)),n&&Object.keys(n).length>0){let t=tt(n);t&&(e+=\", see evidence field for the suspicious comment/snippet."
+						}
+					],
+					"count": "2",
+					"systemic": false,
+					"solution": "<p>Remove all comments that return information that may help an attacker and fix any underlying problems they refer to.</p>",
+					"otherinfo": "<p>The following pattern was used: \\bUSER\\b and was detected in likely comment: \"//www.w3.org/2000/svg`,viewBox:`0 0 20 20`,fill:`currentColor`,height:`20`,width:`20`,\"aria-hidden\":`true`},V.createElement(`pat\", see evidence field for the suspicious comment/snippet.</p>",
+					"reference": "",
+					"cweid": "615",
+					"wascid": "13",
+					"sourceid": "310"
+				},
+				{
+					"pluginid": "10109",
+					"alertRef": "10109",
+					"alert": "Modern Web Application",
+					"name": "Modern Web Application",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.</p>",
+					"instances":[ 
+						{
+							"id": "137",
+							"uri": "https://staff.perf.localhost:8443/admin",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"K7sABdFLgv4wFRDSecwLJWn6SRzcDumobrsM3sSd\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "143",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"EhRccS0IrhvLjiu5wRo4XUMOI4Rk38VavJ5LS81y\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "131",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"KwywmlUnVa1IDVgCgsM4RZzGbKPHRu762S2XxhGj\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "120",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"BtBGWJ0JcdYgvEIaqlxusZuaRTXn8qcXX7P608gW\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "114",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://staff.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"5HVWmFPHwiado7ppwMRrTeJD2vBN3pHr97TZebDB\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>This is an informational alert and so no changes are required.</p>",
+					"otherinfo": "<p>No links have been found while there are scripts, which is an indication that this is a modern web application.</p>",
+					"reference": "",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "39"
+				},
+				{
+					"pluginid": "10015",
+					"alertRef": "10015",
+					"alert": "Re-examine Cache-control Directives",
+					"name": "Re-examine Cache-control Directives",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>The cache-control header has not been set properly or is missing, allowing the browser and proxies to cache content. For static assets like css, js, or image files this might be intended, however, the resources should be reviewed to ensure that no sensitive content will be cached.</p>",
+					"instances":[ 
+						{
+							"id": "134",
+							"uri": "https://staff.perf.localhost:8443/admin",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-store, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "140",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-store, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "128",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-store, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "117",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "111",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>For secure content, ensure the cache-control HTTP header is set with \"no-cache, no-store, must-revalidate\". If an asset should be cached consider setting the directives \"public, max-age, immutable\".</p>",
+					"otherinfo": "",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#web-content-caching</p><p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control</p><p>https://grayduck.mn/2021/09/13/cache-control-recommendations/</p>",
+					"cweid": "525",
+					"wascid": "13",
+					"sourceid": "39"
+				},
+				{
+					"pluginid": "10112",
+					"alertRef": "10112",
+					"alert": "Session Management Response Identified",
+					"name": "Session Management Response Identified",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The given response has been identified as containing a session management token. The 'Other Info' field contains a set of header tokens that can be used in the Header Based Session Management Method. If the request is in a context which has a Session Management Method set to \"Auto-Detect\" then this rule will change the session management to use the tokens identified.</p>",
+					"instances":[ 
+						{
+							"id": "445",
+							"uri": "https://staff.perf.localhost:8443",
+							"nodeName": "https:\/\/staff.perf.localhost:8443",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "110",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "139",
+							"uri": "https://staff.perf.localhost:8443/admin",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "457",
+							"uri": "https://staff.perf.localhost:8443/admin/applications",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "146",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "152",
+							"uri": "https://staff.perf.localhost:8443/admin/applications/01a1b65d-771f-707c-bb4c-77da3483efe4",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications\/01a1b65d-771f-707c-bb4c-77da3483efe4",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "155",
+							"uri": "https://staff.perf.localhost:8443/admin/applications/01a1b65d-771f-707c-bb4c-77da3483efe4/receipt",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications\/01a1b65d-771f-707c-bb4c-77da3483efe4\/receipt",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "163",
+							"uri": "https://staff.perf.localhost:8443/admin/content",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "169",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about/edit",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about\/edit",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "133",
+							"uri": "https://staff.perf.localhost:8443/admin/home",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/home",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "175",
+							"uri": "https://staff.perf.localhost:8443/admin/periods",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "187",
+							"uri": "https://staff.perf.localhost:8443/admin/periods/1/edit",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods\/1\/edit",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "181",
+							"uri": "https://staff.perf.localhost:8443/admin/periods/create",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/periods\/create",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "193",
+							"uri": "https://staff.perf.localhost:8443/admin/reports",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/reports",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "197",
+							"uri": "https://staff.perf.localhost:8443/admin/reports/1/export",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/reports\/1\/export",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "203",
+							"uri": "https://staff.perf.localhost:8443/admin/student-export?from=2026-01-01&to=2026-12-31&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/student-export (from,per_page,to)",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "209",
+							"uri": "https://staff.perf.localhost:8443/admin/users?role=reviewer&state=active&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/users (per_page,q,role,state)",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "510",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "519",
+							"uri": "https://staff.perf.localhost:8443/settings",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "221",
+							"uri": "https://staff.perf.localhost:8443/settings/appearance",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings\/appearance",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "215",
+							"uri": "https://staff.perf.localhost:8443/settings/profile",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/settings\/profile",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "122",
+							"uri": "https://staff.perf.localhost:8443/staff/invitation",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/invitation",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "116",
+							"uri": "https://staff.perf.localhost:8443/staff/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/staff\/login",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "225",
+							"uri": "https://staff.perf.localhost:8443/admin/message-templates",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/message-templates ()(body,status,title)",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "127",
+							"uri": "https://staff.perf.localhost:8443/login",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/login ()(email,password)",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						},
+						{
+							"id": "229",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about ()(body_ar,body_en,is_published,title_ar,title_en)",
+							"method": "PUT",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_staff_session"
+						}
+					],
+					"count": "26",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>cookie:XSRF-TOKEN</p><p>cookie:__Host-examis_staff_session</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/session-mgmt-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "237"
+				},
+				{
+					"pluginid": "10104",
+					"alertRef": "10104",
+					"alert": "User Agent Fuzzer",
+					"name": "User Agent Fuzzer",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.</p>",
+					"instances":[ 
+						{
+							"id": "841",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "839",
+							"uri": "https://staff.perf.localhost:8443/",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "840",
+							"uri": "https://staff.perf.localhost:8443/admin/content/about",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/content\/about ()(body_ar,body_en,is_published,title_ar,title_en)",
+							"method": "PUT",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "3",
+					"systemic": true,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "<p>https://owasp.org/wstg</p>",
+					"cweid": "0",
+					"wascid": "0",
+					"sourceid": "616"
+				},
+				{
+					"pluginid": "10031",
+					"alertRef": "10031",
+					"alert": "User Controllable HTML Element Attribute (Potential XSS)",
+					"name": "User Controllable HTML Element Attribute (Potential XSS)",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>This check looks at user-supplied input in query string parameters and POST data to identify where certain HTML attribute values might be controlled. This provides hot-spot detection for XSS (cross-site scripting) that will require further review by a security analyst to determine exploitability.</p>",
+					"instances":[ 
+						{
+							"id": "145",
+							"uri": "https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20",
+							"nodeName": "https:\/\/staff.perf.localhost:8443\/admin\/applications (assigned,per_page,period,q,status)",
+							"method": "GET",
+							"param": "period",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "User-controlled HTML attribute values were found. Try injecting special characters to see if XSS might be possible. The page at the following URL:\n\nhttps://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20\n\nappears to include user input in:\na(n) [meta] tag [content] attribute\n\nThe user input found was:\nperiod=1\n\nThe user-controlled value was:\nwidth=device-width, initial-scale=1, viewport-fit=cover"
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Validate all input and sanitize output it before writing to any HTML attributes.</p>",
+					"otherinfo": "<p>User-controlled HTML attribute values were found. Try injecting special characters to see if XSS might be possible. The page at the following URL:</p><p></p><p>https://staff.perf.localhost:8443/admin/applications?status=submitted&period=1&assigned=me&q=perf&per_page=20</p><p></p><p>appears to include user input in:</p><p>a(n) [meta] tag [content] attribute</p><p></p><p>The user input found was:</p><p>period=1</p><p></p><p>The user-controlled value was:</p><p>width=device-width, initial-scale=1, viewport-fit=cover</p>",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html</p>",
+					"cweid": "20",
+					"wascid": "20",
+					"sourceid": "40"
+				}
+			]
+		},
+		{
+			"@name": "https://students.perf.localhost:8443",
+			"@host": "students.perf.localhost",
+			"@port": "8443",
+			"@ssl": "true",
+			"alerts": [ 
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-6",
+					"alert": "CSP: style-src unsafe-inline",
+					"name": "CSP: style-src unsafe-inline",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks. Including (but not limited to) Cross Site Scripting (XSS), and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "1",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-IzFrPrVNnHFogTHRkLllIArNJKkdL9Hc8UTZRlPg'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "7",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-vTN7BxeyNrMFHecb3xMOTaGUB1OAN4Ly9JGuAyeW'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "23",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-4LQOOk3Vku8AkLwUX9kXwiWF0zpe1Frw1rvYHhBZ'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "13",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-6fIG8I1YRER1zOG42tOTteCPqnGIX9VGcMkQIKFj'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						},
+						{
+							"id": "17",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; script-src 'self' 'nonce-RONu6eiOYiyOup9CpqhGTW0y3c84KyiS7Bryo4SM'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+							"otherinfo": "style-src includes unsafe-inline."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>style-src includes unsafe-inline.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10038",
+					"alertRef": "10038-1",
+					"alert": "Content Security Policy (CSP) Header Not Set",
+					"name": "Content Security Policy (CSP) Header Not Set",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "253",
+							"uri": "https://students.perf.localhost:8443/applications",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "267",
+							"uri": "https://students.perf.localhost:8443/apply",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "281",
+							"uri": "https://students.perf.localhost:8443/notifications/read",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/notifications\/read",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "245",
+							"uri": "https://students.perf.localhost:8443/sitemap.xml",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/sitemap.xml",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "46",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP</p><p>https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html</p><p>https://www.w3.org/TR/CSP/</p><p>https://w3c.github.io/webappsec-csp/</p><p>https://web.dev/articles/csp</p><p>https://caniuse.com/#feat=contentsecuritypolicy</p><p>https://content-security-policy.com/</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "121"
+				},
+				{
+					"pluginid": "10020",
+					"alertRef": "10020-1",
+					"alert": "Missing Anti-clickjacking Header",
+					"name": "Missing Anti-clickjacking Header",
+					"riskcode": "2",
+					"confidence": "2",
+					"riskdesc": "Medium (Medium)",
+					"desc": "<p>The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options.</p>",
+					"instances":[ 
+						{
+							"id": "44",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "x-frame-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": true,
+					"solution": "<p>Modern Web browsers support the Content-Security-Policy and X-Frame-Options HTTP headers. Ensure one of them is set on all web pages returned by your site/app.</p><p>If you expect the page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect the page to be framed, you should use DENY. Alternatively consider implementing Content Security Policy's \"frame-ancestors\" directive.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Frame-Options</p>",
+					"cweid": "1021",
+					"wascid": "15",
+					"sourceid": "15"
+				},
+				{
+					"pluginid": "90003",
+					"alertRef": "90003",
+					"alert": "Sub Resource Integrity Attribute Missing",
+					"name": "Sub Resource Integrity Attribute Missing",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>The integrity attribute is missing on a script or link tag served by an external server. The integrity tag prevents an attacker who have gained access to this server from injecting a malicious content.</p>",
+					"instances":[ 
+						{
+							"id": "50",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<link href=\"https://fonts.bunny.net/css?family=figtree:400,600&display=swap\" rel=\"stylesheet\" />",
+							"otherinfo": ""
+						},
+						{
+							"id": "51",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>",
+							"otherinfo": ""
+						}
+					],
+					"count": "2",
+					"systemic": true,
+					"solution": "<p>Provide a valid integrity attribute to the tag.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity</p>",
+					"cweid": "345",
+					"wascid": "15",
+					"sourceid": "15"
+				},
+				{
+					"pluginid": "10044",
+					"alertRef": "10044-1",
+					"alert": "Big Redirect Detected (Potential Sensitive Information Leak)",
+					"name": "Big Redirect Detected (Potential Sensitive Information Leak)",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The server has responded with a redirect that seems to provide a large response. This may indicate that although the server sent a redirect it also responded with body content (which may include sensitive details, PII, etc.).</p>",
+					"instances":[ 
+						{
+							"id": "255",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].\nPredicted response size: 348.\nResponse Body Length: 438."
+						},
+						{
+							"id": "258",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/edit",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/edit",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].\nPredicted response size: 348.\nResponse Body Length: 438."
+						},
+						{
+							"id": "261",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/printed",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/printed",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].\nPredicted response size: 348.\nResponse Body Length: 438."
+						},
+						{
+							"id": "264",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/receipt",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/receipt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].\nPredicted response size: 348.\nResponse Body Length: 438."
+						},
+						{
+							"id": "67",
+							"uri": "https://students.perf.localhost:8443/dashboard",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/dashboard",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 91 [https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/edit].\nPredicted response size: 391.\nResponse Body Length: 610."
+						},
+						{
+							"id": "71",
+							"uri": "https://students.perf.localhost:8443/notifications",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/notifications",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 46 [https://students.perf.localhost:8443/dashboard].\nPredicted response size: 346.\nResponse Body Length: 430."
+						},
+						{
+							"id": "12",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].\nPredicted response size: 348.\nResponse Body Length: 438."
+						},
+						{
+							"id": "34",
+							"uri": "https://students.perf.localhost:8443/s/00000000-0000-4000-8000-000000002900",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/s\/00000000-0000-4000-8000-000000002900",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 51 [https://students.perf.localhost:8443/student/verify].\nPredicted response size: 351.\nResponse Body Length: 450."
+						},
+						{
+							"id": "75",
+							"uri": "https://students.perf.localhost:8443/student/card",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/student\/card",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 46 [https://students.perf.localhost:8443/dashboard].\nPredicted response size: 346.\nResponse Body Length: 430."
+						},
+						{
+							"id": "103",
+							"uri": "https://students.perf.localhost:8443/notifications/read",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/notifications\/read",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 46 [https://students.perf.localhost:8443/dashboard].\nPredicted response size: 346.\nResponse Body Length: 430."
+						},
+						{
+							"id": "57",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register ()(phone)",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 51 [https://students.perf.localhost:8443/student/verify].\nPredicted response size: 351.\nResponse Body Length: 450."
+						},
+						{
+							"id": "53",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track ()(reference_number)",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 51 [https://students.perf.localhost:8443/student/verify].\nPredicted response size: 351.\nResponse Body Length: 450."
+						},
+						{
+							"id": "99",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3 ()({lock_version,step,student_name,father_name,grandfather_name,great_grandfather_name,mother_first_name,mother_father_name,mother_grandfather_name,birth_date,birth_place_code,gender})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "Location header URI length: 98 [https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/edit?step=2].\nPredicted response size: 398.\nResponse Body Length: 638."
+						}
+					],
+					"count": "13",
+					"systemic": false,
+					"solution": "<p>Ensure that no sensitive information is leaked via redirect responses. Redirect responses should have almost no content.</p>",
+					"otherinfo": "<p>Location header URI length: 48 [https://students.perf.localhost:8443/apply/terms].</p><p>Predicted response size: 348.</p><p>Response Body Length: 438.</p>",
+					"reference": "",
+					"cweid": "201",
+					"wascid": "13",
+					"sourceid": "122"
+				},
+				{
+					"pluginid": "10010",
+					"alertRef": "10010",
+					"alert": "Cookie No HttpOnly Flag",
+					"name": "Cookie No HttpOnly Flag",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>A cookie has been set without the HttpOnly flag, which means that the cookie can be accessed by JavaScript. If a malicious script can be run on this page then the cookie will be accessible and can be transmitted to another site. If this is a session cookie then session hijacking may be possible.</p>",
+					"instances":[ 
+						{
+							"id": "2",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "24",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "14",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						},
+						{
+							"id": "18",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "Set-Cookie: XSRF-TOKEN",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the HttpOnly flag is set for all cookies.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://owasp.org/www-community/HttpOnly</p>",
+					"cweid": "1004",
+					"wascid": "13",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10017",
+					"alertRef": "10017",
+					"alert": "Cross-Domain JavaScript Source File Inclusion",
+					"name": "Cross-Domain JavaScript Source File Inclusion",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The page includes one or more script files from a third-party domain.</p>",
+					"instances":[ 
+						{
+							"id": "47",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
+							"attack": "",
+							"evidence": "<script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script>",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": true,
+					"solution": "<p>Ensure JavaScript source files are loaded from only trusted sources, and the sources can't be controlled by end users of the application.</p>",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "829",
+					"wascid": "15",
+					"sourceid": "15"
+				},
+				{
+					"pluginid": "10035",
+					"alertRef": "10035-1",
+					"alert": "Strict-Transport-Security Header Not Set",
+					"name": "Strict-Transport-Security Header Not Set",
+					"riskcode": "1",
+					"confidence": "3",
+					"riskdesc": "Low (High)",
+					"desc": "<p>HTTP Strict Transport Security (HSTS) is a web security policy mechanism whereby a web server declares that complying user agents (such as a web browser) are to interact with it using only secure HTTPS connections (i.e. HTTP layered over TLS/SSL). HSTS is an IETF standards track protocol and is specified in RFC 6797.</p>",
+					"instances":[ 
+						{
+							"id": "4",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "10",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "26",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "20",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "32",
+							"uri": "https://students.perf.localhost:8443/verify/781df1f8-ccd6-457a-b28e-bab533559747",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/verify\/781df1f8-ccd6-457a-b28e-bab533559747",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to enforce Strict-Transport-Security.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html</p><p>https://owasp.org/www-community/Security_Headers</p><p>https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security</p><p>https://caniuse.com/stricttransportsecurity</p><p>https://datatracker.ietf.org/doc/html/rfc6797</p>",
+					"cweid": "319",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10021",
+					"alertRef": "10021",
+					"alert": "X-Content-Type-Options Header Missing",
+					"name": "X-Content-Type-Options Header Missing",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>",
+					"instances":[ 
+						{
+							"id": "346",
+							"uri": "https://students.perf.localhost:8443/build/assets/app-CHkK96e_.css",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/build\/assets\/app-CHkK96e_.css",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "344",
+							"uri": "https://students.perf.localhost:8443/build/assets/ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/build\/assets\/ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "342",
+							"uri": "https://students.perf.localhost:8443/build/assets/ibm-plex-sans-arabic-400-normal-CyU-ddYS.woff2",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/build\/assets\/ibm-plex-sans-arabic-400-normal-CyU-ddYS.woff2",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "238",
+							"uri": "https://students.perf.localhost:8443/robots.txt",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/robots.txt",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "52",
+							"uri": "https://students.perf.localhost:8443/up",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/up",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.</p>",
+					"otherinfo": "<p>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.</p><p>At \"High\" threshold this scan rule will not alert on client or server error responses.</p>",
+					"reference": "<p>https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</p><p>https://owasp.org/www-community/Security_Headers</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "171"
+				},
+				{
+					"pluginid": "10027",
+					"alertRef": "10027",
+					"alert": "Information Disclosure - Suspicious Comments",
+					"name": "Information Disclosure - Suspicious Comments",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>The response appears to contain suspicious comments which may help an attacker.</p>",
+					"instances":[ 
+						{
+							"id": "347",
+							"uri": "https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/build\/assets\/app-DeEo39Pz.js",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "user",
+							"otherinfo": "The following pattern was used: \\bUSER\\b and was detected in likely comment: \"//www.w3.org/2000/svg`,viewBox:`0 0 20 20`,fill:`currentColor`,height:`20`,width:`20`,\"aria-hidden\":`true`},V.createElement(`pat\", see evidence field for the suspicious comment/snippet."
+						},
+						{
+							"id": "354",
+							"uri": "https://students.perf.localhost:8443/build/assets/jsx-runtime-GYkmRuKb.js",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/build\/assets\/jsx-runtime-GYkmRuKb.js",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "from",
+							"otherinfo": "The following pattern was used: \\bFROM\\b and was detected in likely comment: \"//`)&&!e.startsWith(`https://`)&&(e=t.replace(/\\/$/,``)+`/`+e.replace(/^\\//,``)),n&&Object.keys(n).length>0){let t=tt(n);t&&(e+=\", see evidence field for the suspicious comment/snippet."
+						}
+					],
+					"count": "2",
+					"systemic": false,
+					"solution": "<p>Remove all comments that return information that may help an attacker and fix any underlying problems they refer to.</p>",
+					"otherinfo": "<p>The following pattern was used: \\bUSER\\b and was detected in likely comment: \"//www.w3.org/2000/svg`,viewBox:`0 0 20 20`,fill:`currentColor`,height:`20`,width:`20`,\"aria-hidden\":`true`},V.createElement(`pat\", see evidence field for the suspicious comment/snippet.</p>",
+					"reference": "",
+					"cweid": "615",
+					"wascid": "13",
+					"sourceid": "172"
+				},
+				{
+					"pluginid": "10109",
+					"alertRef": "10109",
+					"alert": "Modern Web Application",
+					"name": "Modern Web Application",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.</p>",
+					"instances":[ 
+						{
+							"id": "3",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"IzFrPrVNnHFogTHRkLllIArNJKkdL9Hc8UTZRlPg\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "9",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"vTN7BxeyNrMFHecb3xMOTaGUB1OAN4Ly9JGuAyeW\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "25",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"4LQOOk3Vku8AkLwUX9kXwiWF0zpe1Frw1rvYHhBZ\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "19",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"RONu6eiOYiyOup9CpqhGTW0y3c84KyiS7Bryo4SM\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						},
+						{
+							"id": "31",
+							"uri": "https://students.perf.localhost:8443/verify/781df1f8-ccd6-457a-b28e-bab533559747",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/verify\/781df1f8-ccd6-457a-b28e-bab533559747",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script type=\"module\" src=\"https://students.perf.localhost:8443/build/assets/app-DeEo39Pz.js\" nonce=\"SYZnshgTW1I29KPzTfiHOW6nGuFKPii39kOcPTPp\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>This is an informational alert and so no changes are required.</p>",
+					"otherinfo": "<p>No links have been found while there are scripts, which is an indication that this is a modern web application.</p>",
+					"reference": "",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10015",
+					"alertRef": "10015",
+					"alert": "Re-examine Cache-control Directives",
+					"name": "Re-examine Cache-control Directives",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>The cache-control header has not been set properly or is missing, allowing the browser and proxies to cache content. For static assets like css, js, or image files this might be intended, however, the resources should be reviewed to ensure that no sensitive content will be cached.</p>",
+					"instances":[ 
+						{
+							"id": "0",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "22",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "16",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						},
+						{
+							"id": "28",
+							"uri": "https://students.perf.localhost:8443/verify/781df1f8-ccd6-457a-b28e-bab533559747",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/verify\/781df1f8-ccd6-457a-b28e-bab533559747",
+							"method": "GET",
+							"param": "cache-control",
+							"attack": "",
+							"evidence": "no-cache, private",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>For secure content, ensure the cache-control HTTP header is set with \"no-cache, no-store, must-revalidate\". If an asset should be cached consider setting the directives \"public, max-age, immutable\".</p>",
+					"otherinfo": "",
+					"reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#web-content-caching</p><p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control</p><p>https://grayduck.mn/2021/09/13/cache-control-recommendations/</p>",
+					"cweid": "525",
+					"wascid": "13",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10112",
+					"alertRef": "10112",
+					"alert": "Session Management Response Identified",
+					"name": "Session Management Response Identified",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The given response has been identified as containing a session management token. The 'Other Info' field contains a set of header tokens that can be used in the Header Based Session Management Method. If the request is in a context which has a Session Management Method set to \"Auto-Detect\" then this rule will change the session management to use the tokens identified.</p>",
+					"instances":[ 
+						{
+							"id": "244",
+							"uri": "https://students.perf.localhost:8443",
+							"nodeName": "https:\/\/students.perf.localhost:8443",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "5",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "84",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "90",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/edit",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/edit",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "98",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/printed",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/printed",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "94",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3/receipt",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3\/receipt",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "11",
+							"uri": "https://students.perf.localhost:8443/apply/terms",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/apply\/terms",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "70",
+							"uri": "https://students.perf.localhost:8443/dashboard",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/dashboard",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "74",
+							"uri": "https://students.perf.localhost:8443/notifications",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/notifications",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "27",
+							"uri": "https://students.perf.localhost:8443/pages/about",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/pages\/about",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "66",
+							"uri": "https://students.perf.localhost:8443/portal",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/portal",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "15",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "37",
+							"uri": "https://students.perf.localhost:8443/s/00000000-0000-4000-8000-000000002900",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/s\/00000000-0000-4000-8000-000000002900",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "78",
+							"uri": "https://students.perf.localhost:8443/student/card",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/student\/card",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "43",
+							"uri": "https://students.perf.localhost:8443/student/verify",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/student\/verify",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "21",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "33",
+							"uri": "https://students.perf.localhost:8443/verify/781df1f8-ccd6-457a-b28e-bab533559747",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/verify\/781df1f8-ccd6-457a-b28e-bab533559747",
+							"method": "GET",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "106",
+							"uri": "https://students.perf.localhost:8443/notifications/read",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/notifications\/read",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "60",
+							"uri": "https://students.perf.localhost:8443/register",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/register ()(phone)",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "56",
+							"uri": "https://students.perf.localhost:8443/track",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/track ()(reference_number)",
+							"method": "POST",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						},
+						{
+							"id": "102",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3 ()({lock_version,step,student_name,father_name,grandfather_name,great_grandfather_name,mother_first_name,mother_father_name,mother_grandfather_name,birth_date,birth_place_code,gender})",
+							"method": "PUT",
+							"param": "XSRF-TOKEN",
+							"attack": "",
+							"evidence": "XSRF-TOKEN",
+							"otherinfo": "cookie:XSRF-TOKEN\ncookie:__Host-examis_students_session"
+						}
+					],
+					"count": "21",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>cookie:XSRF-TOKEN</p><p>cookie:__Host-examis_students_session</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/session-mgmt-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "96"
+				},
+				{
+					"pluginid": "10104",
+					"alertRef": "10104",
+					"alert": "User Agent Fuzzer",
+					"name": "User Agent Fuzzer",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.</p>",
+					"instances":[ 
+						{
+							"id": "592",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "590",
+							"uri": "https://students.perf.localhost:8443/",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/",
+							"method": "GET",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "591",
+							"uri": "https://students.perf.localhost:8443/applications/01a1b65d-9b76-73ac-8013-326a58594cc3",
+							"nodeName": "https:\/\/students.perf.localhost:8443\/applications\/01a1b65d-9b76-73ac-8013-326a58594cc3 ()({lock_version,step,student_name,father_name,grandfather_name,great_grandfather_name,mother_first_name,mother_father_name,mother_grandfather_name,birth_date,birth_place_code,gender})",
+							"method": "PUT",
+							"param": "Header User-Agent",
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "3",
+					"systemic": true,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "<p>https://owasp.org/wstg</p>",
+					"cweid": "0",
+					"wascid": "0",
+					"sourceid": "346"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}

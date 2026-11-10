@@ -2,6 +2,8 @@
 
 @import 'tw-animate-css';
 
+@import './palette-srgb.css';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -154,45 +156,6 @@
     --sidebar-ring: var(--examis-gold);
 }
 
-.dark {
-    --examis-surface: color-mix(in srgb, var(--examis-navy) 92%, #000000);
-    --examis-card: color-mix(in srgb, var(--examis-navy) 82%, #000000);
-    --background: var(--examis-surface);
-    --foreground: var(--examis-pearl);
-    --card: var(--examis-card);
-    --card-foreground: var(--examis-pearl);
-    --popover: var(--examis-card);
-    --popover-foreground: var(--examis-pearl);
-    --primary: var(--examis-gold);
-    --primary-foreground: var(--examis-navy);
-    --secondary: var(--examis-green);
-    --secondary-foreground: var(--examis-pearl);
-    --muted: color-mix(in srgb, var(--examis-navy) 70%, #000000);
-    --muted-foreground: color-mix(
-        in srgb,
-        var(--examis-pearl) 75%,
-        transparent
-    );
-    --accent: var(--examis-green);
-    --accent-foreground: var(--examis-pearl);
-    --destructive: #e07a7a;
-    --destructive-foreground: #1a1010;
-    --border: color-mix(in srgb, var(--examis-pearl) 22%, transparent);
-    --input: color-mix(in srgb, var(--examis-navy) 70%, #000000);
-    --ring: var(--examis-gold);
-    --success: #3d9a4a;
-    --warning: var(--examis-gold);
-    --info: color-mix(in srgb, var(--examis-gold) 40%, var(--examis-pearl));
-    --sidebar: color-mix(in srgb, var(--examis-navy) 95%, #000000);
-    --sidebar-foreground: var(--examis-pearl);
-    --sidebar-primary: var(--examis-gold);
-    --sidebar-primary-foreground: var(--examis-navy);
-    --sidebar-accent: var(--examis-green);
-    --sidebar-accent-foreground: var(--examis-pearl);
-    --sidebar-border: color-mix(in srgb, var(--examis-pearl) 18%, transparent);
-    --sidebar-ring: var(--examis-gold);
-}
-
 @layer base {
     * {
         @apply border-border;
@@ -204,6 +167,44 @@
 
     :focus-visible {
         @apply outline-2 outline-offset-2 outline-ring;
+    }
+
+    /*
+     * Running text is justified, flush with both edges; the last line of a
+     * paragraph stays at the start. Text inside a centred or end-aligned
+     * container keeps that alignment, and alignment utilities still win.
+     */
+    :where(p, li, dd, blockquote, figcaption):not(
+        :where([class*='text-center'], [class*='text-end']) *
+    ) {
+        text-align: justify;
+    }
+
+    /*
+     * Very thin scrollbars in the sidebar colour. Chromium ignores the
+     * ::-webkit-scrollbar rules once scrollbar-width is set, so the standard
+     * properties apply only where those pseudo-elements are unsupported.
+     */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background: var(--sidebar);
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--sidebar) transparent;
+        }
     }
 
     [dir='rtl'] body {
@@ -232,7 +233,8 @@
     min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    overscroll-behavior: contain;
+    /* Sideways only: the wheel must keep moving the page over a table. */
+    overscroll-behavior-x: contain;
     border: var(--examis-table-line);
     border-radius: var(--examis-table-radius);
     background: var(--card);
@@ -315,18 +317,50 @@
     color: var(--examis-green);
 }
 
-.dark .examis-data-table thead th {
-    background: var(--examis-green);
-    color: var(--examis-pearl);
+/* Single background for every body row (no zebra striping). */
+.examis-data-table--plain tbody tr:nth-child(even):not(:hover) {
+    background: transparent;
 }
 
-.dark .examis-data-table {
-    --examis-table-line-color: var(--examis-gold);
+/* Search-term highlight inside table cells. */
+.examis-highlight {
+    border-radius: 0.2rem;
+    background: color-mix(in srgb, var(--examis-gold) 45%, transparent);
+    color: inherit;
+    padding-inline: 0.1rem;
+}
+
+@page print-sheet {
+    size: A4 portrait;
+    margin: 0;
 }
 
 @media print {
     .no-print {
         display: none !important;
+    }
+
+    /*
+     * A page that has a print sheet (portalled to <body>) prints only that
+     * sheet, alone on one A4 page and centered both ways.
+     */
+    body:has(> .print-sheet) {
+        margin: 0;
+        background: #fff !important;
+    }
+
+    body:has(> .print-sheet) > :not(.print-sheet) {
+        display: none !important;
+    }
+
+    .print-sheet {
+        page: print-sheet;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 210mm;
+        height: 296mm;
+        overflow: hidden;
     }
 
     .examis-data-table {
@@ -336,5 +370,17 @@
 
     .examis-data-table :is(th, td) {
         border-color: #000;
+    }
+}
+
+/* Entrance of the start page blocks (used with motion-safe only). */
+@keyframes start-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
     }
 }

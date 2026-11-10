@@ -3,28 +3,13 @@ import { expect, test } from '@playwright/test';
 test('the home page is Arabic and right-to-left by default', async ({
     page,
 }) => {
-    await page.goto('/');
+    await page.goto('/portal');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
         'قدّم على الامتحانات الخارجية إلكترونياً',
     );
-});
-
-test('switching to English flips the layout to left-to-right', async ({
-    page,
-}) => {
-    await page.goto('/');
-    await page.getByTestId('language-switcher').click();
-
-    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'Apply for external examinations online',
-    );
-
-    await page.getByTestId('language-switcher').click();
-    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 });
 
 test('managed content pages render as text', async ({ page }) => {
@@ -37,11 +22,10 @@ test('managed content pages render as text', async ({ page }) => {
 test('tracking with unknown details reveals nothing', async ({ page }) => {
     await page.goto('/track');
     await page.locator('#reference_number').fill('EX2027-0000019');
-    await page.locator('#birth_date').fill('2000-01-01');
     await page.getByTestId('track-button').click();
 
     await expect(
-        page.getByText('لم يُعثر على طلب يطابق البيانات المدخلة.', {
+        page.getByText('لم يُعثر على طلب بهذا الرقم.', {
             exact: false,
         }),
     ).toBeVisible();
