@@ -33,6 +33,10 @@ it('renders an A4 receipt whose Arabic text can be extracted', function () {
     expect($pdf)->toStartWith('%PDF-')
         ->and($pdf)->toContain('/MediaBox [0 0 595.280 841.890]');
 
+    if (! receiptFontInstalled()) {
+        $this->markTestIncomplete('Times New Roman is not installed here (EXAMIS_RECEIPT_FONT_DIR): the A4 PDF is checked, its Arabic text is not.');
+    }
+
     $text = extractPdfText($pdf);
     expect($text)->toContain(visualOrder('استمارة واقع حال الطالب المتقدم'))
         ->and($text)->toContain(visualOrder('عبد الرحمن'))
@@ -120,8 +124,12 @@ it('prints the verified personal photo in the photo box', function () {
 
     // The authority logo (when provided) is an image too, so compare counts.
     expect(substr_count($withPhoto, '/Subtype /Image'))
-        ->toBeGreaterThan(substr_count($withoutVerifiedPhoto, '/Subtype /Image'))
-        ->and(extractPdfText($withoutVerifiedPhoto))->toContain(visualOrder('الصورة الشخصية'));
+        ->toBeGreaterThan(substr_count($withoutVerifiedPhoto, '/Subtype /Image'));
+
+    // Without a verified photo the box keeps its label (Arabic text: see receiptFontInstalled).
+    if (receiptFontInstalled()) {
+        expect(extractPdfText($withoutVerifiedPhoto))->toContain(visualOrder('الصورة الشخصية'));
+    }
 });
 
 it('encodes only the verification link in the QR code, not personal data', function () {

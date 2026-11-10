@@ -140,6 +140,19 @@ function extractPdfText(string $pdf): string
 }
 
 /**
+ * Whether the form prints in Times New Roman, as in production. The font is
+ * licensed with Windows and cannot ship with the repository, so the Linux CI
+ * prints with the DejaVu fallback, whose Arabic text extracts differently;
+ * checks of the extracted Arabic run only where the real font is.
+ */
+function receiptFontInstalled(): bool
+{
+    $directory = rtrim((string) config('examis.receipt.font_dir'), '/\\');
+
+    return $directory !== '' && is_file($directory.'/times.ttf') && is_file($directory.'/timesbd.ttf');
+}
+
+/**
  * PDF stores right-to-left runs in visual order; viewers reorder them for
  * display and selection. Reverse an expected phrase to find it in raw text.
  */
