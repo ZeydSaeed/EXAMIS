@@ -86,7 +86,7 @@ test('arabic-indic digits and the 00 prefix are normalized', function () {
 });
 
 test('registration is rate limited', function () {
-    foreach (range(1, 3) as $attempt) {
+    foreach (range(1, (int) config('examis.security.students_per_ip.registrations_per_minute')) as $attempt) {
         $this->post(route('register.store'), ['phone' => 'x'])->assertRedirect();
     }
 

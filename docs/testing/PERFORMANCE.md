@@ -20,7 +20,7 @@
 > **Outdated since 2026-11-06.** The k6 suite was rebuilt for the current sign-in (QR link + access code) and runs only against loopback test portals; `BASE_URL`, `I_HAVE_WRITTEN_APPROVAL` and `LoadTestSeeder` accounts are refused. Follow `tests/load/README.md` and `docs/external_link/quality-engineering/`. The steps below and the results in §3 are kept as history.
 
 1. Isolated staging stack, sized like production. Record CPU, RAM, disk, network, PostgreSQL version and settings, PHP-FPM settings, and data volume.
-2. `php artisan migrate:fresh --seed` then `LOAD_TEST_USERS=1000 php artisan db:seed --class=LoadTestSeeder`. Set `EXAMIS_LOGIN_ATTEMPTS_PER_IP_PER_HOUR=100000` **on staging only** (k6 runs from one IP).
+2. `php artisan migrate:fresh --seed` then `LOAD_TEST_USERS=1000 php artisan db:seed --class=LoadTestSeeder`. Set `EXAMIS_LOGIN_ATTEMPTS_PER_IP_PER_HOUR=100000`, `EXAMIS_STUDENT_LOGINS_PER_IP_PER_MINUTE=100000` and `EXAMIS_STUDENT_ATTEMPTS_PER_IP_PER_HOUR=100000` **on staging only** (k6 runs from one IP; students are counted apart from staff).
 3. Run, stopping at the first failing stage:
     1. `k6 run tests/load/smoke.js`
     2. `k6 run -e MAX_VUS=25 tests/load/normal-load.js` → then 100 → 250 → 500 → 1000

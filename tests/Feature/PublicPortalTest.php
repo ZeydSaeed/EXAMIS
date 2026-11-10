@@ -68,7 +68,7 @@ describe('tracking without signing in', function () {
     });
 
     it('is rate limited', function () {
-        foreach (range(1, 10) as $attempt) {
+        foreach (range(1, (int) config('examis.security.students_per_ip.lookups_per_minute')) as $attempt) {
             $this->post(route('track.store'), ['reference_number' => 'EX2027-0000019']);
         }
 

@@ -81,24 +81,26 @@ class FortifyServiceProvider extends ServiceProvider
             ];
         });
 
+        // Students share addresses (CGNAT, school labs): their per-IP limits
+        // are wider and counted apart from staff sign-in (config/examis.php).
         RateLimiter::for('student-login', function (Request $request) {
             return [
-                Limit::perMinute(10)->by('student-login|'.$request->ip()),
-                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+                Limit::perMinute((int) config('examis.security.students_per_ip.logins_per_minute'))->by('student-login|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.students_per_ip.attempts_per_hour'))->by('student-ip|'.$request->ip()),
             ];
         });
 
         RateLimiter::for('student-code', function (Request $request) {
             return [
                 Limit::perMinute(5)->by('student-code|'.$request->session()->getId().'|'.$request->ip()),
-                Limit::perHour((int) config('examis.security.login_attempts_per_ip_per_hour'))->by('login-ip|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.students_per_ip.attempts_per_hour'))->by('student-ip|'.$request->ip()),
             ];
         });
 
         RateLimiter::for('registration', function (Request $request) {
             return [
-                Limit::perMinute(3)->by('register|'.$request->ip()),
-                Limit::perDay(30)->by('register-day|'.$request->ip()),
+                Limit::perMinute((int) config('examis.security.students_per_ip.registrations_per_minute'))->by('register|'.$request->ip()),
+                Limit::perDay((int) config('examis.security.students_per_ip.registrations_per_day'))->by('register-day|'.$request->ip()),
             ];
         });
 
