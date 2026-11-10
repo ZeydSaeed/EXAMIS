@@ -46,8 +46,20 @@ return [
         'hsts' => (bool) env('EXAMIS_HSTS_ENABLED', env('APP_ENV') === 'production'),
         // Start low on a new host (300, then a day) and raise to a year.
         'hsts_max_age' => (int) env('EXAMIS_HSTS_MAX_AGE', 31536000),
-        // Raise only on an isolated load-test environment (k6 runs from one IP).
+        // Staff sign-in. Raise only on an isolated load-test environment (k6 runs from one IP).
         'login_attempts_per_ip_per_hour' => (int) env('EXAMIS_LOGIN_ATTEMPTS_PER_IP_PER_HOUR', 100),
+        // Students, counted per IP apart from staff. Mobile carriers in Iraq
+        // put many subscribers behind one address (CGNAT), and a school lab
+        // signs a whole class in from one, so these allow a busy shared
+        // address; guessing is stopped per account (access code lock).
+        'students_per_ip' => [
+            'logins_per_minute' => (int) env('EXAMIS_STUDENT_LOGINS_PER_IP_PER_MINUTE', 60),
+            'attempts_per_hour' => (int) env('EXAMIS_STUDENT_ATTEMPTS_PER_IP_PER_HOUR', 600),
+            'registrations_per_minute' => (int) env('EXAMIS_REGISTRATIONS_PER_IP_PER_MINUTE', 10),
+            'registrations_per_day' => (int) env('EXAMIS_REGISTRATIONS_PER_IP_PER_DAY', 300),
+            'lookups_per_minute' => (int) env('EXAMIS_LOOKUPS_PER_IP_PER_MINUTE', 30),
+            'lookups_per_hour' => (int) env('EXAMIS_LOOKUPS_PER_IP_PER_HOUR', 300),
+        ],
     ],
 
     /*

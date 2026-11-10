@@ -118,10 +118,12 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by('app-write|'.($request->user() === null ? $request->ip() : $request->user()->id));
         });
 
+        // Tracking and receipt checks reveal a status only; shared student
+        // addresses need room (config/examis.php).
         RateLimiter::for('public-lookup', function (Request $request) {
             return [
-                Limit::perMinute(10)->by('lookup|'.$request->ip()),
-                Limit::perHour(100)->by('lookup-hour|'.$request->ip()),
+                Limit::perMinute((int) config('examis.security.students_per_ip.lookups_per_minute'))->by('lookup|'.$request->ip()),
+                Limit::perHour((int) config('examis.security.students_per_ip.lookups_per_hour'))->by('lookup-hour|'.$request->ip()),
             ];
         });
     }
