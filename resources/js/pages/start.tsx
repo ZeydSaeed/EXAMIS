@@ -47,8 +47,9 @@ export default function Start() {
                         >
                             {t('start.heading')}
                         </h1>
+                        {/* Bump ?v= whenever the logo file changes, so Cloudflare and browsers fetch the new one. */}
                         <img
-                            src="/images/vocational-education-logo.webp"
+                            src="/images/vocational-education-logo.webp?v=2"
                             alt={t('start.vocational_logo')}
                             className="size-[clamp(3rem,min(12svh,19vw),7rem)] shrink-0 object-contain drop-shadow-md"
                             decoding="async"
