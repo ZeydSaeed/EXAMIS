@@ -36,18 +36,16 @@ class StudentExportController extends Controller
     private const LOCAL_TIMEZONE = 'Asia/Baghdad';
 
     /**
-     * The statuses staff filter this list by, as the stored statuses each one
-     * covers. Unlike the other staff screens, an application nobody has
-     * opened yet ("pending") is kept apart from one a reviewer has started.
+     * The statuses staff filter this list by, in the order the filter offers
+     * them: the outcomes they export for, final acceptance first.
      *
-     * @var array<string, list<ApplicationStatus>>
+     * @var list<ApplicationStatus>
      */
-    private const STATUSES = [
-        'pending' => [ApplicationStatus::Submitted, ApplicationStatus::Resubmitted],
-        'under_review' => [ApplicationStatus::UnderReview],
-        'accepted' => [ApplicationStatus::Accepted],
-        'rejected' => [ApplicationStatus::Rejected],
-        'requires_correction' => [ApplicationStatus::RequiresCorrection],
+    private const FILTER_STATUSES = [
+        ApplicationStatus::FeesPaid,
+        ApplicationStatus::Accepted,
+        ApplicationStatus::Rejected,
+        ApplicationStatus::RequiresCorrection,
     ];
 
     public function index(Request $request, ReferenceData $referenceData): Response
@@ -71,8 +69,8 @@ class StudentExportController extends Controller
             'students' => $students,
             'filters' => $filters,
             'statuses' => array_map(
-                fn (string $status): array => ['value' => $status, 'label' => __('ui.student_export.statuses.'.$status)],
-                array_keys(self::STATUSES),
+                fn (ApplicationStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
+                self::FILTER_STATUSES,
             ),
         ]);
     }
@@ -120,7 +118,7 @@ class StudentExportController extends Controller
         return [
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
-            'status' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::STATUSES))],
+            'status' => ['nullable', 'string', 'in:'.implode(',', array_map(fn (ApplicationStatus $status): string => $status->value, self::FILTER_STATUSES))],
         ];
     }
 
@@ -146,9 +144,7 @@ class StudentExportController extends Controller
     {
         return Application::query()
             ->visibleToStaff($request->user())
-            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->whereIn(
-                'status', self::STATUSES[$status],
-            ))
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->when($filters['from'] ?? null, fn (Builder $query, string $from) => $query->where(
                 'submitted_at', '>=', CarbonImmutable::parse($from, self::LOCAL_TIMEZONE)->utc(),
             ))
@@ -216,18 +212,17 @@ class StudentExportController extends Controller
     }
 
     /**
-     * The name of the filter that covers this status, or the status's own
-     * label for one with no filter (fees paid, withdrawn).
+     * The status as this list names it. Unlike the other staff screens, an
+     * application nobody has opened yet is kept apart from one a reviewer has
+     * started.
      */
     private function statusLabel(ApplicationStatus $status): string
     {
-        foreach (self::STATUSES as $key => $covered) {
-            if (in_array($status, $covered, true)) {
-                return __('ui.student_export.statuses.'.$key);
-            }
-        }
-
-        return $status->label();
+        return match ($status) {
+            ApplicationStatus::Submitted, ApplicationStatus::Resubmitted => __('ui.student_export.statuses.pending'),
+            ApplicationStatus::UnderReview => __('ui.student_export.statuses.under_review'),
+            default => $status->label(),
+        };
     }
 
     /**

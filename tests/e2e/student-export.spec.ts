@@ -30,16 +30,18 @@ test('a supervisor exports student information to Excel', async ({
     await staffPage.getByLabel('من تاريخ').fill('');
     await staffPage.getByLabel('إلى تاريخ').fill('');
 
-    // The status filter narrows the list, and the export takes it along.
-    await staffPage.getByLabel('الحالة').selectOption('pending');
-    await expect(staffPage).toHaveURL(/status=pending/);
-    await expect(
-        staffPage.getByRole('cell', { name: 'قيد التدقيق' }).first(),
-    ).toBeVisible();
+    // The status filter, final acceptance first, narrows the list, and the
+    // export takes it along.
+    const status = staffPage.getByLabel('الحالة');
+    await expect(status.locator('option').nth(1)).toHaveText(
+        'تم دفع الرسوم (القبول النهائي)',
+    );
+    await status.selectOption('accepted');
+    await expect(staffPage).toHaveURL(/status=accepted/);
     await expect(staffPage.getByTestId('export')).toHaveText('تصدير إلى إكسل');
     await expect(staffPage.getByTestId('export')).toHaveAttribute(
         'href',
-        /status=pending/,
+        /status=accepted/,
     );
 
     const download = staffPage.waitForEvent('download');

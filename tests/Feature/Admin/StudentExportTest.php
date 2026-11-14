@@ -149,17 +149,16 @@ it('names each status as staff filter by it', function (ApplicationStatus $statu
     'fees paid' => [ApplicationStatus::FeesPaid, 'تم دفع الرسوم (القبول النهائي)'],
 ]);
 
-it('offers the five statuses and filters the list by one', function () {
+it('offers four statuses, final acceptance first, and filters the list by one', function () {
     submittedOn('2026-10-01 09:00', [], ApplicationStatus::Submitted);
-    $resubmitted = submittedOn('2026-10-02 09:00', [], ApplicationStatus::Resubmitted);
-    $accepted = submittedOn('2026-10-03 09:00', [], ApplicationStatus::Accepted);
+    $accepted = submittedOn('2026-10-02 09:00', [], ApplicationStatus::Accepted);
+    $feesPaid = submittedOn('2026-10-03 09:00', [], ApplicationStatus::FeesPaid);
     $staff = staffWith(Role::Supervisor);
 
     $this->actingAs($staff)->get(route('admin.student-export.index', ['status' => 'accepted']))
         ->assertInertia(fn (Assert $page) => $page
             ->where('statuses', [
-                ['value' => 'pending', 'label' => 'قيد التدقيق'],
-                ['value' => 'under_review', 'label' => 'بدأ التدقيق'],
+                ['value' => 'fees_paid', 'label' => 'تم دفع الرسوم (القبول النهائي)'],
                 ['value' => 'accepted', 'label' => 'مقبول'],
                 ['value' => 'rejected', 'label' => 'مرفوض'],
                 ['value' => 'requires_correction', 'label' => 'وجود نقص بالمعاملة'],
@@ -168,10 +167,10 @@ it('offers the five statuses and filters the list by one', function () {
             ->where('students.total', 1)
             ->where('students.data.0.uuid', $accepted->uuid));
 
-    $this->actingAs($staff)->get(route('admin.student-export.index', ['status' => 'pending']))
+    $this->actingAs($staff)->get(route('admin.student-export.index', ['status' => 'fees_paid']))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('students.total', 2)
-            ->where('students.data.1.uuid', $resubmitted->uuid));
+            ->where('students.total', 1)
+            ->where('students.data.0.uuid', $feesPaid->uuid));
 });
 
 it('exports only the students of the chosen status and dates', function () {
@@ -191,11 +190,11 @@ it('exports only the students of the chosen status and dates', function () {
         ->toBe(['from' => '2026-10-10', 'status' => 'rejected']);
 });
 
-it('rejects a status it does not offer', function () {
+it('rejects a status it does not offer', function (string $status) {
     $this->actingAs(staffWith(Role::Supervisor))
-        ->get(route('admin.student-export.index', ['status' => 'draft']))
+        ->get(route('admin.student-export.index', ['status' => $status]))
         ->assertSessionHasErrors('status');
-});
+})->with(['draft', 'submitted', 'under_review', 'pending']);
 
 it('keeps a value that looks like a formula as text', function () {
     submittedOn('2026-10-01 09:00', ['district' => '=HYPERLINK("http://evil")']);

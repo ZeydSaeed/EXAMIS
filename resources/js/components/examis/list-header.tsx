@@ -119,6 +119,7 @@ export function HeaderFilter({
     options: { value: string; label: string }[];
     onChange: (value: string) => void;
     required?: boolean;
+    /** `max-w-none` lets the box grow to its longest option. */
     className?: string;
 }) {
     const { t } = useTrans();
