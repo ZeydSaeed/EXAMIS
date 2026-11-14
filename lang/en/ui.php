@@ -523,8 +523,15 @@ return [
         'from' => 'From date',
         'to' => 'To date',
         'total' => 'Students: :count',
-        'export_range' => 'Export the selected dates',
-        'export_all' => 'Export all data',
+        'export' => 'Export to Excel',
+        'status' => 'Status',
+        'statuses' => [
+            'pending' => 'Awaiting review',
+            'under_review' => 'Review started',
+            'accepted' => 'Accepted',
+            'rejected' => 'Rejected',
+            'requires_correction' => 'Incomplete paperwork',
+        ],
     ],
     'db' => [
         'tables_hint' => 'Every table of the system. Locked tables are read-only: history and the audit log never change, and roles and permissions are managed on the Users and roles page.',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ApplicationStatus;
 use App\Enums\ReferenceType;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
@@ -21,8 +22,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The student information staff keep in Excel. The page and the file show the
- * same columns, for every submitted application or those sent between two
- * dates. Contains personal data, so both are limited to `applications.view_all`
+ * same columns and the same filters (status, dates sent), so the file holds
+ * exactly the students the list shows. Contains personal data, so both are limited to `applications.view_all`
  * (routes/staff.php) and each download is audited.
  */
 class StudentExportController extends Controller
@@ -33,6 +34,21 @@ class StudentExportController extends Controller
      * Timestamps are stored in UTC; staff pick dates as they read them in Iraq.
      */
     private const LOCAL_TIMEZONE = 'Asia/Baghdad';
+
+    /**
+     * The statuses staff filter this list by, as the stored statuses each one
+     * covers. Unlike the other staff screens, an application nobody has
+     * opened yet ("pending") is kept apart from one a reviewer has started.
+     *
+     * @var array<string, list<ApplicationStatus>>
+     */
+    private const STATUSES = [
+        'pending' => [ApplicationStatus::Submitted, ApplicationStatus::Resubmitted],
+        'under_review' => [ApplicationStatus::UnderReview],
+        'accepted' => [ApplicationStatus::Accepted],
+        'rejected' => [ApplicationStatus::Rejected],
+        'requires_correction' => [ApplicationStatus::RequiresCorrection],
+    ];
 
     public function index(Request $request, ReferenceData $referenceData): Response
     {
@@ -54,6 +70,10 @@ class StudentExportController extends Controller
             'columns' => $this->columns(),
             'students' => $students,
             'filters' => $filters,
+            'statuses' => array_map(
+                fn (string $status): array => ['value' => $status, 'label' => __('ui.student_export.statuses.'.$status)],
+                array_keys(self::STATUSES),
+            ),
         ]);
     }
 
@@ -100,6 +120,7 @@ class StudentExportController extends Controller
         return [
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'status' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::STATUSES))],
         ];
     }
 
@@ -108,19 +129,26 @@ class StudentExportController extends Controller
      */
     private function attributes(): array
     {
-        return ['from' => __('ui.student_export.from'), 'to' => __('ui.student_export.to')];
+        return [
+            'from' => __('ui.student_export.from'),
+            'to' => __('ui.student_export.to'),
+            'status' => __('ui.student_export.status'),
+        ];
     }
 
     /**
      * Whole days at both ends, so a range of one day covers that day.
      *
-     * @param  array{from?: string|null, to?: string|null}  $filters
+     * @param  array{from?: string|null, to?: string|null, status?: string|null}  $filters
      * @return Builder<Application>
      */
     private function query(Request $request, array $filters): Builder
     {
         return Application::query()
             ->visibleToStaff($request->user())
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->whereIn(
+                'status', self::STATUSES[$status],
+            ))
             ->when($filters['from'] ?? null, fn (Builder $query, string $from) => $query->where(
                 'submitted_at', '>=', CarbonImmutable::parse($from, self::LOCAL_TIMEZONE)->utc(),
             ))
@@ -153,6 +181,7 @@ class StudentExportController extends Controller
             'ui.student_export.mobile',
             'ui.fields.school_name',
             'ui.fields.school_governorate',
+            'ui.student_export.status',
         ]);
     }
 
@@ -182,7 +211,23 @@ class StudentExportController extends Controller
             $application->phone,
             $application->school_name,
             $application->schoolGovernorate(),
+            $this->statusLabel($application->status),
         ];
+    }
+
+    /**
+     * The name of the filter that covers this status, or the status's own
+     * label for one with no filter (fees paid, withdrawn).
+     */
+    private function statusLabel(ApplicationStatus $status): string
+    {
+        foreach (self::STATUSES as $key => $covered) {
+            if (in_array($status, $covered, true)) {
+                return __('ui.student_export.statuses.'.$key);
+            }
+        }
+
+        return $status->label();
     }
 
     /**
