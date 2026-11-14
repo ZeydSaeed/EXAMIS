@@ -33,9 +33,9 @@ function workbookRows(string $content): array
     return $rows;
 }
 
-function submittedOn(string $utc, array $attributes = []): Application
+function submittedOn(string $utc, array $attributes = [], ApplicationStatus $status = ApplicationStatus::Submitted): Application
 {
-    return Application::factory()->submitted()->create([...$attributes, 'submitted_at' => CarbonImmutable::parse($utc, 'UTC')]);
+    return Application::factory()->inStatus($status)->create([...$attributes, 'submitted_at' => CarbonImmutable::parse($utc, 'UTC')]);
 }
 
 it('lists the requested columns in order and leaves drafts out', function () {
@@ -54,13 +54,15 @@ it('lists the requested columns in order and leaves drafts out', function () {
             ->where('columns.8', 'اسم جد الأم')
             ->where('columns.15', 'رقم الموبايل')
             ->where('columns.17', 'المحافظة')
-            ->has('columns', 18)
+            ->where('columns.18', 'الحالة')
+            ->has('columns', 19)
             ->where('students.total', 1)
             ->where('students.data.0.uuid', $application->uuid)
             ->where('students.data.0.cells.3', 'حسن')
             ->where('students.data.0.cells.8', 'كريم')
             ->where('students.data.0.cells.15', '07701234567')
-            ->has('students.data.0.cells', 18));
+            ->where('students.data.0.cells.18', 'قيد التدقيق')
+            ->has('students.data.0.cells', 19));
 });
 
 it('covers whole days of the chosen range as read in Iraq', function () {
@@ -107,7 +109,8 @@ it('exports all the data to a workbook and audits it', function () {
     $rows = workbookRows($response->streamedContent());
 
     expect($rows)->toHaveCount(3)
-        ->and($rows[0])->toHaveCount(19)
+        ->and($rows[0])->toHaveCount(20)
+        ->and($rows[0][19])->toBe('الحالة')
         ->and($rows[0][0])->toBe('ت')
         ->and($rows[0][1])->toBe('اسم الطالب')
         ->and($rows[1][0])->toBe('1')
@@ -129,6 +132,69 @@ it('exports only the chosen range and audits it', function () {
     expect(workbookRows($content))->toHaveCount(2)
         ->and(AuditEvent::query()->where('action', 'students.exported')->sole()->metadata['filters'])
         ->toBe(['from' => '2026-10-10', 'to' => '2026-10-31']);
+});
+
+it('names each status as staff filter by it', function (ApplicationStatus $status, string $label) {
+    submittedOn('2026-10-01 09:00', [], $status);
+
+    $this->actingAs(staffWith(Role::Supervisor))->get(route('admin.student-export.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('students.data.0.cells.18', $label));
+})->with([
+    'submitted' => [ApplicationStatus::Submitted, 'قيد التدقيق'],
+    'resubmitted' => [ApplicationStatus::Resubmitted, 'قيد التدقيق'],
+    'under review' => [ApplicationStatus::UnderReview, 'بدأ التدقيق'],
+    'accepted' => [ApplicationStatus::Accepted, 'مقبول'],
+    'rejected' => [ApplicationStatus::Rejected, 'مرفوض'],
+    'requires correction' => [ApplicationStatus::RequiresCorrection, 'وجود نقص بالمعاملة'],
+    'fees paid' => [ApplicationStatus::FeesPaid, 'تم دفع الرسوم (القبول النهائي)'],
+]);
+
+it('offers the five statuses and filters the list by one', function () {
+    submittedOn('2026-10-01 09:00', [], ApplicationStatus::Submitted);
+    $resubmitted = submittedOn('2026-10-02 09:00', [], ApplicationStatus::Resubmitted);
+    $accepted = submittedOn('2026-10-03 09:00', [], ApplicationStatus::Accepted);
+    $staff = staffWith(Role::Supervisor);
+
+    $this->actingAs($staff)->get(route('admin.student-export.index', ['status' => 'accepted']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('statuses', [
+                ['value' => 'pending', 'label' => 'قيد التدقيق'],
+                ['value' => 'under_review', 'label' => 'بدأ التدقيق'],
+                ['value' => 'accepted', 'label' => 'مقبول'],
+                ['value' => 'rejected', 'label' => 'مرفوض'],
+                ['value' => 'requires_correction', 'label' => 'وجود نقص بالمعاملة'],
+            ])
+            ->where('filters.status', 'accepted')
+            ->where('students.total', 1)
+            ->where('students.data.0.uuid', $accepted->uuid));
+
+    $this->actingAs($staff)->get(route('admin.student-export.index', ['status' => 'pending']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('students.total', 2)
+            ->where('students.data.1.uuid', $resubmitted->uuid));
+});
+
+it('exports only the students of the chosen status and dates', function () {
+    submittedOn('2026-10-01 09:00', [], ApplicationStatus::Rejected);
+    submittedOn('2026-10-20 09:00', ['student_name' => 'سجاد'], ApplicationStatus::Rejected);
+    submittedOn('2026-10-21 09:00', [], ApplicationStatus::Accepted);
+
+    $rows = workbookRows($this->actingAs(staffWith(Role::Supervisor))
+        ->get(route('admin.student-export.download', ['status' => 'rejected', 'from' => '2026-10-10']))
+        ->assertOk()
+        ->streamedContent());
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[1][1])->toBe('سجاد')
+        ->and($rows[1][19])->toBe('مرفوض')
+        ->and(AuditEvent::query()->where('action', 'students.exported')->sole()->metadata['filters'])
+        ->toBe(['from' => '2026-10-10', 'status' => 'rejected']);
+});
+
+it('rejects a status it does not offer', function () {
+    $this->actingAs(staffWith(Role::Supervisor))
+        ->get(route('admin.student-export.index', ['status' => 'draft']))
+        ->assertSessionHasErrors('status');
 });
 
 it('keeps a value that looks like a formula as text', function () {

@@ -27,10 +27,23 @@ test('a supervisor exports student information to Excel', async ({
     await staffPage.getByLabel('من تاريخ').fill('2000-01-01');
     await staffPage.getByLabel('إلى تاريخ').fill('2000-01-31');
     await expect(staffPage.getByText('عدد الطلاب: 0')).toBeVisible();
-    await expect(staffPage.getByTestId('export-range')).toBeVisible();
+    await staffPage.getByLabel('من تاريخ').fill('');
+    await staffPage.getByLabel('إلى تاريخ').fill('');
+
+    // The status filter narrows the list, and the export takes it along.
+    await staffPage.getByLabel('الحالة').selectOption('pending');
+    await expect(staffPage).toHaveURL(/status=pending/);
+    await expect(
+        staffPage.getByRole('cell', { name: 'قيد التدقيق' }).first(),
+    ).toBeVisible();
+    await expect(staffPage.getByTestId('export')).toHaveText('تصدير إلى إكسل');
+    await expect(staffPage.getByTestId('export')).toHaveAttribute(
+        'href',
+        /status=pending/,
+    );
 
     const download = staffPage.waitForEvent('download');
-    await staffPage.getByTestId('export-all').click();
+    await staffPage.getByTestId('export').click();
 
     expect((await download).suggestedFilename()).toMatch(/^students-.*\.xlsx$/);
 });

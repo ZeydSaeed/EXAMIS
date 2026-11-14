@@ -3,7 +3,11 @@ import { Download, Inbox } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DataTableFrame } from '@/components/examis/data-table-frame';
 import { EmptyState } from '@/components/examis/empty-state';
-import { HeaderDateFilter, ListHeader } from '@/components/examis/list-header';
+import {
+    HeaderDateFilter,
+    HeaderFilter,
+    ListHeader,
+} from '@/components/examis/list-header';
 import { NumberedPagination } from '@/components/examis/pagination';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -17,6 +21,7 @@ type Row = { uuid: string; cells: (string | null)[] };
 type Filters = {
     from?: string;
     to?: string;
+    status?: string;
     per_page?: string | number;
 };
 
@@ -24,12 +29,18 @@ type Props = {
     columns: string[];
     students: Paginated<Row>;
     filters: Filters;
+    statuses: { value: string; label: string }[];
 };
 
 /** Long enough to finish typing a year by hand before the list reloads. */
 const DATE_DELAY_MS = 500;
 
-export default function StudentExport({ columns, students, filters }: Props) {
+export default function StudentExport({
+    columns,
+    students,
+    filters,
+    statuses,
+}: Props) {
     const { t } = useTrans();
     const { errors } = usePage().props;
     const [from, setFrom] = useState(filters.from ?? '');
@@ -63,13 +74,17 @@ export default function StudentExport({ columns, students, filters }: Props) {
         return () => window.clearTimeout(timer);
     }, [from, to, filters.from, filters.to, visit]);
 
-    const hasRange = Boolean(filters.from || filters.to);
-
     return (
         <>
             <Head title={t('nav.student_export')} />
 
             <ListHeader>
+                <HeaderFilter
+                    label={t('student_export.status')}
+                    value={filters.status ?? ''}
+                    options={statuses}
+                    onChange={(status) => visit({ status, page: 1 })}
+                />
                 <HeaderDateFilter
                     label={t('student_export.from')}
                     value={from}
@@ -89,40 +104,27 @@ export default function StudentExport({ columns, students, filters }: Props) {
                     <p className="text-sm text-muted-foreground tabular-nums">
                         {t('student_export.total', { count: students.total })}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {hasRange && (
-                            <Button asChild size="sm">
-                                <a
-                                    href={admin.studentExport.download.url({
-                                        query: compactQuery({
-                                            from: filters.from,
-                                            to: filters.to,
-                                        }),
-                                    })}
-                                    data-test="export-range"
-                                >
-                                    <Download aria-hidden />
-                                    {t('student_export.export_range')}
-                                </a>
-                            </Button>
-                        )}
-                        <Button
-                            asChild
-                            size="sm"
-                            variant={hasRange ? 'outline' : 'default'}
+                    {/* Exports exactly what the list shows: every filter goes along. */}
+                    <Button asChild size="sm">
+                        <a
+                            href={admin.studentExport.download.url({
+                                query: compactQuery({
+                                    from: filters.from,
+                                    to: filters.to,
+                                    status: filters.status,
+                                }),
+                            })}
+                            data-test="export"
                         >
-                            <a
-                                href={admin.studentExport.download.url()}
-                                data-test="export-all"
-                            >
-                                <Download aria-hidden />
-                                {t('student_export.export_all')}
-                            </a>
-                        </Button>
-                    </div>
+                            <Download aria-hidden />
+                            {t('student_export.export')}
+                        </a>
+                    </Button>
                 </div>
 
-                <InputError message={errors.to ?? errors.from} />
+                <InputError
+                    message={errors.to ?? errors.from ?? errors.status}
+                />
 
                 <div ref={tableArea} className="min-h-0 flex-1">
                     {students.data.length === 0 ? (
