@@ -528,9 +528,6 @@ return [
         'statuses' => [
             'pending' => 'Awaiting review',
             'under_review' => 'Review started',
-            'accepted' => 'Accepted',
-            'rejected' => 'Rejected',
-            'requires_correction' => 'Incomplete paperwork',
         ],
     ],
     'db' => [

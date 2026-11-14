@@ -528,9 +528,6 @@ return [
         'statuses' => [
             'pending' => 'قيد التدقيق',
             'under_review' => 'بدأ التدقيق',
-            'accepted' => 'مقبول',
-            'rejected' => 'مرفوض',
-            'requires_correction' => 'وجود نقص بالمعاملة',
         ],
     ],
     'db' => [

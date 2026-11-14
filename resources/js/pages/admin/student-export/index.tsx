@@ -79,22 +79,25 @@ export default function StudentExport({
             <Head title={t('nav.student_export')} />
 
             <ListHeader>
-                <HeaderFilter
-                    label={t('student_export.status')}
-                    value={filters.status ?? ''}
-                    options={statuses}
-                    onChange={(status) => visit({ status, page: 1 })}
-                />
-                <HeaderDateFilter
-                    label={t('student_export.from')}
-                    value={from}
-                    onChange={setFrom}
-                />
-                <HeaderDateFilter
-                    label={t('student_export.to')}
-                    value={to}
-                    onChange={setTo}
-                />
+                <div className="flex items-center gap-5">
+                    <HeaderFilter
+                        label={t('student_export.status')}
+                        value={filters.status ?? ''}
+                        options={statuses}
+                        onChange={(status) => visit({ status, page: 1 })}
+                        className="max-w-none shrink-0"
+                    />
+                    <HeaderDateFilter
+                        label={t('student_export.from')}
+                        value={from}
+                        onChange={setFrom}
+                    />
+                    <HeaderDateFilter
+                        label={t('student_export.to')}
+                        value={to}
+                        onChange={setTo}
+                    />
+                </div>
             </ListHeader>
 
             <div className="flex min-h-0 w-full flex-1 flex-col gap-3 p-4 sm:p-6">

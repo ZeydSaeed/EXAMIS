@@ -10,8 +10,10 @@ export function AppSidebarHeader({
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
+    // Equal side columns keep the search box centred. A page without one gives
+    // the room to its title and filters, so neither is cut short.
     return (
-        <header className="no-print grid h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b bg-[var(--examis-green)] px-3 text-white transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:gap-3 sm:px-6 md:px-4 [&_[data-slot=breadcrumb-list]]:text-white/80 [&_[data-slot=breadcrumb-page]]:text-white [&_[data-slot=breadcrumb-separator]]:text-white/50 [&_a]:text-white/80 [&_a:hover]:text-white">
+        <header className="no-print grid h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b bg-[var(--examis-green)] px-3 text-white transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 has-[[data-header-slot=center]:empty]:grid-cols-[minmax(0,1fr)_0_auto] sm:gap-3 sm:px-6 md:px-4 [&_[data-slot=breadcrumb-list]]:text-white/80 [&_[data-slot=breadcrumb-page]]:text-white [&_[data-slot=breadcrumb-separator]]:text-white/50 [&_a]:text-white/80 [&_a:hover]:text-white">
             <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger className="-ms-1 text-white hover:bg-white/10 hover:text-white" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />

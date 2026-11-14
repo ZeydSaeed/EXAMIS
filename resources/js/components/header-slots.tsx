@@ -58,7 +58,13 @@ export function HeaderSlotTarget({
 }) {
     const context = useContext(HeaderSlotsContext);
 
-    return <div ref={context?.register(name)} className={className} />;
+    return (
+        <div
+            ref={context?.register(name)}
+            data-header-slot={name}
+            className={className}
+        />
+    );
 }
 
 /** Renders its children inside the named header slot. */
